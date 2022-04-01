@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Original Pond
+blockly-pond/
