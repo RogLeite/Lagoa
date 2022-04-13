@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/whack.mp3-4cc55ea4879d82df58755ab73fce0dbf.mp3str"
+
+[deps]
+
+source_file="res://assets/whack.mp3"
+dest_files=[ "res://.import/whack.mp3-4cc55ea4879d82df58755ab73fce0dbf.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0
