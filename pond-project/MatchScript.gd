@@ -31,6 +31,8 @@ func run():
 func _exit_tree():
 	# [TODO] Take the code out of this method, so Match can check regularly if the script had any error
 	# [TODO] Also: use is_alive() so i don't get blocked on the call to wait_to_finish
+	if threads[1] == null: # [TODO] Implement a better check to see if the threads were never created
+		return
 	for i in 2:
 		var run_returned = threads[i].wait_to_finish()
 		if run_returned != OK:
