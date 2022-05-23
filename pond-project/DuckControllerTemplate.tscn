@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://DuckControllerScript.gd" type="Script" id=1]
+
+[node name="DuckControllerTemplate" type="LuaController"]
+methods_to_register = {
+}
+max_lines = 0
+count_interval = 1000000
+script = ExtResource( 1 )

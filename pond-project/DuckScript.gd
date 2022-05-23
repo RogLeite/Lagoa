@@ -37,7 +37,7 @@ func stop () -> void :
 	speed_target = 0
 
 func accelerate(delta) :
-	# [TODO] Implement acceleration
+	# [TODO] Implement acceleration (Change the equation)
 	if speed != speed_target:
 		self.speed = speed_target + delta * 0
 

@@ -1,0 +1,26 @@
+[gd_scene format=2]
+
+[node name="PlayerScriptTemplate" type="TextEdit"]
+light_mask = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "for i = 1,5 do
+	swim(0,20)
+	stop()
+	swim(90,20)
+	stop()
+	swim(180,20)
+	stop()
+	swim(270,20)
+	stop()
+end"
+highlight_current_line = true
+syntax_highlighting = true
+show_line_numbers = true
+draw_tabs = true

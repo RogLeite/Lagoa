@@ -13,9 +13,15 @@ _global_script_classes=[ {
 "class": "Match",
 "language": "GDScript",
 "path": "res://MatchScript.gd"
+}, {
+"base": "Button",
+"class": "RunResetButton",
+"language": "GDScript",
+"path": "res://RunResetButtonScript.gd"
 } ]
 _global_script_class_icons={
-"Match": ""
+"Match": "",
+"RunResetButton": ""
 }
 
 [application]
@@ -27,6 +33,11 @@ config/icon="res://icon.png"
 [autoload]
 
 PlayerData="*res://PlayerDataScript.gd"
+ThreadSincronizer="*res://ThreadSincronizerScript.gd"
+
+[debug]
+
+settings/fps/force_fps=60
 
 [global]
 

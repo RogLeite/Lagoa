@@ -2,7 +2,7 @@
 
 [ext_resource path="res://MatchScript.gd" type="Script" id=1]
 [ext_resource path="res://PondVisualization.tscn" type="PackedScene" id=2]
-[ext_resource path="res://DuckControllerScript.gd" type="Script" id=3]
+[ext_resource path="res://RunResetButtonScript.gd" type="Script" id=3]
 
 [node name="Match" type="HBoxContainer"]
 anchor_right = 1.0
@@ -11,6 +11,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 alignment = 1
 script = ExtResource( 1 )
+duck_amount = 2
 
 [node name="Gameplay" type="VBoxContainer" parent="."]
 margin_right = 400.0
@@ -60,32 +61,20 @@ margin_bottom = 600.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="ReferenceRect2" type="ColorRect" parent="Gameplay/HBoxContainer"]
+[node name="StepButton" type="Button" parent="Gameplay/HBoxContainer"]
 margin_right = 198.0
 margin_bottom = 96.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-color = Color( 1, 0.282353, 0, 1 )
+text = "Step"
 
-[node name="Label" type="Label" parent="Gameplay/HBoxContainer/ReferenceRect2"]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "DOCUMENTATION "
-uppercase = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="RunButton" type="Button" parent="Gameplay/HBoxContainer"]
+[node name="RunResetButton" type="Button" parent="Gameplay/HBoxContainer"]
 margin_left = 202.0
 margin_right = 400.0
 margin_bottom = 96.0
 size_flags_horizontal = 3
 text = "Run"
+script = ExtResource( 3 )
 
 [node name="ScriptTabs" type="TabContainer" parent="."]
 margin_left = 404.0
@@ -95,64 +84,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 tab_align = 0
 
-[node name="PlayerScript1" type="TextEdit" parent="ScriptTabs"]
-light_mask = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 4.0
-margin_top = 32.0
-margin_right = -4.0
-margin_bottom = -4.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-text = "function wait(seconds)
-	local target = os.time() +  seconds;
-	repeat until os.time() > target
-end
-swim(45, 20)
-wait(5)
-swim(0, 40)"
-highlight_current_line = true
-syntax_highlighting = true
-show_line_numbers = true
-draw_tabs = true
-
-[node name="PlayerScript2" type="TextEdit" parent="ScriptTabs"]
-visible = false
-light_mask = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 4.0
-margin_top = 32.0
-margin_right = -4.0
-margin_bottom = -4.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-text = "function wait(seconds)
-	local target = os.time() +  seconds;
-	repeat until os.time() > target
-end
-swim(-90)
-wait(2)
-swim(90, 10)"
-highlight_current_line = true
-syntax_highlighting = true
-show_line_numbers = true
-draw_tabs = true
-
-[node name="DuckController1" type="LuaController" parent="."]
-methods_to_register = {
-}
-max_lines = 0
-count_interval = 1000000
-script = ExtResource( 3 )
-
-[node name="DuckController2" type="LuaController" parent="."]
-methods_to_register = {
-}
-max_lines = 0
-count_interval = 1000000
-script = ExtResource( 3 )
-duck_idx = 1
-
-[connection signal="pressed" from="Gameplay/HBoxContainer/RunButton" to="." method="run"]
+[connection signal="pressed" from="Gameplay/HBoxContainer/StepButton" to="." method="script_step"]
+[connection signal="reset" from="Gameplay/HBoxContainer/RunResetButton" to="." method="reset_match"]
+[connection signal="run" from="Gameplay/HBoxContainer/RunResetButton" to="." method="run"]
