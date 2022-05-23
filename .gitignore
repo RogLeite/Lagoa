@@ -33,3 +33,9 @@
 
 # Original Pond
 blockly-pond/
+pond-project/.vscode/
+
+# Godot's recomendations 
+.import/
+*.translation
+export_presets.cfg
