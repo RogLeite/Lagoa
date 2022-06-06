@@ -69,38 +69,38 @@ func reset_match():
 	
 	threads.resize(duck_amount)
 
-	var bars := []
-	for i in duck_amount:
-		# Disconnects ducks from energy bars
-		bars.append($Gameplay/EnergyBars.get_node("EnergyBar%d"%i))
-		if get_node(PlayerData.ducks[i]).is_connected("energy_changed", bars[i], "set_energy") : 
-			get_node(PlayerData.ducks[i]).disconnect("energy_changed", bars[i], "set_energy")
+	# var bars := []
+	# for i in duck_amount:
+	# 	# Disconnects ducks from energy bars
+	# 	bars.append($Gameplay/EnergyBars.get_node("EnergyBar%d"%i))
+	# 	if get_node(PlayerData.ducks[i]).is_connected("energy_changed", bars[i], "set_energy") : 
+	# 		get_node(PlayerData.ducks[i]).disconnect("energy_changed", bars[i], "set_energy")
 
-	var flag := get_tree().GROUP_CALL_REALTIME
-	# Interrupts sound effects
-	get_tree().call_group_flags(flag, "sound_effects", "stop")
-	get_tree().call_group_flags(flag, "sound_effects", "queue_free")
-	# Interrupts visual effects
-	get_tree().call_group_flags(flag, "visual_effects", "stop")
-	get_tree().call_group_flags(flag, "visual_effects", "queue_free")
+	# var flag := get_tree().GROUP_CALL_REALTIME
+	# # Interrupts sound effects
+	# get_tree().call_group_flags(flag, "sound_effects", "stop")
+	# get_tree().call_group_flags(flag, "sound_effects", "queue_free")
+	# # Interrupts visual effects
+	# get_tree().call_group_flags(flag, "visual_effects", "stop")
+	# get_tree().call_group_flags(flag, "visual_effects", "queue_free")
 	
-	# [TODO] Resolve error in Viewport when resetting the visualization with stopped ducks
-	var parent := $Gameplay/PondContainer/PondViewport
-	var old_instance = $Gameplay/PondContainer/PondViewport/PondVisualization
-	var new_instance = visualization_scene.instance()
-	old_instance.name = "PondVisualization_is_queued_for_deletion"
-	old_instance.queue_free()
-	parent.remove_child(old_instance)
-	new_instance.name = "PondVisualization"
-	parent.add_child(new_instance)
-	parent.move_child(new_instance,0)
-
+	# # [TODO] Resolve error in Viewport when resetting the visualization with stopped ducks
+	# var parent := $Gameplay/PondContainer/PondViewport
+	# var old_instance = $Gameplay/PondContainer/PondViewport/PondVisualization
+	# var new_instance = visualization_scene.instance()
+	# old_instance.name = "PondVisualization_is_queued_for_deletion"
+	# old_instance.queue_free()
+	# parent.remove_child(old_instance)
+	# new_instance.name = "PondVisualization"
+	# parent.add_child(new_instance)
+	# parent.move_child(new_instance,0)
+	CurrentVisualization.get_current().reset()
 
 	for i in duck_amount:
 		# Connects Ducks to the energy bars
 		# [TODO] Maybe needs to check return value to see if connection was successfull
-		get_node(PlayerData.ducks[i]).connect("energy_changed", bars[i], "set_energy")
-		bars[i].set_energy(100)
+		# get_node(PlayerData.ducks[i]).connect("energy_changed", bars[i], "set_energy")
+		# bars[i].set_energy(100)
 		
 		threads[i] = Thread.new()		
 		# Store the instance id to use with ThreadSincronizer.prepare_participants()

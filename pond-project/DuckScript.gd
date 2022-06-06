@@ -67,13 +67,12 @@ func set_speed_target (value):
 	speed_target = clamp(value, 0, 100)
 	
 func set_energy(value : int) :
-	energy = clamp(value, 0, 100)
+	energy = int(clamp(value, 0, 100))
 	emit_signal("energy_changed", energy)
 	check_energy()
 	
 func set_can_launch(value : bool):
 	can_launch = value
-	
 	
 func tire(value : int) :
 	tire_mutex.lock()
@@ -133,7 +132,15 @@ func launcher(angle, distance):
 		
 		CurrentVisualization.get_current().add_projectile(projectile)
 		# Starts a cooldown timer for can_launch
-		get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
+		var _err = get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
 		
 func get_class() -> String :
 	return "Duck"
+
+func reset(pos : Vector2, angle : float):
+	speed = 0
+	speed_target = 0
+	self.energy = MAX_ENERGY
+	can_launch = true
+	position = pos
+	rotation = angle

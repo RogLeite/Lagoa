@@ -11,7 +11,7 @@ func _ready():
 func _draw():
 	draw_circle(Vector2.ZERO, radius, Color.white)
 
-func _process(delta):
+func _process(_delta):
 	update()
 
 func play():
