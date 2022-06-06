@@ -25,7 +25,7 @@ var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
 
-onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * get_parent().MAP_SCALE_FROM_BLOCKLY
+onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
 onready var projectile_scene := preload("res://Projectile.tscn")
 onready var tire_mutex := Mutex.new()
 
@@ -116,9 +116,9 @@ func is_tired() -> bool :
 	return energy == 0
 
 func scan(duck_idx, angle):
-	return get_parent().scan_field(duck_idx, angle, scan_resolution)
+	return CurrentVisualization.get_current().scan_field(duck_idx, angle, scan_resolution)
 
-# Create a new insatnce of Projectile, configure it, then call get_parent().add_projectile()
+# Create a new insatnce of Projectile, configure it, then call CurrentVisualization.get_current().add_projectile()
 # angle is in degrees
 func launcher(angle, distance):
 	if can_launch:
@@ -131,7 +131,7 @@ func launcher(angle, distance):
 		projectile.startLoc = position
 		projectile.endLoc = position+Vector2(dist,0).rotated(deg2rad(angle))
 		
-		get_parent().add_projectile(projectile)
+		CurrentVisualization.get_current().add_projectile(projectile)
 		# Starts a cooldown timer for can_launch
 		get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
 		

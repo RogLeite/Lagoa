@@ -12,6 +12,9 @@ onready var boom_player_scene := preload("res://BoomPlayer.tscn")
 onready var blast_scene := preload("res://Blast.tscn")
 onready var splash_player_scene := preload("res://SplashPlayer.tscn")
 
+func _enter_tree():
+	# Sets itself as the current visualization
+	CurrentVisualization.set_current(self)
 
 func _ready() -> void:
 	var ducks := [$Duck0.get_path(), $Duck1.get_path()]

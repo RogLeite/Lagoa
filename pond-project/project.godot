@@ -52,6 +52,7 @@ config/icon="res://icon.png"
 
 PlayerData="*res://PlayerDataScript.gd"
 ThreadSincronizer="*res://ThreadSincronizerScript.gd"
+CurrentVisualization="*res://CurrentVisualizationScript.gd"
 
 [debug]
 
