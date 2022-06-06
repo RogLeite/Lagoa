@@ -9,10 +9,25 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "KinematicBody2D",
+"class": "Duck",
+"language": "GDScript",
+"path": "res://DuckScript.gd"
+}, {
+"base": "Control",
+"class": "EnergyBar",
+"language": "GDScript",
+"path": "res://EnergyBarScript.gd"
+}, {
 "base": "HBoxContainer",
 "class": "Match",
 "language": "GDScript",
 "path": "res://MatchScript.gd"
+}, {
+"base": "Node2D",
+"class": "Projectile",
+"language": "GDScript",
+"path": "res://ProjectileScript.gd"
 }, {
 "base": "Button",
 "class": "RunResetButton",
@@ -20,7 +35,10 @@ _global_script_classes=[ {
 "path": "res://RunResetButtonScript.gd"
 } ]
 _global_script_class_icons={
+"Duck": "",
+"EnergyBar": "",
 "Match": "",
+"Projectile": "",
 "RunResetButton": ""
 }
 
@@ -46,6 +64,7 @@ collision=false
 [layer_names]
 
 2d_physics/layer_1="duck-body"
+2d_physics/layer_2="wall"
 
 [physics]
 

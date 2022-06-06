@@ -8,21 +8,23 @@ func _ready():
 	set_methods_to_register({
 		"swim":"swim",
 		"stop":"stop",
-		"kill":"kill"
+		"scan":"scan",
+		"launch":"launch",
+		"tire":"tire" # [TODO] Remove this method in the final version
 		})
 	
 # [TODO] Write a good error handler for DuckControllerScript
 func lua_error_handler(call_error_code: int, message: String) -> void:
 	print("Controller #%d | code : %d | message : \"%s\""%[duck_idx, call_error_code, message])
 
-func kill() -> void :
+func tire(value) -> void :
 	if get_force_stop():
 		return
 	
 	ThreadSincronizer.await_permission(thread_id)
-	# print("Controller %d Called kill()"%duck_idx)
-	set_force_stop(true)
-	# print("Controller %d get_force_stop() = %s"% [duck_idx, ("true" if get_force_stop() else "false")] )
+	var duck = get_duck()
+	if duck:
+		duck.tire(value)
 
 func swim(angle, target) -> void :
 	if get_force_stop():
@@ -30,7 +32,6 @@ func swim(angle, target) -> void :
 	
 	ThreadSincronizer.await_permission(thread_id)
 	var duck = get_duck()
-	# duck.call_deferred("swim", angle, target)
 	if duck:
 		duck.swim(angle, target)
 	
@@ -40,13 +41,30 @@ func stop() -> void :
 
 	ThreadSincronizer.await_permission(thread_id)
 	var duck = get_duck()
-	# duck.call_deferred("stop")
 	if duck:
 		duck.stop()
+
+func scan(angle):
+	if get_force_stop():
+		return "infinity"
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck()
+	if duck:
+		var result = duck.scan(duck_idx, angle)
+		if result == INF:
+			return "infinity"
+		return result
+	return "infinity"
 	
+func launch(angle, distance) : 
+	if get_force_stop():
+		return
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck()
+	if duck:
+		duck.launcher(angle, distance)
+
 func get_duck():
-	var path = PlayerData.ducks[duck_idx]
-	if is_inside_tree() and has_node(path):
-		return get_node(path)
-	else:
-		return null
+	return PlayerData.get_duck(duck_idx)

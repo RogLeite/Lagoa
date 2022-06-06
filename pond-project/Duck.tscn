@@ -13,7 +13,7 @@ texture = ExtResource( 1 )
 region_enabled = true
 region_rect = Rect2( 0, 0, 35, 35 )
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="Collision" type="CollisionShape2D" parent="."]
 light_mask = 0
 shape = SubResource( 1 )
 
@@ -23,6 +23,3 @@ margin_right = 20.0
 margin_bottom = 5.0
 rect_pivot_offset = Vector2( 0, 5 )
 color = Color( 1, 0.486275, 0.0705882, 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}

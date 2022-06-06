@@ -1,20 +1,26 @@
 extends HBoxContainer
 class_name Match
 
+# References to Buttons
+onready var run_reset_btn := $Gameplay/HBoxContainer/RunResetButton
+onready var step_btn := $Gameplay/HBoxContainer/StepButton
+
+export var is_step_by_step : bool = true
 export var duck_amount := 1
 
 var threads : Array
 var scripts : Array
-onready var script_scene := preload("res://PlayerScriptTemplate.tscn")
 var controllers : Array
+
+onready var script_scene := preload("res://PlayerScriptTemplate.tscn")
 onready var controller_scene := preload("res://DuckControllerTemplate.tscn")
 onready var visualization_scene := preload("res://PondVisualization.tscn")
-var running := false
+var is_running : bool = false
 
-# Reference to RunResetButton
-onready var run_reset_btn := $Gameplay/HBoxContainer/RunResetButton
 
 func _ready():
+	step_btn.visible = is_step_by_step
+	
 	scripts.resize(duck_amount)
 	controllers.resize(duck_amount)
 
@@ -35,13 +41,15 @@ func _ready():
 	reset_match()
 
 func _physics_process(_delta: float) -> void:
-	if running and are_controllers_finished() :
-		running = false
+	if not is_step_by_step:
+		script_step()
+	if is_running and are_controllers_finished() :
+		is_running = false
 		join_controllers()
 
-# If it's running, busy waits for every thread to arrive
+# If it's is_running, busy waits for every thread to arrive
 func script_step():
-	if not running : 
+	if not is_running : 
 		return
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
@@ -61,6 +69,21 @@ func reset_match():
 	
 	threads.resize(duck_amount)
 
+	var bars := []
+	for i in duck_amount:
+		# Disconnects ducks from energy bars
+		bars.append($Gameplay/EnergyBars.get_node("EnergyBar%d"%i))
+		if get_node(PlayerData.ducks[i]).is_connected("energy_changed", bars[i], "set_energy") : 
+			get_node(PlayerData.ducks[i]).disconnect("energy_changed", bars[i], "set_energy")
+
+	var flag := get_tree().GROUP_CALL_REALTIME
+	# Interrupts sound effects
+	get_tree().call_group_flags(flag, "sound_effects", "stop")
+	get_tree().call_group_flags(flag, "sound_effects", "queue_free")
+	# Interrupts visual effects
+	get_tree().call_group_flags(flag, "visual_effects", "stop")
+	get_tree().call_group_flags(flag, "visual_effects", "queue_free")
+	
 	# [TODO] Resolve error in Viewport when resetting the visualization with stopped ducks
 	var parent := $Gameplay/PondContainer/PondViewport
 	var old_instance = $Gameplay/PondContainer/PondViewport/PondVisualization
@@ -72,7 +95,13 @@ func reset_match():
 	parent.add_child(new_instance)
 	parent.move_child(new_instance,0)
 
+
 	for i in duck_amount:
+		# Connects Ducks to the energy bars
+		# [TODO] Maybe needs to check return value to see if connection was successfull
+		get_node(PlayerData.ducks[i]).connect("energy_changed", bars[i], "set_energy")
+		bars[i].set_energy(100)
+		
 		threads[i] = Thread.new()		
 		# Store the instance id to use with ThreadSincronizer.prepare_participants()
 		controller_ids[i] = controllers[i].get_instance_id()
@@ -106,9 +135,9 @@ func run():
 				break
 		if any_thread_failed:
 			reset_match()
-			running = false
+			is_running = false
 		else:
-			running = true
+			is_running = true
 		
 
 func controller_run_wrapper(index : int) -> int :
@@ -122,7 +151,7 @@ func controller_run_wrapper(index : int) -> int :
 
 # Force threads to stop and then joins them
 func force_join_controllers() :
-	if not running:
+	if not is_running:
 		return
 
 	for ctrl in controllers:
@@ -137,7 +166,7 @@ func join_controllers():
 	for thread in threads :
 		if thread != null :
 			var _run_return = thread.wait_to_finish()
-	running = false
+	is_running = false
 
 func are_controllers_finished() -> bool :
 	for thread in threads : 
@@ -148,3 +177,4 @@ func are_controllers_finished() -> bool :
 func _exit_tree():
 	force_join_controllers()
 	print("Match seemingly exited the tree graciously")
+
