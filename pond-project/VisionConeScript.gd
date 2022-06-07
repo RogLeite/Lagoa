@@ -1,16 +1,21 @@
 extends Polygon2D
 
-
-func _exit_tree():
-	if has_node("AnimationPlayer") and $AnimationPlayer.is_playing():
-		$AnimationPlayer.stop()
+onready var _animation_player := $AnimationPlayer
 	
-func set_angular_width(angle):
-	polygon[1] = Vector2(1000,0).rotated(angle/2)
-	polygon[2] = Vector2(1000,0).rotated(-angle/2)
+func _exit_tree():
+	if has_node("AnimationPlayer") and _animation_player.is_playing():
+		_animation_player.stop()
+		
+func play_animation(from : Vector2, angle : float):
+	if _animation_player.is_playing() \
+		and _animation_player.current_animation_position != 0.0 :
+		_animation_player.seek(0.0, true)
+	rotation = angle
+	position = from
+	_animation_player.play("fade")
 
-func play_animation():
-	$AnimationPlayer.play("fade")
 
-func stop():
-	$AnimationPlayer.stop()
+func reset():
+	_animation_player.stop(true)
+	position = Vector2.ZERO
+	rotation_degrees = 0

@@ -66,3 +66,6 @@ func set_color(new_color : Color) :
 	color.a = 1.0
 	shadow_color = color
 	shadow_color.a = 0.5
+	
+func stop():
+	set_physics_process(false)

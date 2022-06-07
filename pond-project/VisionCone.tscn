@@ -4,7 +4,7 @@
 
 [sub_resource type="Animation" id=1]
 resource_name = "fade"
-length = 0.22
+length = 0.2
 loop = true
 step = 0.02
 tracks/0/type = "value"
@@ -14,10 +14,10 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.16, 0.22 ),
-"transitions": PoolRealArray( 1, 0.0764342, 1 ),
+"times": PoolRealArray( 0, 0.04, 0.2 ),
+"transitions": PoolRealArray( 1, 2.63901, 1 ),
 "update": 0,
-"values": [ Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 0 ) ]
+"values": [ Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0 ) ]
 }
 tracks/1/type = "method"
 tracks/1/path = NodePath(".")
@@ -26,17 +26,20 @@ tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 0.22 ),
-"transitions": PoolRealArray( 1 ),
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 1, 1 ),
 "values": [ {
-"args": [  ],
-"method": "queue_free"
+"args": [ true ],
+"method": "set_visible"
+}, {
+"args": [ false ],
+"method": "set_visible"
 } ]
 }
 
 [node name="VisionCone" type="Polygon2D"]
 color = Color( 1, 1, 1, 0.498039 )
-polygon = PoolVector2Array( 0, 0, 999.048, 43.6194, 999.048, -43.6194 )
+polygon = PoolVector2Array( 0, 0, 999, 44, 999, -44 )
 script = ExtResource( 1 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
