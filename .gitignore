@@ -39,3 +39,4 @@ pond-project/.vscode/
 .import/
 *.translation
 export_presets.cfg
+nakama/.cookie
