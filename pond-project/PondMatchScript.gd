@@ -1,5 +1,5 @@
 extends HBoxContainer
-class_name Match
+class_name PondMatch
 
 # References to Buttons
 onready var run_reset_btn := $Gameplay/HBoxContainer/RunResetButton
@@ -38,7 +38,7 @@ func _ready():
 	# Set the first script tab as visible
 	$ScriptTabs.current_tab = 0
 	
-	reset_match()
+	reset_pond_match()
 
 func _physics_process(_delta: float) -> void:
 	if not is_step_by_step:
@@ -56,7 +56,7 @@ func script_step():
 	ThreadSincronizer.give_permission() 
 		
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
-func reset_match():
+func reset_pond_match():
 	run_reset_btn.swap_role("run")
 
 	force_join_controllers()
@@ -101,7 +101,7 @@ func run():
 				any_thread_failed = true
 				break
 		if any_thread_failed:
-			reset_match()
+			reset_pond_match()
 			is_running = false
 		else:
 			is_running = true

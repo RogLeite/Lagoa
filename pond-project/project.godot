@@ -19,11 +19,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://EnergyBarScript.gd"
 }, {
-"base": "HBoxContainer",
-"class": "Match",
-"language": "GDScript",
-"path": "res://MatchScript.gd"
-}, {
 "base": "Reference",
 "class": "NakamaAPI",
 "language": "GDScript",
@@ -94,6 +89,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/com.heroiclabs.nakama/api/NakamaWriteStorageObject.gd"
 }, {
+"base": "HBoxContainer",
+"class": "PondMatch",
+"language": "GDScript",
+"path": "res://PondMatchScript.gd"
+}, {
 "base": "Node2D",
 "class": "Projectile",
 "language": "GDScript",
@@ -107,7 +107,6 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "Duck": "",
 "EnergyBar": "",
-"Match": "",
 "NakamaAPI": "",
 "NakamaAsyncResult": "",
 "NakamaClient": "",
@@ -122,6 +121,7 @@ _global_script_class_icons={
 "NakamaSocketAdapter": "",
 "NakamaStorageObjectId": "",
 "NakamaWriteStorageObject": "",
+"PondMatch": "",
 "Projectile": "",
 "RunResetButton": ""
 }
@@ -129,7 +129,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Pond-project"
-run/main_scene="res://Match.tscn"
+run/main_scene="res://PondMatch.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -138,6 +138,7 @@ PlayerData="*res://PlayerDataScript.gd"
 ThreadSincronizer="*res://ThreadSincronizerScript.gd"
 CurrentVisualization="*res://CurrentVisualizationScript.gd"
 Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
+ServerConnection="*res://src/Autoload/ServerConnection.gd"
 
 [debug]
 

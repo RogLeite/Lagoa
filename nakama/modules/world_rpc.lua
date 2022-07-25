@@ -14,7 +14,10 @@ local function _get_first_world()
 end
 
 -- [TODO] Lembrar, olhando pra projeto, que parâmetros são passadoa para cá
-local function get_world_id(_,_)
+-- @param context Table storing context data such as user_id of the caller. Possible keys: https://heroiclabs.com/docs/nakama/server-framework/introduction/#runtime-context
+-- @param payload String with payload sent by the caller of rpc_async()
+-- @ret The world id as String
+local function get_world_id(_context, _payload)
     return _get_first_world()
 end
 
