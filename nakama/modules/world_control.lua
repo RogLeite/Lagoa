@@ -66,7 +66,7 @@ end
 function world_control.match_join_attempt( context, dispatcher, tick, state, presence, metadata )
     -- [TODO] Maybe run a check if there is a MasterClient attempting and there is already a MasterClient for the Match.
     -- If user is already logged in, refuses attempt
-    if state.presences and state.presencer[presence.user_id] then
+    if state.presences and state.presences[presence.user_id] then
         return state, false, "User already logged in"
     end
 

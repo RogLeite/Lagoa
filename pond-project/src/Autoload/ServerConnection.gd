@@ -22,7 +22,7 @@ var _session: NakamaSession
 var _client : NakamaClient
 
 # Communication line between client and server
-var _socket := NakamaSocket
+var _socket : NakamaSocket
 
 # The identifier of the match this client participates
 var _world_id:= ""
@@ -30,7 +30,7 @@ var _world_id:= ""
 # Starts the Nakama Client and connects it to the server
 func start_client():
 # [TODO] When the server is hosted non-locally, change the IP address used
-	 _client = Nakama.create_client(KEY, "127.0.0.1", 7350, "https")
+	 _client = Nakama.create_client(KEY, "127.0.0.1", 7350, "http")
 
 # Authenticates a new session from the given email and password. If it's a new user, registers the credentials
 # Can return: 
@@ -58,7 +58,7 @@ func authenticate_async(email : String, password : String) -> int :
 # returns ERR_CANT_CONNECT if socket could not connect to the session
 func connect_to_server_async() -> int :
 	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
-	assert(_session, "_session was not initialized, remember to call ServerConnection.authenticate_async()")		 
+	assert(_session, "_session was not initialized, remember to call ServerConnection.authenticate_async()")
 	
 	# Creates the socket
 	_socket = Nakama.create_socket_from(_client)
@@ -87,7 +87,7 @@ func join_world_async():
 		return
 	
 	# Gets the world id from the server with RPC to `get_world_id()`
-	var rpc_result = NakamaAPI.ApiRpc = yield(_client.rpc_async(_session,"get_world_id", ""), "completed")
+	var rpc_result : NakamaAPI.ApiRpc = yield(_client.rpc_async(_session,"get_world_id", ""), "completed")
 
 	if not rpc_result.is_exception():
 		_world_id = rpc_result.payload
@@ -99,7 +99,7 @@ func join_world_async():
 	# Joins the match represented by _world_id
 	# [TODO] Maybe the metadata sent can identify if this client wants to be a MasterClient
 	var match_join_result: NakamaRTAPI.Match = \
-		yield(_socket.join_match_async(_world_id, null), "completed")
+		yield(_socket.join_match_async(_world_id), "completed")
 	# If join failed, prints error message
 	if match_join_result.is_exception():
 		var exception : NakamaException = match_join_result.get_exception()
@@ -120,4 +120,14 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			# Receives the current server tick
 			var decoded: Dictionary = JSON.parse(raw).result
 
-			var tick: int = decoded.tick
+			var current_tick: int = decoded.current_tick
+			print("Current server current_tick: %d"%current_tick)
+
+# [TODO] Remove this method. It is only used for debugging.
+# func _ready():
+# 	start_client()
+# 	var email := "test1@pond.com"
+# 	var password := "password"
+# 	print("Authenticate: %d"%yield( authenticate_async(email, password), "completed" ))
+# 	print("Connect to Server: %d"%yield( connect_to_server_async(), "completed" ))
+# 	yield( join_world_async(), "completed" )
