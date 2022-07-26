@@ -20,6 +20,11 @@ _global_script_classes=[ {
 "path": "res://EnergyBarScript.gd"
 }, {
 "base": "Reference",
+"class": "ExceptionHandler",
+"language": "GDScript",
+"path": "res://src/Delegates/ExceptionHandler.gd"
+}, {
+"base": "Reference",
 "class": "NakamaAPI",
 "language": "GDScript",
 "path": "res://addons/com.heroiclabs.nakama/api/NakamaAPI.gd"
@@ -107,6 +112,7 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "Duck": "",
 "EnergyBar": "",
+"ExceptionHandler": "",
 "NakamaAPI": "",
 "NakamaAsyncResult": "",
 "NakamaClient": "",
