@@ -114,12 +114,27 @@ func join_world_async() -> int:
 
 	return parsed_result
 
-# [TODO] Fazer este métoto
+# Disconnects from live server
+# Returns OK or a nakama error number and puts the error message in `ServerConnection.error_message`
 func disconnect_from_server_async() -> int:
-	return OK
+	var result: NakamaAsyncResult = \
+		yield(_socket.leave_match_async(_world_id), "completed")
+	var parsed_result := _exception_handler.parse_exception(result)
+
+	# If left the match successfully, clears data
+	if parsed_result == OK:
+		_reset_data()
+
+	return parsed_result
 
 func _get_error_message() -> String:
 	return _exception_handler.error_message
+
+# Clears the socket, world i
+func _reset_data() -> void:
+	_socket = null
+	_world_id = ""
+	# Cleanup of other data, such as asny presences stored
 
 # De-references the _socket object
 func _on_NakamaSocket_closed() -> void:
@@ -143,10 +158,17 @@ func _no_set(_value) -> void:
 	pass
 
 # [TODO] Remove this method. It is only used for debugging.
-func _ready():
-	start_client()
-	var email := "test1@pond.com"
-	var password := "password"
-	print("Authenticate: %d"%yield( authenticate_async(email, password), "completed" ))
-	print("Connect to Server: %d"%yield( connect_to_server_async(), "completed" ))
-	yield( join_world_async(), "completed" )
+# func _ready():
+# 	start_client()
+# 	var email := "test1@pond.com"
+# 	var password := "password"
+# 	print("Authenticate: %d"%yield( authenticate_async(email, password), "completed" ))
+# 	print("Connect to Server: %d"%yield( connect_to_server_async(), "completed" ))
+# 	yield( join_world_async(), "completed" )
+
+# func _exit_tree():
+# 	var result : int = yield(disconnect_from_server_async(), "completed")
+# 	if result == OK:
+# 		print("Disconnect from server sucessful")
+# 	else:
+# 		print("Disconnect from server sucessful: %s"%self.error_message)
