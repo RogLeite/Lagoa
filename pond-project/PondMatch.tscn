@@ -2,7 +2,7 @@
 
 [ext_resource path="res://PondMatchScript.gd" type="Script" id=1]
 [ext_resource path="res://PondVisualization.tscn" type="PackedScene" id=2]
-[ext_resource path="res://RunResetButtonScript.gd" type="Script" id=3]
+[ext_resource path="res://src/UI/RunResetButton.gd" type="Script" id=3]
 [ext_resource path="res://EnergyBar.tscn" type="PackedScene" id=4]
 
 [node name="PondMatch" type="HBoxContainer"]
@@ -91,5 +91,5 @@ size_flags_vertical = 3
 tab_align = 0
 
 [connection signal="pressed" from="Gameplay/HBoxContainer/StepButton" to="." method="script_step"]
-[connection signal="reset" from="Gameplay/HBoxContainer/RunResetButton" to="." method="reset_match"]
+[connection signal="reset" from="Gameplay/HBoxContainer/RunResetButton" to="." method="reset_pond_match"]
 [connection signal="run" from="Gameplay/HBoxContainer/RunResetButton" to="." method="run"]

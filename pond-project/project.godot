@@ -112,7 +112,7 @@ _global_script_classes=[ {
 "base": "Button",
 "class": "RunResetButton",
 "language": "GDScript",
-"path": "res://RunResetButtonScript.gd"
+"path": "res://src/UI/RunResetButton.gd"
 } ]
 _global_script_class_icons={
 "Authenticator": "",
