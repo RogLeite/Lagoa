@@ -22,7 +22,7 @@ _global_script_classes=[ {
 "base": "Control",
 "class": "EnergyBar",
 "language": "GDScript",
-"path": "res://EnergyBarScript.gd"
+"path": "res://src/UI/EnergyBar.gd"
 }, {
 "base": "Reference",
 "class": "ExceptionHandler",
