@@ -142,7 +142,7 @@ _global_script_class_icons={
 
 config/name="Pond-project"
 run/main_scene="res://src/World/PondMatch.tscn"
-config/icon="res://icon.png"
+config/icon="res://assets/icon.png"
 
 [autoload]
 
@@ -159,6 +159,7 @@ settings/fps/force_fps=30
 [global]
 
 collision=false
+icon=false
 
 [layer_names]
 
