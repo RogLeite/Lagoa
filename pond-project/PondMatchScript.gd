@@ -14,7 +14,7 @@ var controllers : Array
 
 onready var script_scene := preload("res://src/UI/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
-onready var visualization_scene := preload("res://PondVisualization.tscn")
+onready var visualization_scene := preload("res://src/World/PondVisualization.tscn")
 var is_running : bool = false
 
 
