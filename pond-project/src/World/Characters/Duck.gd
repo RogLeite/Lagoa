@@ -26,7 +26,7 @@ var energy : int = MAX_ENERGY setget set_energy
 var can_launch : bool = true setget set_can_launch
 
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
-onready var projectile_scene := preload("res://Projectile.tscn")
+onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var tire_mutex := Mutex.new()
 
 func _ready():

@@ -107,7 +107,7 @@ _global_script_classes=[ {
 "base": "Node2D",
 "class": "Projectile",
 "language": "GDScript",
-"path": "res://ProjectileScript.gd"
+"path": "res://src/World/Characters/Projectile.gd"
 }, {
 "base": "Button",
 "class": "RunResetButton",
