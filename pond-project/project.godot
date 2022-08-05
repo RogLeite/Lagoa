@@ -147,7 +147,7 @@ config/icon="res://icon.png"
 [autoload]
 
 PlayerData="*res://PlayerDataScript.gd"
-ThreadSincronizer="*res://ThreadSincronizerScript.gd"
+ThreadSincronizer="*res://src/Autoload/ThreadSincronizer.gd"
 CurrentVisualization="*res://CurrentVisualizationScript.gd"
 Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 ServerConnection="*res://src/Autoload/ServerConnection.gd"
