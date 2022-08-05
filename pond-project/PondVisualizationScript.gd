@@ -20,7 +20,7 @@ onready var _ducks := []
 onready var _vision_cones := []
 onready var vision_cone_scene := preload("res://VisionCone.tscn")
 onready var boom_player_scene := preload("res://BoomPlayer.tscn")
-onready var blast_scene := preload("res://Blast.tscn")
+onready var blast_scene := preload("res://src/World/Effects/Blast.tscn")
 onready var splash_player_scene := preload("res://src/World/Effects/SplashPlayer.tscn")
 onready var scan_mutex := Mutex.new()
 
