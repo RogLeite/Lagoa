@@ -102,7 +102,7 @@ _global_script_classes=[ {
 "base": "HBoxContainer",
 "class": "PondMatch",
 "language": "GDScript",
-"path": "res://PondMatchScript.gd"
+"path": "res://src/World/PondMatch.gd"
 }, {
 "base": "Node2D",
 "class": "Projectile",
@@ -141,7 +141,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Pond-project"
-run/main_scene="res://PondMatch.tscn"
+run/main_scene="res://src/World/PondMatch.tscn"
 config/icon="res://icon.png"
 
 [autoload]
