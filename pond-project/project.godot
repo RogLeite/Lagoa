@@ -17,7 +17,7 @@ _global_script_classes=[ {
 "base": "KinematicBody2D",
 "class": "Duck",
 "language": "GDScript",
-"path": "res://DuckScript.gd"
+"path": "res://src/World/Characters/Duck.gd"
 }, {
 "base": "Control",
 "class": "EnergyBar",
