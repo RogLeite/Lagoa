@@ -12,7 +12,7 @@ var threads : Array
 var scripts : Array
 var controllers : Array
 
-onready var script_scene := preload("res://PlayerScriptTemplate.tscn")
+onready var script_scene := preload("res://src/UI/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 onready var visualization_scene := preload("res://PondVisualization.tscn")
 var is_running : bool = false
