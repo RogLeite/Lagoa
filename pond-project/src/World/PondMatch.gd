@@ -34,7 +34,12 @@ func _ready():
 		controllers[i].name = "DuckController%d"%i
 		controllers[i].duck_idx = i
 		add_child(controllers[i])
-	
+		
+		#Connects a Duck's energy_changed signal to it's corresponding energy bar
+		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
+		#warning-ignore: return_value_discarded
+		PlayerData.get_duck(i).connect("energy_changed", find_node("EnergyBar%d"%i), "set_energy")
+		
 	# Set the first script tab as visible
 	$ScriptTabs.current_tab = 0
 	
