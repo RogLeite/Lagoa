@@ -28,6 +28,7 @@ var can_launch : bool = true setget set_can_launch
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
 onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var tire_mutex := Mutex.new()
+onready var _base_modulate := modulate
 
 func _ready():
 	$Collision.shape.radius = COLLISION_CIRCLE_RADIUS
@@ -141,6 +142,7 @@ func reset(pos : Vector2, angle : float):
 	speed = 0
 	speed_target = 0
 	self.energy = MAX_ENERGY
+	modulate = _base_modulate
 	can_launch = true
 	position = pos
 	rotation = angle
