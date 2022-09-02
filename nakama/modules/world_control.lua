@@ -14,7 +14,6 @@ local OpCodes = {
     manual_debug = 99         -- Used when running a non-production debug test
 }
 
--- nakama.logger_info("Entered module 'world_control.lua'")
 
 -- Command pattern table for boiler plate updates that uses data and state.
 local commands = {}
@@ -35,6 +34,12 @@ local function new_match_label()
     return string.format("Pond Match %d", pond_match_counter)
 end
 
+-- [TODO] Implement a whitelist system to determine which user_id can be MasterClient
+local Whitelist = {}
+function Whitelist.is_whitelisted (user_id)
+    return true
+end
+
 -- Initializes a match: The `state` table, the match `label`, and `tick_rate`
 -- @param context Table with contextual information such as the caller of the function
 -- @param params table with parameters passed in the nakama.match_create() call
@@ -44,10 +49,10 @@ function world_control.match_init(context, params)
         tick_counter = 0, -- [TODO] Remove after testing the client connection
         presences = {}, -- Every presence, including the master
         player_presences = {},   -- Every presence excluding the MasterClient
-        -- [TODO] Consider if MasterClient registration is better the following way
-        -- master_id = false, -- user_id is String
-        -- master_presence = {},
-        master_presence = {}     -- Key/value pair for user_id/presence
+        master = {              -- Information from MasterClient
+            user_id = false,             -- String representing the "user_id"
+            presence = false        -- Table representing the presence
+        }
     }
     local tick_rate = TICK_RATE
     local label = new_match_label()
@@ -64,10 +69,34 @@ end
 -- Optionally returns a error message
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_join_attempt
 function world_control.match_join_attempt( context, dispatcher, tick, state, presence, metadata )
-    -- [TODO] Maybe run a check if there is a MasterClient attempting and there is already a MasterClient for the Match.
-    -- If user is already logged in, refuses attempt
+    -- Presence format:
+	-- {
+	--   user_id = "user unique ID",
+	--   session_id = "session ID of the user's current connection",
+	--   username = "user's unique username",
+	--   node = "name of the Nakama node the user is connected to"
+	-- }
+
     if state.presences and state.presences[presence.user_id] then
-        return state, false, "User already logged in"
+        return state, false, "user_id already has presence on the match"
+    end
+
+    -- If the presence wants to be a MasterClient
+    if metadata and metadata.is_master then
+        -- Rejects if another Master already exists
+        if state.master.user_id and state.master.presence then
+            return state, false, "Another MasterClient is already in this match"
+        end
+
+        -- Check the whitelist if the user_id can be a MasterClient
+        if not Whitelist.is_whitelisted(presence.user_id) then
+            return state, false, "user_id is not whitelisted to the role of MasterClient"
+        end
+
+        -- Since match_join does not have a "metadata" linked to the presence,
+        -- it cannot distinguish who wants to be a Master. So register it here.
+        state.master.user_id = presence.user_id
+        state.master.presence = presence
     end
 
     return state, true
@@ -81,11 +110,16 @@ end
 -- @param presences     The list of joining players to handle
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_join
 function world_control.match_join(context, dispatcher, tick, state, presences)
-    -- [TODO] If is a MasterClient joining, register it in the gamestate
 
     -- Registers every new presence in the gamestate
     for _, presence in ipairs(presences) do
+        
         state.presences[presence.user_id] = presence
+
+        -- If it's not a MasterClient, store the presence in state.player_presences
+        if presence.user_id ~= state.master.user_id  then
+            state.player_presences[presence.user_id] = presence
+        end
     end
 
     return state
@@ -100,10 +134,15 @@ end
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_leave
 function world_control.match_leave(context, dispatcher, tick, state, presences)
     -- Removes presences from the state
-    -- [TODO] Verify if the leaving of MasterClient needs to be a special case
     
     for _, presence in ipairs(presences) do
         state.presences[presence.user_id] = nil
+        if presence.user_id == state.master.user_id then
+            state.master.user_id = nil
+            state.master.presence = nil
+        else
+            state.player_presences[presence.user_id] = nil
+        end
     end
 
     return state
@@ -122,11 +161,25 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
     for _, message in ipairs(messages) do
         local op_code = message.op_code
         local decoded = nakama.json_decode(message.data)
+        
         -- Runs the boiler plate codes for state update
         local command = commands[op_code]
         if command then
             command(decoded, state)
         end
+
+        if op_code == OpCodes.send_script then
+            if state.master.user_id then
+                -- Sends the PlayerClient message (the actual message is in message.data) to the MasterClient
+                dispatcher.broadcast_message(op_code, message.data, {state.master.presence}, message.sender)
+            else
+                nakama.logger_error("PlayerClients are sending messages with op_code 'send_script' when no MasterClient is connected")
+            end
+        elseif op_code == OpCodes.update_pond_state then
+            -- Broadcasts the message to all PlayerClients
+            nakama.broadcast_message(op_code, message.data, state.player_presences, message.sender)
+        end
+
     end
 
     -- [TODO] Remove after testing the client connection
@@ -137,9 +190,6 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
     else
         state.tick_counter = state.tick_counter + 1
     end
-    
-
-    -- [TODO] dispatcher.broadcast_message for script updates and update_pond_state
     
     return state
 end
@@ -152,7 +202,6 @@ end
 -- @param grace_seconds The number of seconds provided to complete a graceful termination before a match is forcefully closed.
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_terminate
 function world_control.match_terminate(context, dispatcher, tick, state, grace_seconds)
-    -- [TODO] Maybe broadcast a message to all clients
     return state
 end
 
