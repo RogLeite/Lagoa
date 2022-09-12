@@ -21,7 +21,7 @@ do -- Defines default behaviour for __index
     -- Metatable with __index metamethod, for undeclared OpCode handlers
     local commands_mt = {
         __index = function(_, idx)
-            nakama.logger_error(string.format("No command found for OpCode %d", idx))
+            nakama.logger_warn(string.format("No command found for OpCode %d", idx))
         end
     }
     setmetatable(commands, commands_mt)
@@ -47,6 +47,7 @@ end
 function world_control.match_init(context, params)
     local state = {
         tick_counter = 0, -- [TODO] Remove after testing the client connection
+        presence_counter = 0,
         presences = {}, -- Every presence, including the master
         player_presences = {},   -- Every presence excluding the MasterClient
         master = {              -- Information from MasterClient
@@ -120,6 +121,7 @@ function world_control.match_join(context, dispatcher, tick, state, presences)
         if presence.user_id ~= state.master.user_id  then
             state.player_presences[presence.user_id] = presence
         end
+        state.presence_counter = state.presence_counter + 1
     end
 
     return state
@@ -143,6 +145,11 @@ function world_control.match_leave(context, dispatcher, tick, state, presences)
         else
             state.player_presences[presence.user_id] = nil
         end
+        state.presence_counter = state.presence_counter - 1
+    end
+
+    if state.presence_counter <= 0 then
+        return nil
     end
 
     return state
@@ -173,23 +180,23 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
                 -- Sends the PlayerClient message (the actual message is in message.data) to the MasterClient
                 dispatcher.broadcast_message(op_code, message.data, {state.master.presence}, message.sender)
             else
-                nakama.logger_error("PlayerClients are sending messages with op_code 'send_script' when no MasterClient is connected")
+                nakama.logger_warn("PlayerClients are sending messages with op_code 'send_script' when no MasterClient is connected")
             end
         elseif op_code == OpCodes.update_pond_state then
             -- Broadcasts the message to all PlayerClients
-            nakama.broadcast_message(op_code, message.data, state.player_presences, message.sender)
+            dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)
         end
 
     end
 
-    -- [TODO] Remove after testing the client connection
-    if state.tick_counter > 10 then
-        state.tick_counter = 0
-        local message = { ["current_tick"] = tick }
-        dispatcher.broadcast_message(OpCodes.manual_debug, nakama.json_encode(message), nil, nil)
-    else
-        state.tick_counter = state.tick_counter + 1
-    end
+    -- -- [TODO] Remove after testing the client connection
+    -- if state.tick_counter > 10 then
+    --     state.tick_counter = 0
+    --     local message = { ["current_tick"] = tick }
+    --     dispatcher.broadcast_message(OpCodes.manual_debug, nakama.json_encode(message), nil, nil)
+    -- else
+    --     state.tick_counter = state.tick_counter + 1
+    -- end
     
     return state
 end
