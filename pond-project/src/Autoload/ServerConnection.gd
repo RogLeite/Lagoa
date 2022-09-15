@@ -1,16 +1,41 @@
 extends Node
 
-# Signals
+# Message formats by OpCode:
+# SEND_SCRIPT = 1:
+# {
+# 	“user_id” : String,
+# 	“script” : String
+# }
+# UPDATE_POND_STATE = 2:
+# {
+# 	“pond_match_tick” : int,
+# 	“pond_state” : {}   , Dictionary storing the state of the match
+# 	“scripts” : {}		, //Dictionary with every script 
+# }
 
-# Enums
+## Signals
+
+# Emited when a message with OpCode.SEND_SCRIPT is received
+# parameter are the contents of the specified message format
+signal script_received(user_id, script)
+
+# Emited when a message with OpCode.UPDATE_POND_STATE is received
+# message is a Dictionary in the specified message format
+signal pond_state_updated(pond_match_tick, pond_state, scripts) 
+
+
+## Enums
 
 # Custom operational codes for state messages.
 enum OpCodes {
-	SEND_SCRIPT = 1,
-	UPDATE_POND_STATE = 2,
+	SEND_SCRIPT = 1, 		# Emits signal `script_received`
+	UPDATE_POND_STATE = 2,	# Emits signal `pond_state_received`
 	INITIAL_STATE = 3,
 	MANUAL_DEBUG = 99
 }
+
+
+## Constants
 
 # Unique key for the server, defined in it's "docker-compose.yml" file
 const KEY := "nakama_pond_server"
@@ -32,7 +57,7 @@ var _exception_handler := ExceptionHandler.new()
 var _authenticator : Authenticator
 
 # Starts the Nakama Client and connects it to the server
-func start_client():
+func start_client() -> void:
 # [TODO] When the server is hosted non-locally, change the IP address used
 	_client = Nakama.create_client(KEY, "127.0.0.1", 7350, "http")
 	_authenticator = Authenticator.new(_client, _exception_handler)
@@ -41,7 +66,7 @@ func start_client():
 # creates a new account when it did not previously exist, then initializes a session.
 # Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
 func register_async(email: String, password: String) -> int:
-	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")	
+	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
 	assert(_authenticator, "_authenticator was not initialized, remember to call ServerConnection.start_client()")
 
 	var result : int = yield(_authenticator.register_async(email, password), "completed")
@@ -97,7 +122,7 @@ func connect_to_server_async() -> int :
 
 # Remote calls `get_world_id()` then joins the match
 # Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
-func join_world_async() -> int: 
+func join_world_async( is_master : bool) -> int: 
 	# Debug assertions
 	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
 	assert(_socket, "_socket was not initialized, remember to call ServerConnection.connect_to_server_async()")
@@ -107,6 +132,7 @@ func join_world_async() -> int:
 		_exception_handler.error_message = "Server not connected"
 		return ERR_UNAVAILABLE
 	
+	# [TODO] Pass "is_master" to the get_world rpc, so it can choose a world that still has no MasterClient
 	# Gets the world id from the server with RPC to `get_world_id()`
 	if not _world_id:
 		var rpc_result : NakamaAPI.ApiRpc = yield(_client.rpc_async(_authenticator.session,"get_world_id", ""), "completed")
@@ -122,7 +148,7 @@ func join_world_async() -> int:
 	# Joins the match represented by _world_id
 	# [TODO] Maybe the metadata sent can identify if this client wants to be a MasterClient
 	var match_join_result: NakamaRTAPI.Match = \
-		yield(_socket.join_match_async(_world_id), "completed")
+		yield(_socket.join_match_async(_world_id, {"is_master" : String(is_master)}), "completed")
 	var parsed_result := _exception_handler.parse_exception(match_join_result)
 
 	if parsed_result == OK:
@@ -134,11 +160,13 @@ func join_world_async() -> int:
 	return parsed_result
 
 # Disconnects from live server
+# Assumes the caller has verified the connection is live
 # Returns OK or a nakama error number and puts the error message in `ServerConnection.error_message`
 func disconnect_from_server_async() -> int:
-	var result: NakamaAsyncResult = \
-		yield(_socket.leave_match_async(_world_id), "completed")
-	var parsed_result := _exception_handler.parse_exception(result)
+	var parsed_result := OK
+		
+	var result: NakamaAsyncResult = yield(_socket.leave_match_async(_world_id), "completed")
+	parsed_result = _exception_handler.parse_exception(result)
 
 	# If left the match successfully, clears data
 	if parsed_result == OK:
@@ -151,6 +179,30 @@ func get_user_id() -> String:
 	if _authenticator.session:
 		return _authenticator.session.user_id
 	return ""
+
+func get_username() -> String:
+	if _authenticator.session:
+		return _authenticator.session.username
+	return ""
+
+ # Sends a message to the server stating a change in the script for the player.
+func send_script(p_script: String) -> void:
+	if _socket:
+		var payload := {username = get_username(), script = p_script}
+		_socket.send_match_state_async(_world_id, OpCodes.SEND_SCRIPT, JSON.print(payload))
+
+
+ # Sends a message to the server stating a change in the script for the player.
+func update_pond_state(p_pond_match_tick : int, p_pond_state : Dictionary, p_scripts : Dictionary) -> void:
+	if _socket:
+		var payload := {
+			pond_match_tick = p_pond_match_tick,
+			pond_state = p_pond_state,
+			scripts = p_scripts
+		}
+		_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
+
+
 
 func _get_error_message() -> String:
 	return _exception_handler.error_message
@@ -170,68 +222,22 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 	var code := match_state.op_code
 	var raw := match_state.data
 	match code:
-		# [TODO] Remove this code corresponding to OpCode.MANUAL_DEBUG
-		OpCodes.MANUAL_DEBUG:
-			# Receives the current server tick
+		OpCodes.SEND_SCRIPT:
 			var decoded: Dictionary = JSON.parse(raw).result
-
-			var current_tick: int = decoded.current_tick
-			print_debug("Current server current_tick: %d"%current_tick)
+			var username: String = decoded.username
+			var script: String = decoded.script
+			emit_signal("script_received", username, script)
+		OpCodes.UPDATE_POND_STATE:
+			var decoded: Dictionary = JSON.parse(raw).result
+			var pond_match_tick: int = decoded.pond_match_tick
+			var pond_state: Dictionary = decoded.pond_state
+			var scripts: Dictionary = decoded.scripts
+			
+			emit_signal("pond_state_updated", pond_match_tick, pond_state, scripts)
+		OpCodes.MANUAL_DEBUG:
+			pass
 
 # Used as a setter function for read-only variables.
 func _no_set(_value) -> void:
 	pass
 
-# [TODO] Remove this method. It is only used for debugging.
-# func _ready():
-# 	start_client()
-# 	var email := "test1@pond.com"
-# 	var password := "password"
-	
-# 	# Test 1: Fail login then register
-# 	# yield( login_async(email, password), "completed" )
-# 	# print("Login fail: %s"%_get_error_message())
-# 	# print("Registered. Result = %d"% yield( register_async(email, password), "completed" ))
-	
-# 	# Test 2: Just register
-# #	print("Registered. Result = %d"% yield( register_async(email, password), "completed" ))
-	
-# 	# Test 3: Just login. For a success, needs the a register in previous session
-# 	print("LOGIN IN:")
-# 	var result: int = yield( login_async(email, password), "completed" )
-# 	if result != OK :
-# 		print("Error %d when login in: %s"%[result, self.error_message])
-# 	print("")
-
-
-
-# 	print("CONNECT TO SERVER")
-# 	result = yield( connect_to_server_async(), "completed" )
-# 	if result != OK :
-# 		print("Error %d when connecting: %s. Trying again..."%[result, self.error_message])
-# 	if result == ERR_UNAUTHORIZED:
-# 		var new_result: int = yield( login_async(email, password, true), "completed" )
-# 		if new_result != OK :
-# 			print("Error %d when login in: %s"%[result, self.error_message])
-# 		new_result = yield( connect_to_server_async(), "completed" )
-# 		if new_result != OK :
-# 			print("Error %d when connecting: %s."%[result, self.error_message])
-		
-	
-# 	print("")
-		
-# 	yield(Engine.get_main_loop(), "idle_frame")
-# #	print("Connect Error Message : %s"%_get_error_message())
-	
-# 	print("JOIN MATCH")
-# 	result = yield( join_world_async(), "completed" )
-# 	if result != OK :
-# 		print("Error %d when joining: %s"%[result, self.error_message])
-# 	print("")
-
-# func _exit_tree():
-# 	var result : int = yield(disconnect_from_server_async(), "completed")
-# 	if result == OK:
-# 		print("Disconnect from server sucessful")
-# 	else:
-# 		print("Disconnect from server unsucessful: %s"%self.error_message)

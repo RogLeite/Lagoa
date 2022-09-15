@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://src/Main/MainMenu.gd" type="Script" id=1]
+[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=2]
 
 [node name="MainMenu" type="Node"]
 script = ExtResource( 1 )
@@ -8,39 +9,66 @@ script = ExtResource( 1 )
 [node name="ModeSelection" type="CenterContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource( 2 )
 
-[node name="Buttons" type="VBoxContainer" parent="ModeSelection"]
+[node name="ModeButtons" type="VBoxContainer" parent="ModeSelection"]
 margin_left = 412.0
-margin_top = 248.0
+margin_top = 242.0
 margin_right = 612.0
-margin_bottom = 352.0
+margin_bottom = 358.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SingleplayerButton" type="Button" parent="ModeSelection/Buttons"]
+[node name="SingleplayerButton" type="Button" parent="ModeSelection/ModeButtons"]
 margin_right = 200.0
 margin_bottom = 50.0
 rect_min_size = Vector2( 200, 50 )
 size_flags_vertical = 3
 text = "Singleplayer"
 
-[node name="MultiplayerButton" type="Button" parent="ModeSelection/Buttons"]
-margin_top = 54.0
+[node name="MultiplayerButton" type="Button" parent="ModeSelection/ModeButtons"]
+margin_top = 66.0
 margin_right = 200.0
-margin_bottom = 104.0
+margin_bottom = 116.0
 rect_min_size = Vector2( 200, 50 )
 size_flags_vertical = 3
 text = "Multiplayer"
 
+[node name="ClientButtons" type="VBoxContainer" parent="ModeSelection"]
+visible = false
+margin_left = 412.0
+margin_top = 242.0
+margin_right = 612.0
+margin_bottom = 358.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerClientButton" type="Button" parent="ModeSelection/ClientButtons"]
+margin_right = 200.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 200, 50 )
+size_flags_vertical = 3
+text = "Player Client"
+
+[node name="MasterClientButton" type="Button" parent="ModeSelection/ClientButtons"]
+margin_top = 66.0
+margin_right = 200.0
+margin_bottom = 116.0
+rect_min_size = Vector2( 200, 50 )
+size_flags_vertical = 3
+text = "Master Client"
+
 [node name="WarningPopup" type="AcceptDialog" parent="ModeSelection"]
-margin_left = 348.0
-margin_top = 271.0
-margin_right = 675.0
-margin_bottom = 329.0
+margin_left = 210.0
+margin_top = 257.0
+margin_right = 813.0
+margin_bottom = 343.0
 window_title = "Warning!"
 dialog_text = "Não foi possível inicializar a partida multijogador"
 
-[connection signal="pressed" from="ModeSelection/Buttons/SingleplayerButton" to="." method="_on_SingleplayerButton_pressed"]
-[connection signal="pressed" from="ModeSelection/Buttons/MultiplayerButton" to="." method="_on_MultiplayerButton_pressed"]
+[connection signal="pressed" from="ModeSelection/ModeButtons/SingleplayerButton" to="." method="_on_SingleplayerButton_pressed"]
+[connection signal="pressed" from="ModeSelection/ModeButtons/MultiplayerButton" to="." method="_on_MultiplayerButton_pressed"]
+[connection signal="pressed" from="ModeSelection/ClientButtons/PlayerClientButton" to="." method="_on_PlayerClientButton_pressed"]
+[connection signal="pressed" from="ModeSelection/ClientButtons/MasterClientButton" to="." method="_on_MasterClientButton_pressed"]
 [connection signal="about_to_show" from="ModeSelection/WarningPopup" to="." method="_on_WarningPopup_about_to_show"]
 [connection signal="popup_hide" from="ModeSelection/WarningPopup" to="." method="_on_WarningPopup_popup_hide"]

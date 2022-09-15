@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
+[ext_resource path="res://src/Main/MainPlayer.gd" type="Script" id=2]
+[ext_resource path="res://assets/icon.png" type="Texture" id=3]
+
+[node name="MainPlayer" type="Node"]
+script = ExtResource( 2 )
+
+[node name="PlayerClient" type="Node" parent="."]
+script = ExtResource( 1 )
+username = "PlayerClient1@test.com"
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+margin_left = 454.0
+margin_top = 263.0
+margin_right = 569.0
+margin_bottom = 337.0
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+margin_right = 115.0
+margin_bottom = 14.0
+text = "Main Player Client"
+
+[node name="TextEdit" type="TextEdit" parent="CenterContainer/VBoxContainer"]
+margin_top = 18.0
+margin_right = 115.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 0, 14 )
+
+[node name="SendTextButton" type="Button" parent="CenterContainer/VBoxContainer"]
+margin_top = 36.0
+margin_right = 115.0
+margin_bottom = 56.0
+text = "Send Text"
+
+[node name="TotalScripts" type="Label" parent="CenterContainer/VBoxContainer"]
+margin_top = 60.0
+margin_right = 115.0
+margin_bottom = 74.0
+text = "Total Scripts: 0"
+
+[node name="Ball" type="Sprite" parent="."]
+position = Vector2( 50, 50 )
+texture = ExtResource( 3 )
+
+[connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/SendTextButton" to="." method="_on_SendTextButton_pressed"]
