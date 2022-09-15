@@ -197,7 +197,7 @@ func update_pond_state(p_pond_match_tick : int, p_pond_state : Dictionary, p_scr
 	if _socket:
 		var payload := {
 			pond_match_tick = p_pond_match_tick,
-			pond_state = p_pond_state,
+			pond_state = Adapter.convert(p_pond_state),
 			scripts = p_scripts
 		}
 		_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
@@ -230,7 +230,7 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 		OpCodes.UPDATE_POND_STATE:
 			var decoded: Dictionary = JSON.parse(raw).result
 			var pond_match_tick: int = decoded.pond_match_tick
-			var pond_state: Dictionary = decoded.pond_state
+			var pond_state: Dictionary = Adapter.deconvert(decoded.pond_state)
 			var scripts: Dictionary = decoded.scripts
 			
 			emit_signal("pond_state_updated", pond_match_tick, pond_state, scripts)
@@ -241,3 +241,16 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 func _no_set(_value) -> void:
 	pass
 
+# Adapts the pond_state Dictionary to and from a acceptable configuration for transmition
+class Adapter:
+	const TYPE_NAMES=["TYPE_NIL","TYPE_BOOL","TYPE_INT","TYPE_REAL","TYPE_STRING","TYPE_VECTOR2","TYPE_RECT2","TYPE_VECTOR3","TYPE_TRANSFORM2D","TYPE_PLANE","TYPE_QUAT","TYPE_AABB","TYPE_BASIS","TYPE_TRANSFORM","TYPE_COLOR","TYPE_NODE_PATH","TYPE_RID","TYPE_OBJECT","TYPE_DICTIONARY","TYPE_ARRAY","TYPE_RAW_ARRAY","TYPE_INT_ARRAY","TYPE_REAL_ARRAY","TYPE_STRING_ARRAY","TYPE_VECTOR2_ARRAY","TYPE_VECTOR3_ARRAY","TYPE_COLOR_ARRAY","TYPE_MAX"]
+
+	static func convert_Vector2(vector : Vector2) -> Dictionary:
+		return {x = vector.x, y = vector.y}
+	static func deconvert_Vector2(vector : Dictionary) -> Vector2:
+		return Vector2(vector.x, vector.y)
+
+	static func convert(state : Dictionary) -> Dictionary:
+		return {ball_position = convert_Vector2(state.ball_position)}
+	static func deconvert(state : Dictionary) -> Dictionary:
+		return {ball_position = deconvert_Vector2(state.ball_position)}

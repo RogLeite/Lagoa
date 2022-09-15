@@ -13,6 +13,6 @@ func _on_SendTextButton_pressed():
 
 func _on_PlayerClient_pond_state_updated(pond_match_tick, pond_state, scripts):
 	if pond_match_tick > _last_tick:
-		_ball.position = Vector2(pond_state.ball_position.x, pond_state.ball_position.y)
+		_ball.position = pond_state.ball_position
 		_total_scripts.text = "Total Scripts: %d"%scripts.size()
 		

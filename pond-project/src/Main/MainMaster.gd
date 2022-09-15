@@ -8,7 +8,7 @@ onready var _client := $MasterClient
 onready var _scripts := $CenterContainer/HBoxContainer/Scripts
 
 onready var _ball := $Ball
-onready var _pond_state := {ball_position = {x = _ball.position.x, y = _ball.position.y}}
+onready var _pond_state := {ball_position = _ball.position}
 
 func start_pond_match() -> void:
 	is_pond_match_running = true
@@ -21,7 +21,7 @@ func start_ball():
 func _physics_process(_delta):
 	if is_pond_match_running :
 		_tick += 1
-		_pond_state.ball_position = {x = _ball.position.x, y = _ball.position.y}
+		_pond_state.ball_position = _ball.position
 		_client.update_pond_state(_tick, _pond_state, _all_scripts)
 
 func add_script_tab(username : String, text : String) -> void :
