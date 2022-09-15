@@ -28,11 +28,74 @@ do -- Defines default behaviour for __index
 end
 
 
+
 local pond_match_counter = 0
 local function new_match_label()
     pond_match_counter = pond_match_counter + 1
     return string.format("Pond Match %d", pond_match_counter)
 end
+
+local function metadata2string(metadata)
+    local txt = {"{ "}
+    for k, v in pairs(metadata) do
+        txt[#txt+1] = table.concat({" [",k," = ",v,"]"})
+    end
+    txt[#txt+1] = " }"
+    return table.concat(txt)
+end
+
+local function presence2string(presence)
+    return string.format('{username = "%s", user_id (short) = "%s"}', presence.username, string.sub(presence.user_id, 1, 8))
+end
+
+local function presences2string(presences, tabs)
+    local txt_table = {"{\n"}
+    
+    for id, presence in pairs(presences) do
+        txt_table[#txt_table+1] = string.rep("\t", tabs)
+        txt_table[#txt_table+1] = string.format("'%s' : %s\n", tostring(id), presence2string(presence))
+    end
+    
+    txt_table[#txt_table+1] = "}"
+    return table.concat(txt_table)
+end
+
+local function state2string(state)
+    local txt = [[{
+        presence_counter = %d,
+        presences = %s,
+        player_presences = %s,
+        master = {
+            user_id = %s,
+            presence = %s
+        }
+    }]]
+    return string.format(txt,
+        state.presence_counter,
+        presences2string(state.presences,1),
+        presences2string(state.player_presences,1),
+        state.master.user_id or "false",
+        state.master.presence and state.master.presence.username or "false"
+    )
+end
+
+local my_logger_debug = nakama.logger_debug
+-- local my_logger_debug = print
+
+-- [TODO] Remove this mannual debugging code
+-- do
+--     local counter = 0
+--     local skips = 15
+--     commands[OpCodes.update_pond_state] = function (data, state) -- data is the decoded message, state is the current game state. Returns nothing but can modify state
+--         counter = counter + 1
+--         if counter >= skips then
+--             my_logger_debug(string.format("command[update_pond_state]: state is = %s", state2string(state)))
+--             my_logger_debug(string.format("command[update_pond_state]: pond_match_tick = %d, ball_position = (%f, %f)", data.pond_match_tick, data.pond_state.ball_position.x, data.pond_state.ball_position.y))
+--             counter = 0
+--         end
+--     end
+-- end
+
 
 -- [TODO] Implement a whitelist system to determine which user_id can be MasterClient
 local Whitelist = {}
@@ -46,10 +109,9 @@ end
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_init
 function world_control.match_init(context, params)
     local state = {
-        tick_counter = 0, -- [TODO] Remove after testing the client connection
         presence_counter = 0,
         presences = {}, -- Every presence, including the master
-        player_presences = {},   -- Every presence excluding the MasterClient
+        player_presences = {},   -- Array of every presence excluding the MasterClient (for broadcasting messages)
         master = {              -- Information from MasterClient
             user_id = false,             -- String representing the "user_id"
             presence = false        -- Table representing the presence
@@ -60,7 +122,7 @@ function world_control.match_init(context, params)
     return state, tick_rate, label
 end
 
--- @brief match_join_attemp decides if the attempt to join was successful
+-- @brief match_join_attempt decides if the attempt to join was successful
 -- @param context       Table with contextual information such as the caller of the function
 -- @param dispatcher    Provides broadcast to clients functionality (broadcast_message, match_kick, match_label_update)
 -- @param tick          Current match tick
@@ -78,12 +140,14 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
 	--   node = "name of the Nakama node the user is connected to"
 	-- }
 
+    -- my_logger_debug(string.format("match_join_attempt: presence = %s, metadata = %s", presence2string(presence), metadata2string(metadata)))
+
     if state.presences and state.presences[presence.user_id] then
         return state, false, "user_id already has presence on the match"
     end
 
     -- If the presence wants to be a MasterClient
-    if metadata and metadata.is_master then
+    if metadata and string.lower(metadata.is_master) == "true" then
         -- Rejects if another Master already exists
         if state.master.user_id and state.master.presence then
             return state, false, "Another MasterClient is already in this match"
@@ -99,6 +163,9 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
         state.master.user_id = presence.user_id
         state.master.presence = presence
     end
+
+    -- my_logger_debug("match_join_attempt: join allowed")
+    -- my_logger_debug(string.format("match_join_attempt: state is = %s", state2string(state)))
 
     return state, true
 end
@@ -119,10 +186,13 @@ function world_control.match_join(context, dispatcher, tick, state, presences)
 
         -- If it's not a MasterClient, store the presence in state.player_presences
         if presence.user_id ~= state.master.user_id  then
-            state.player_presences[presence.user_id] = presence
+            state.player_presences[#state.player_presences+1] = presence
         end
         state.presence_counter = state.presence_counter + 1
     end
+
+    
+    -- my_logger_debug(string.format("match_join: state is = %s", state2string(state)))
 
     return state
 end
@@ -138,15 +208,28 @@ function world_control.match_leave(context, dispatcher, tick, state, presences)
     -- Removes presences from the state
     
     for _, presence in ipairs(presences) do
-        state.presences[presence.user_id] = nil
-        if presence.user_id == state.master.user_id then
-            state.master.user_id = nil
-            state.master.presence = nil
-        else
-            state.player_presences[presence.user_id] = nil
+        if state.presences[presence.user_id] then            
+           
+            state.presences[presence.user_id] = nil
+    
+            if presence.user_id == state.master.user_id then
+                state.master.user_id = false
+                state.master.presence = false
+            else
+                for i, pres in ipairs(state.player_presences) do
+                    if pres.user_id == presence.user_id then
+                        table.remove(state.player_presences, i)
+                        break
+                    end
+                end
+            end
+
+            state.presence_counter = state.presence_counter - 1
+            
         end
-        state.presence_counter = state.presence_counter - 1
     end
+
+    -- my_logger_debug(string.format("match_leave: state is = %s", state2string(state)))
 
     if state.presence_counter <= 0 then
         return nil
@@ -184,19 +267,11 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
             end
         elseif op_code == OpCodes.update_pond_state then
             -- Broadcasts the message to all PlayerClients
+            -- my_logger_debug(string.format("Attempting a broadcast of OpCode %d", op_code))
             dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)
         end
 
     end
-
-    -- -- [TODO] Remove after testing the client connection
-    -- if state.tick_counter > 10 then
-    --     state.tick_counter = 0
-    --     local message = { ["current_tick"] = tick }
-    --     dispatcher.broadcast_message(OpCodes.manual_debug, nakama.json_encode(message), nil, nil)
-    -- else
-    --     state.tick_counter = state.tick_counter + 1
-    -- end
     
     return state
 end
