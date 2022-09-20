@@ -10,6 +10,20 @@ onready var _scripts := $CenterContainer/HBoxContainer/Scripts
 onready var _ball := $Ball
 onready var _pond_state := {ball_position = _ball.position}
 
+func login(email : String, password : String) -> void:
+	$Login.visible = false
+	# [TODO] Clean login test code
+	var result: int = yield(_client.register_connect_join_async(email, password), "completed")
+	if result != OK:
+		# [TODO] Change to a proper alert
+		var label = Label.new()
+		add_child(label)
+		label.set_text("register_connect_join failed")
+	else:
+		$CenterContainer/HBoxContainer/VBoxContainer/Description.text = email
+		$CenterContainer.visible = true
+		_ball.visible = true
+
 func start_pond_match() -> void:
 	is_pond_match_running = true
 	start_ball()
@@ -40,10 +54,19 @@ func add_script_tab(username : String, text : String) -> void :
 	_scripts.add_child(new_page)
 		
 
-
 func _on_StartMatchButton_pressed():
 	start_pond_match()
 
 
 func _on_MasterClient_script_received(username, script):
 	add_script_tab(username, script)
+
+func _on_MasterClient_connection_closed() -> void:
+	is_pond_match_running = false
+	# [TODO] Possibly handle reconnection attempt
+
+# [TODO] Remove Login test
+func _on_Master1_pressed():
+	login("MasterClient1@test.com", "password")
+func _on_Master2_pressed():
+	login("MasterClient2@test.com", "password")

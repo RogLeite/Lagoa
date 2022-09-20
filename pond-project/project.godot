@@ -162,6 +162,11 @@ ServerConnection="*res://src/Autoload/ServerConnection.gd"
 
 settings/fps/force_fps=30
 
+[display]
+
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
 [global]
 
 collision=false

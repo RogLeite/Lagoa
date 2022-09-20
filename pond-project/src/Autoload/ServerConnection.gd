@@ -15,6 +15,9 @@ extends Node
 
 ## Signals
 
+# Connection closed unexpectedly. Authentication may still be valid. To reconnect, call connect_to_server_aync
+signal connection_closed()
+
 # Emited when a message with OpCode.SEND_SCRIPT is received
 # parameter are the contents of the specified message format
 signal script_received(user_id, script)
@@ -61,6 +64,11 @@ func start_client() -> void:
 # [TODO] When the server is hosted non-locally, change the IP address used
 	_client = Nakama.create_client(KEY, "127.0.0.1", 7350, "http")
 	_authenticator = Authenticator.new(_client, _exception_handler)
+
+# Resets ServerConnection, assumes caller checked if the connection was live
+func end_client() -> void:
+	cleanup()
+	_client = null
 
 # Asynchronous coroutine. Authenticates a new session via email and password, and
 # creates a new account when it did not previously exist, then initializes a session.
@@ -170,8 +178,7 @@ func disconnect_from_server_async() -> int:
 
 	# If left the match successfully, clears data
 	if parsed_result == OK:
-		_reset_data()
-		_authenticator.cleanup()
+		cleanup()
 
 	return parsed_result
 
@@ -207,15 +214,19 @@ func update_pond_state(p_pond_match_tick : int, p_pond_state : Dictionary, p_scr
 func _get_error_message() -> String:
 	return _exception_handler.error_message
 
-# Clears the socket, world i
-func _reset_data() -> void:
+func cleanup() -> void:
 	_socket = null
 	_world_id = ""
 	# Cleanup of other data, such as asny presences stored
+	if _authenticator :
+		_authenticator.cleanup()
+
+
 
 # De-references the _socket object
 func _on_NakamaSocket_closed() -> void:
 	_socket = null
+	emit_signal("connection_closed")
 
 # Called when the server sends a match update
 func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) -> void:

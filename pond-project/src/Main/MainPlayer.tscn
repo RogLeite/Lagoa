@@ -9,9 +9,29 @@ script = ExtResource( 2 )
 
 [node name="PlayerClient" type="Node" parent="."]
 script = ExtResource( 1 )
-username = "PlayerClient1@test.com"
+
+[node name="Login" type="VBoxContainer" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -96.0
+margin_right = 96.0
+margin_bottom = 86.0
+
+[node name="Client1" type="Button" parent="Login"]
+margin_right = 192.0
+margin_bottom = 41.0
+size_flags_vertical = 3
+text = "Client1"
+
+[node name="Client2" type="Button" parent="Login"]
+margin_top = 45.0
+margin_right = 192.0
+margin_bottom = 86.0
+size_flags_vertical = 3
+text = "Client2"
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 
@@ -45,8 +65,12 @@ margin_bottom = 74.0
 text = "Total Scripts: 0"
 
 [node name="Ball" type="Sprite" parent="."]
+visible = false
 position = Vector2( 50, 50 )
 texture = ExtResource( 3 )
 
+[connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
+[connection signal="pressed" from="Login/Client1" to="." method="_on_Client1_pressed"]
+[connection signal="pressed" from="Login/Client2" to="." method="_on_Client2_pressed"]
 [connection signal="pressed" from="CenterContainer/VBoxContainer/SendTextButton" to="." method="_on_SendTextButton_pressed"]

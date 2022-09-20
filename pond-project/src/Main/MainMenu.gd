@@ -23,6 +23,7 @@ func _on_MultiplayerButton_pressed():
 	_client_buttons_container.show()
 
 
+
 func _on_PlayerClientButton_pressed():
 	var scene := load(_main_player_client)
 	_try_change_scene(scene, _popup_msg_player_client)
@@ -54,4 +55,3 @@ func _try_change_scene(scene, msg) -> void :
 		_warning_popup.set_text(msg) 
 		_warning_popup.popup()
 
-	
