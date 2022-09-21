@@ -22,7 +22,7 @@ _global_script_classes=[ {
 "base": "Control",
 "class": "EnergyBar",
 "language": "GDScript",
-"path": "res://src/UI/EnergyBar.gd"
+"path": "res://src/UI/Elements/EnergyBar.gd"
 }, {
 "base": "Reference",
 "class": "ExceptionHandler",
@@ -117,7 +117,7 @@ _global_script_classes=[ {
 "base": "Button",
 "class": "RunResetButton",
 "language": "GDScript",
-"path": "res://src/UI/RunResetButton.gd"
+"path": "res://src/UI/Elements/RunResetButton.gd"
 } ]
 _global_script_class_icons={
 "Authenticator": "",
