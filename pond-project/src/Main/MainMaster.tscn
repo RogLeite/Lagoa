@@ -1,8 +1,27 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
 [ext_resource path="res://src/Main/MainMaster.gd" type="Script" id=2]
 [ext_resource path="res://assets/icon.png" type="Texture" id=3]
+[ext_resource path="res://src/UI/LoginAndRegister.tscn" type="PackedScene" id=4]
+[ext_resource path="res://assets/spinner.png" type="Texture" id=5]
+
+[sub_resource type="Animation" id=2]
+resource_name = "spin"
+loop = true
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:rotation_degrees")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1.10957, 1 ),
+"update": 0,
+"values": [ 0.0, 360.0 ]
+}
 
 [sub_resource type="Animation" id=1]
 resource_name = "wobble"
@@ -28,25 +47,18 @@ script = ExtResource( 2 )
 script = ExtResource( 1 )
 is_master = true
 
-[node name="Login" type="VBoxContainer" parent="."]
-anchor_left = 0.5
-anchor_right = 0.5
-margin_left = -67.5
-margin_right = 67.5
-margin_bottom = 83.0
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Master1" type="Button" parent="Login"]
-margin_right = 135.0
-margin_bottom = 39.0
-size_flags_vertical = 3
-text = "Master1"
+[node name="Spinner" type="Sprite" parent="CanvasLayer"]
+visible = false
+position = Vector2( 512, 300 )
+scale = Vector2( 0.159999, 0.159999 )
+texture = ExtResource( 5 )
 
-[node name="Master2" type="Button" parent="Login"]
-margin_top = 43.0
-margin_right = 135.0
-margin_bottom = 83.0
-size_flags_vertical = 3
-text = "Master2"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Spinner"]
+anims/spin = SubResource( 2 )
+
+[node name="LoginAndRegister" parent="." instance=ExtResource( 4 )]
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 visible = false
@@ -74,6 +86,12 @@ margin_right = 120.0
 margin_bottom = 38.0
 text = "Start Match"
 
+[node name="StopMatchButton" type="Button" parent="CenterContainer/HBoxContainer/VBoxContainer"]
+visible = false
+margin_right = 12.0
+margin_bottom = 20.0
+text = "Stop"
+
 [node name="Scripts" type="TabContainer" parent="CenterContainer/HBoxContainer"]
 margin_left = 124.0
 margin_right = 424.0
@@ -90,6 +108,7 @@ anims/wobble = SubResource( 1 )
 
 [connection signal="connection_closed" from="MasterClient" to="." method="_on_MasterClient_connection_closed"]
 [connection signal="script_received" from="MasterClient" to="." method="_on_MasterClient_script_received"]
-[connection signal="pressed" from="Login/Master1" to="." method="_on_Master1_pressed"]
-[connection signal="pressed" from="Login/Master2" to="." method="_on_Master2_pressed"]
+[connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
+[connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
 [connection signal="pressed" from="CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton" to="." method="_on_StartMatchButton_pressed"]
+[connection signal="pressed" from="CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton" to="." method="_on_StopMatchButton_pressed"]

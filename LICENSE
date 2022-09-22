@@ -22,3 +22,5 @@ SOFTWARE.
 
 Splash.wav sound effect used under Sampling Plus 1.0 License:
 Original sound https://soundbible.com/1463-Water-Balloon.html
+
+Some code from Heroic Labs' (https://heroiclabs.com/) [nakama-godot-demo](https://github.com/heroiclabs/nakama-godot-demo) was used in the Godot project and in the nakama Server runtime.

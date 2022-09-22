@@ -78,7 +78,7 @@ func register_async(email: String, password: String) -> int:
 	assert(_authenticator, "_authenticator was not initialized, remember to call ServerConnection.start_client()")
 
 	var result : int = yield(_authenticator.register_async(email, password), "completed")
-
+	
 	return result
 
 # Asynchronous coroutine. Authenticates a new session via email and password, but will
@@ -91,7 +91,7 @@ func login_async(email : String, password : String, force_new_session: bool = fa
 	assert(_authenticator, "_authenticator was not initialized, remember to call ServerConnection.start_client()")
 	
 	var result: int = yield(_authenticator.login_async(email, password, force_new_session), "completed")
-	
+		
 	return result
 
 # Starts the socket connection with the server, if possible
@@ -182,6 +182,21 @@ func disconnect_from_server_async() -> int:
 
 	return parsed_result
 
+# Saves the email in the config file.
+func save_email(email: String) -> void:
+	EmailConfigWorker.save_email(email)
+
+
+# Gets the last email from the config file, or a blank string if missing.
+func get_last_email() -> String:
+	return EmailConfigWorker.get_last_email()
+
+
+# Removes the last email from the config file
+func clear_last_email() -> void:
+	EmailConfigWorker.clear_last_email()
+
+
 func get_user_id() -> String:
 	if _authenticator.session:
 		return _authenticator.session.user_id
@@ -251,6 +266,41 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 # Used as a setter function for read-only variables.
 func _no_set(_value) -> void:
 	pass
+
+
+# Helper class to manage functions that relate to local files that have to do with
+# authentication or login parameters, such as remembering email.
+class EmailConfigWorker:
+	const CONFIG := "user://config.ini"
+
+	# Saves the email to the config file.
+	static func save_email(email: String) -> void:
+		var file := ConfigFile.new()
+		#warning-ignore: return_value_discarded
+		file.load(CONFIG)
+		file.set_value("connection", "last_email", email)
+		#warning-ignore: return_value_discarded
+		file.save(CONFIG)
+
+	# Gets the last email from the config file, or a blank string.
+	static func get_last_email() -> String:
+		var file := ConfigFile.new()
+		#warning-ignore: return_value_discarded
+		file.load(CONFIG)
+
+		if file.has_section_key("connection", "last_email"):
+			return file.get_value("connection", "last_email")
+		else:
+			return ""
+
+	# Removes the last email from the config file.
+	static func clear_last_email() -> void:
+		var file := ConfigFile.new()
+		#warning-ignore: return_value_discarded
+		file.load(CONFIG)
+		file.set_value("connection", "last_email", "")
+		#warning-ignore: return_value_discarded
+		file.save(CONFIG)
 
 # Adapts the pond_state Dictionary to and from a acceptable configuration for transmition
 class Adapter:

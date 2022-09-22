@@ -148,5 +148,5 @@ func are_controllers_finished() -> bool :
 
 func _exit_tree():
 	force_join_controllers()
-	print("Match seemingly exited the tree graciously")
+	# print("Match seemingly exited the tree graciously")
 

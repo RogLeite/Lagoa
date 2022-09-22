@@ -9,7 +9,8 @@ signal pond_state_updated(pond_match_tick, pond_state, scripts)
 
 export var is_master : bool = false
 
-var _email : String = "no email"
+var error_message : String = "" setget _no_set, _get_error_message
+
 var _is_connected := false
 
 
@@ -18,23 +19,34 @@ func _ready():
 	# warning-ignore:return_value_discarded
 	ServerConnection.connect("connection_closed", self, "_on_ServerConnection_connection_closed")
 
-func register_connect_join_async(email : String, password : String) -> int:
-	var result : int = yield(ServerConnection.register_async(email, password), "completed")
-	if result != OK:
-		_error_treatment("Register error '%d': \"%s\""%[result, ServerConnection.error_message])
-		return result
-	
-	_email = email
-	
-	result = yield(ServerConnection.connect_to_server_async(), "completed")
-	if result != OK:
-		_error_treatment("Connect to server error '%d': \"%s\""%[result, ServerConnection.error_message])
-		return result
-	_is_connected = true
+func login_async(email : String, password : String, do_remember_email : bool) -> int :
+	var result : int = yield(ServerConnection.login_async(email, password), "completed")
 
-	result = yield(ServerConnection.join_world_async(is_master), "completed")
+	if do_remember_email:
+		ServerConnection.save_email(email)
+
+	return result
+	
+func register_async(email : String, password : String, do_remember_email : bool) -> int :
+	var result : int = yield(ServerConnection.register_async(email, password), "completed")
+	
+	if do_remember_email:
+		ServerConnection.save_email(email)
+		
+	return result
+
+
+func connect_async() -> int:
+	var result: int = yield(ServerConnection.connect_to_server_async(), "completed")
+	
+	if result == OK:
+		_is_connected = true
+	
+	return result
+
+func join_async() -> int :
+	var result: int = yield(ServerConnection.join_world_async(is_master), "completed")
 	if result != OK:
-		_error_treatment("Join world error '%d': \"%s\""%[result, ServerConnection.error_message])
 		return result
 		
 	if is_master:
@@ -61,7 +73,7 @@ func _exit_tree():
 	if _is_connected:
 		var result : int = yield(ServerConnection.disconnect_from_server_async(), "completed")
 		if result != OK:
-			_error_treatment("Disconnect error '%d': \"%s\""%[result, ServerConnection.error_message])
+			push_error("%s : Disconnect error '%d': \"%s\""%[self.to_string(), result, ServerConnection.error_message])
 			return
 		_is_connected = false
 	
@@ -86,10 +98,12 @@ func _on_ServerConnection_script_received(user_id : String, script : String) -> 
 func _on_ServerConnection_pond_state_updated(p_pond_match_tick : int, p_pond_state : Dictionary, p_scripts : Dictionary) -> void:
 	emit_signal("pond_state_updated", p_pond_match_tick, p_pond_state, p_scripts)
 
-	
-	
-func _to_string() -> String:
-	return "[%s, email:%s]"%[name, _email]
 
-func _error_treatment(msg : String) -> void:
-	push_warning("%s : %s"%[self.to_string(), msg])
+func _no_set(_value) -> void:
+	pass
+
+func _get_error_message() -> String:
+	return ServerConnection.error_message	
+
+func _to_string() -> String:
+	return "[%s]"%name
