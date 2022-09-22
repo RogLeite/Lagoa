@@ -30,7 +30,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	
 	if result != OK:
 		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status(_client.error_message)
+		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.visible = false
@@ -40,7 +40,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	result = yield(_client.connect_async(), "completed")
 	if result != OK:
 		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status(_client.error_message)
+		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.visible = false
@@ -53,7 +53,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	
 	if result != OK:
 		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status(_client.error_message)
+		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.visible = false
