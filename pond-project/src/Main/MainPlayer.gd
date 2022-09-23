@@ -18,7 +18,7 @@ func _ready():
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_login_and_register.set_is_enabled(false)
-	_spinner.visible = true
+	_spinner.show()
 	_spinner_animator.play("spin")
 	
 	var result : int 
@@ -32,7 +32,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 
@@ -42,7 +42,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 
@@ -54,26 +54,26 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 	
 	_email = email.left(email.find("@"))
 	
-	_login_and_register.visible = false
+	_login_and_register.hide()
 	_login_and_register.reset()
 		
 	_spinner_animator.stop(true)
-	_spinner.visible = false
+	_spinner.hide()
 	
 	
 	# Call to next state "elapse"
 	call_deferred("elapse")
 
 func elapse() -> void:
-	$CenterContainer.visible = true
+	$CenterContainer.show()
 	$CenterContainer/VBoxContainer/Label.text = _email
-	_ball.visible = true
+	_ball.show()
 	
 func start(pond_match_tick : int, pond_state : Dictionary, scripts : Dictionary) -> void:
 	if pond_match_tick > _last_tick:

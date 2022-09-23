@@ -19,7 +19,7 @@ func _ready():
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_login_and_register.set_is_enabled(false)
-	_spinner.visible = true
+	_spinner.show()
 	_spinner_animator.play("spin")
 	
 	var result : int 
@@ -33,7 +33,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 
@@ -43,7 +43,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 
@@ -56,36 +56,36 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
-		_spinner.visible = false
+		_spinner.hide()
 		
 		return
 	
 	_email = email.left(email.find("@"))
 	
-	_login_and_register.visible = false
+	_login_and_register.hide()
 	_login_and_register.reset()
 		
 	_spinner_animator.stop(true)
-	_spinner.visible = false
+	_spinner.hide()
 	
 	# Call to next state "elapse"
 	call_deferred("elapse")
 	
 func elapse() -> void:	
 	$CenterContainer/HBoxContainer/VBoxContainer/Description.text = _email
-	$CenterContainer.visible = true
-	_ball.visible = true
+	$CenterContainer.show()
+	_ball.show()
 
 func start() -> void:
 	is_pond_match_running = true
 	$Ball/AnimationPlayer.play("wobble")
-	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.visible = false
-	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.visible = true
+	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.hide()
+	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.show()
 
 func result() -> void:
 	$Ball/AnimationPlayer.stop(true)
-	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.visible = false
-	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.visible = true
+	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.hide()
+	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.show()
 	is_pond_match_running = false
 	_all_scripts.clear()
 	for child in _scripts.get_children():
@@ -108,7 +108,7 @@ func add_script_tab(username : String, text : String) -> void :
 	_all_scripts[username] = text
 	
 	if not _scripts.visible :
-		_scripts.visible = true
+		_scripts.show()
 	
 	yield(get_tree(),"idle_frame")
 	
