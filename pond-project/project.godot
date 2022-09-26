@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/Delegates/ExceptionHandler.gd"
 }, {
+"base": "Reference",
+"class": "JSONable",
+"language": "GDScript",
+"path": "res://src/Delegates/JSONable.gd"
+}, {
 "base": "LineEdit",
 "class": "LineEditValidate",
 "language": "GDScript",
@@ -139,6 +144,7 @@ _global_script_class_icons={
 "Duck": "",
 "EnergyBar": "",
 "ExceptionHandler": "",
+"JSONable": "",
 "LineEditValidate": "",
 "Menu": "",
 "MenuList": "",

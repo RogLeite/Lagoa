@@ -150,3 +150,17 @@ func _exit_tree():
 	force_join_controllers()
 	# print("Match seemingly exited the tree graciously")
 
+# [TODO] Implement the class as adapter for PondMatch, not the fake match used in multiplayer tests
+#JSONable class for PondMath
+class State extends JSONable:
+	var ball_position : Vector2
+	
+	func _init(p_ball_position := Vector2.ZERO):
+		ball_position = p_ball_position
+	
+	func to() -> Dictionary:
+		return {"ball_position" : .vector2_to(ball_position)}
+		
+	func from(from : Dictionary) -> JSONable:
+		ball_position = .vector2_from(from.ball_position)
+		return self

@@ -12,7 +12,7 @@ onready var _scripts := $CenterContainer/HBoxContainer/Scripts
 onready var _login_and_register := $LoginAndRegister
 
 onready var _ball := $Ball
-onready var _pond_state := {ball_position = _ball.position}
+onready var _pond_state : PondMatch.State = PondMatch.State.new(_ball.position)
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)

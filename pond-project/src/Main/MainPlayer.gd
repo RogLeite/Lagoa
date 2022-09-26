@@ -75,7 +75,7 @@ func elapse() -> void:
 	$CenterContainer/VBoxContainer/Label.text = _email
 	_ball.show()
 	
-func start(pond_match_tick : int, pond_state : Dictionary, scripts : Dictionary) -> void:
+func start(pond_match_tick : int, pond_state : PondMatch.State, scripts : Dictionary) -> void:
 	if pond_match_tick > _last_tick:
 		_ball.position = pond_state.ball_position
 		_total_scripts.text = "Total Scripts: %d"%scripts.size()

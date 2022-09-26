@@ -83,7 +83,7 @@ func _exit_tree():
 func send_script(p_script : String) -> void:
 	ServerConnection.send_script(p_script)
 
-func update_pond_state(pond_match_tick : int, pond_state : Dictionary, scripts : Dictionary) -> void:
+func update_pond_state(pond_match_tick : int, pond_state : PondMatch.State, scripts : Dictionary) -> void:
 	ServerConnection.update_pond_state(pond_match_tick, pond_state, scripts)
 
 func _on_ServerConnection_connection_closed() -> void:
@@ -95,7 +95,7 @@ func _on_ServerConnection_connection_closed() -> void:
 func _on_ServerConnection_script_received(user_id : String, script : String) -> void :
 	emit_signal("script_received", user_id, script)
 	
-func _on_ServerConnection_pond_state_updated(p_pond_match_tick : int, p_pond_state : Dictionary, p_scripts : Dictionary) -> void:
+func _on_ServerConnection_pond_state_updated(p_pond_match_tick : int, p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
 	emit_signal("pond_state_updated", p_pond_match_tick, p_pond_state, p_scripts)
 
 
