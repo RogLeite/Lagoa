@@ -25,6 +25,12 @@ var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
 
+# [TODO] Initialize and use "player"
+var player : int = -1
+# [TODO] Define and use "color" for the duck
+var color : Color = Color.white
+var pond_state : State setget set_pond_state, get_pond_state
+
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
 onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var tire_mutex := Mutex.new()
@@ -34,6 +40,7 @@ func _ready():
 	$Collision.shape.radius = COLLISION_CIRCLE_RADIUS
 	# Sets metadata for collision
 	set_meta("collider_type", "duck")
+	pond_state = State.new(position, color, rotation, speed, player, energy)
 
 func _physics_process(delta):
 	if is_tired():
@@ -60,9 +67,9 @@ func _physics_process(delta):
 					# print("Collided with wall")
 
 func get_speed ():
-	return speed;
+	return speed
 func set_speed (value):
-	speed = clamp(value, 0, 100);
+	speed = clamp(value, 0, 100)
 	
 func set_speed_target (value):
 	speed_target = clamp(value, 0, 100)
@@ -128,8 +135,8 @@ func launcher(angle, distance):
 		# [TODO] Consider if any calculation should be delegated to Projectile
 		projectile.angle_launched = deg2rad(angle)
 		projectile.color = Color.darkslategray
-		projectile.startLoc = position
-		projectile.endLoc = position+Vector2(dist,0).rotated(deg2rad(angle))
+		projectile.start_location = position
+		projectile.end_location = position+Vector2(dist,0).rotated(deg2rad(angle))
 		
 		CurrentVisualization.get_current().add_projectile(projectile)
 		# Starts a cooldown timer for can_launch
@@ -146,3 +153,71 @@ func reset(pos : Vector2, angle : float):
 	can_launch = true
 	position = pos
 	rotation = angle
+
+func get_pond_state() -> State:
+	pond_state.position = self.position
+	pond_state.color = self.color
+	pond_state.rotation = self.rotation
+	pond_state.speed = self.speed
+	pond_state.player = self.player
+	pond_state.energy = self.energy
+	return pond_state
+
+func set_pond_state(p_state : State) -> void:
+	self.position = p_state.position
+	self.color = p_state.color
+	self.rotation = p_state.rotation
+	self.speed = p_state.speed
+	self.player = p_state.player
+	self.energy = p_state.energy
+	pond_state = p_state
+
+class State extends JSONable:
+	# var state : Dictionary setget _no_set, _no_get
+	var position : Vector2
+	var color 	 : Color
+	var rotation : float	# Radians
+	var speed 	 : float 	# Velocity is calculated with rotation
+	var player 	 : int
+	var energy 	 : int
+
+	func _init(
+			p_position := Vector2.ZERO,
+			p_color := Color.white,
+			p_rotation := 0.0,
+			p_speed := 0.0,
+			p_player := -1,
+			p_energy := 100):
+		position = p_position
+		color = p_color
+		rotation = p_rotation
+		speed = p_speed
+		player = p_player
+		energy = p_energy
+	
+	func to(duck : Duck = null) -> Dictionary:
+		if duck:
+			position = duck.position
+			color = duck.color
+			rotation = duck.rotation
+			speed = duck.speed
+			player = duck.player
+			energy = duck.energy
+		
+		return {
+			"position" : .vector2_to(position),
+			"color" : .color_to(color),
+			"rotation" : rotation,
+			"speed" : speed,
+			"player" : player,
+			"energy" : energy
+		}
+		
+	func from(from : Dictionary) -> JSONable:
+		position = .vector2_from(from.position)
+		color = .color_from(from.color)
+		rotation = from.rotation
+		speed = from.speed
+		player = from.player
+		energy = from.energy
+		return self

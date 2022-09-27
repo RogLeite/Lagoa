@@ -1,7 +1,13 @@
 extends Polygon2D
+class_name VisionCone
+
+var pond_state : State setget set_pond_state, get_pond_state
 
 onready var _animation_player := $AnimationPlayer
-	
+
+func _ready():
+	pond_state = State.new(position, rotation)
+
 func _exit_tree():
 	if has_node("AnimationPlayer") and _animation_player.is_playing():
 		_animation_player.stop()
@@ -19,3 +25,39 @@ func reset():
 	_animation_player.stop(true)
 	position = Vector2.ZERO
 	rotation_degrees = 0
+
+func get_pond_state() -> State:
+	pond_state.position = self.position
+	pond_state.rotation = self.rotation
+	return pond_state
+
+func set_pond_state(p_state : State) -> void:
+	self.position = p_state.position
+	self.rotation = p_state.rotation
+	pond_state = p_state
+
+class State extends JSONable:
+	# var state : Dictionary setget _no_set, _no_get
+	var position : Vector2
+	var rotation : float	# Radians
+
+	func _init(
+			p_position := Vector2.ZERO,
+			p_rotation := 0.0):
+		position = p_position
+		rotation = p_rotation
+	
+	func to(vision_cone : VisionCone = null) -> Dictionary:
+		if vision_cone:
+			position = vision_cone.position
+			rotation = vision_cone.rotation
+		
+		return {
+			"position" : .vector2_to(position),
+			"rotation" : rotation
+		}
+		
+	func from(from : Dictionary) -> JSONable:
+		position = .vector2_from(from.position)
+		rotation = from.rotation
+		return self

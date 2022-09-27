@@ -10,7 +10,7 @@ func to() -> Dictionary:
 	return {}
 
 # For convenience of use, returns self
-func from(from : Dictionary) -> JSONable:
+func from(_from : Dictionary) -> JSONable:
 	push_warning("JSONable.from() is being called. Consider overwriting it.")
 	return self
 

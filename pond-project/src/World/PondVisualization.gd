@@ -119,7 +119,8 @@ func projectile_splash(landing_position : Vector2, has_hit : bool, exhaustion : 
 		
 	
 func add_projectile(projectile : Projectile):
-	var _err = projectile.connect("arrived", self, "_on_Projectile_arrived")
+	# warning-ignore:return_value_discarded
+	projectile.connect("arrived", self, "_on_Projectile_arrived")
 	projectile.add_to_group(PROJECTILES_GROUP)
 	add_child(projectile)
 
