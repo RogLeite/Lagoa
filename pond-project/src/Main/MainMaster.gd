@@ -4,6 +4,8 @@ var is_pond_match_running := false
 var _all_scripts := {}
 var _tick := 0
 var _email := "[no email]"
+# [TODO] Use a true PondMatch as node and get *it's* State
+var pond_state : PondMatch.State
 
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
@@ -12,10 +14,11 @@ onready var _scripts := $CenterContainer/HBoxContainer/Scripts
 onready var _login_and_register := $LoginAndRegister
 
 onready var _ball := $Ball
-onready var _pond_state : PondMatch.State = PondMatch.State.new(_ball.position)
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
+	# [TODO] Change use of PondState, should get directly from PondMatch.pond_state
+	pond_state = PondMatch.State.new(-1, 1, [Duck.State.new(_ball.position)])
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_login_and_register.set_is_enabled(false)
@@ -96,8 +99,9 @@ func result() -> void:
 func _physics_process(_delta):
 	if is_pond_match_running :
 		_tick += 1
-		_pond_state.ball_position = _ball.position
-		_client.update_pond_state(_tick, _pond_state, _all_scripts)
+		pond_state.tick = _tick
+		pond_state.duck_pond_states[0].position = _ball.position
+		_client.update_pond_state(pond_state, _all_scripts)
 
 func add_script_tab(username : String, text : String) -> void :
 	var new_page := Label.new()

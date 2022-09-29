@@ -75,9 +75,10 @@ func elapse() -> void:
 	$CenterContainer/VBoxContainer/Label.text = _email
 	_ball.show()
 	
-func start(pond_match_tick : int, pond_state : PondMatch.State, scripts : Dictionary) -> void:
-	if pond_match_tick > _last_tick:
-		_ball.position = pond_state.ball_position
+func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
+	if pond_state.tick > _last_tick:
+		# [TODO] Change use of PondState, should be passed directly to PondMatch.pond_state
+		_ball.position = pond_state.duck_pond_states[0].position
 		_total_scripts.text = "Total Scripts: %d"%scripts.size()
 	
 func result() -> void:
@@ -94,8 +95,8 @@ func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
 	call_deferred("prepare",email, password, do_remember_email, true)
 
-func _on_PlayerClient_pond_state_updated(pond_match_tick, pond_state, scripts):
-	call_deferred("start", pond_match_tick, pond_state, scripts)
+func _on_PlayerClient_pond_state_updated(pond_state, scripts):
+	call_deferred("start", pond_state, scripts)
 
 func _on_PlayerClient_connection_closed() -> void:
 	call_deferred("result")

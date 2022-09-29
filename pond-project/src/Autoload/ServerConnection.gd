@@ -8,7 +8,6 @@ extends Node
 # }
 # UPDATE_POND_STATE = 2:
 # {
-# 	“pond_match_tick” : int,
 # 	“pond_state” : {}   , Dictionary storing the state of the match
 # 	“scripts” : {}		, //Dictionary with every script 
 # }
@@ -24,7 +23,7 @@ signal script_received(user_id, script)
 
 # Emited when a message with OpCode.UPDATE_POND_STATE is received
 # message is a Dictionary in the specified message format
-signal pond_state_updated(pond_match_tick, pond_state, scripts) 
+signal pond_state_updated(pond_state, scripts) 
 
 
 ## Enums
@@ -215,13 +214,14 @@ func send_script(p_script: String) -> void:
 
 
  # Sends a message to the server stating a change in the script for the player.
-func update_pond_state(p_pond_match_tick : int, p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
+func update_pond_state(p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
 	if _socket:
 		var payload := {
-			pond_match_tick = p_pond_match_tick,
 			pond_state = p_pond_state.to(),
 			scripts = p_scripts
 		}
+		# print("sent pond_state: %s"%p_pond_state)
+		# print("sent pond_state.to(): %s"%p_pond_state.to())
 		_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
 
 
@@ -255,11 +255,11 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			emit_signal("script_received", username, script)
 		OpCodes.UPDATE_POND_STATE:
 			var decoded: Dictionary = JSON.parse(raw).result
-			var pond_match_tick: int = decoded.pond_match_tick
+			# print("decoded.pond_state: %s"%decoded.pond_state)
+			# print(".from(decoded.pond_state): %s"%PondMatch.State.new().from(decoded.pond_state))
 			var pond_state: PondMatch.State = PondMatch.State.new().from(decoded.pond_state)
 			var scripts: Dictionary = decoded.scripts
-			
-			emit_signal("pond_state_updated", pond_match_tick, pond_state, scripts)
+			emit_signal("pond_state_updated", pond_state, scripts)
 		OpCodes.MANUAL_DEBUG:
 			pass
 

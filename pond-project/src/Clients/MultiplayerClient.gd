@@ -5,7 +5,7 @@ class_name MultiplayerClient
 signal connection_closed()
 
 signal script_received(user_id, script)
-signal pond_state_updated(pond_match_tick, pond_state, scripts)
+signal pond_state_updated(pond_state, scripts)
 
 export var is_master : bool = false
 
@@ -83,8 +83,8 @@ func _exit_tree():
 func send_script(p_script : String) -> void:
 	ServerConnection.send_script(p_script)
 
-func update_pond_state(pond_match_tick : int, pond_state : PondMatch.State, scripts : Dictionary) -> void:
-	ServerConnection.update_pond_state(pond_match_tick, pond_state, scripts)
+func update_pond_state(pond_state : PondMatch.State, scripts : Dictionary) -> void:
+	ServerConnection.update_pond_state(pond_state, scripts)
 
 func _on_ServerConnection_connection_closed() -> void:
 	_is_connected = false
@@ -95,8 +95,8 @@ func _on_ServerConnection_connection_closed() -> void:
 func _on_ServerConnection_script_received(user_id : String, script : String) -> void :
 	emit_signal("script_received", user_id, script)
 	
-func _on_ServerConnection_pond_state_updated(p_pond_match_tick : int, p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
-	emit_signal("pond_state_updated", p_pond_match_tick, p_pond_state, p_scripts)
+func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
+	emit_signal("pond_state_updated", p_pond_state, p_scripts)
 
 
 func _no_set(_value) -> void:

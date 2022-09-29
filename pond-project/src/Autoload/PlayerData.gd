@@ -13,7 +13,7 @@ func get_duck(duck_idx : int) :
 		return get_node(path)
 	else:
 		return null
-func get_ducks_as_nodes() -> Array:
+func get_ducks_array() -> Array:
 	var ret := []
 	for i in ducks.size():
 		ret.append(get_duck(i))

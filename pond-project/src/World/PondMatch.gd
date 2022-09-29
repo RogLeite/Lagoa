@@ -8,17 +8,24 @@ onready var step_btn := $Gameplay/HBoxContainer/StepButton
 export var is_step_by_step : bool = true
 export var duck_amount := 1
 
+var tick : int
+
+var is_running : bool = false
 var threads : Array
 var scripts : Array
 var controllers : Array
 
+var pond_state : State setget set_pond_state, get_pond_state
+var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
+
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 onready var visualization_scene := preload("res://src/World/PondVisualization.tscn")
-var is_running : bool = false
 
 
 func _ready():
+	tick = -1
+
 	step_btn.visible = is_step_by_step
 	
 	scripts.resize(duck_amount)
@@ -42,12 +49,16 @@ func _ready():
 		
 	# Set the first script tab as visible
 	$ScriptTabs.current_tab = 0
-	
+
+	pond_state = State.new(self.tick, self.duck_amount, self.duck_pond_states)
+
 	reset_pond_match()
 
 func _physics_process(_delta: float) -> void:
 	if not is_step_by_step:
+		tick += 1
 		script_step()
+		# [TODO] If is a master in a multiplayer match, emit the state.
 	if is_running and are_controllers_finished() :
 		is_running = false
 		join_controllers()
@@ -63,6 +74,8 @@ func script_step():
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
 func reset_pond_match():
 	run_reset_btn.swap_role("run")
+
+	tick = 0
 
 	force_join_controllers()
 
@@ -150,17 +163,66 @@ func _exit_tree():
 	force_join_controllers()
 	# print("Match seemingly exited the tree graciously")
 
-# [TODO] Implement the class as adapter for PondMatch, not the fake match used in multiplayer tests
+func get_duck_pond_states() -> Array:
+	var states := PlayerData.get_ducks_array()
+	for i in states.size():
+		states[i] = states[i].pond_state
+	return states
+func set_duck_pond_states(p_states : Array) :
+	var ducks := PlayerData.get_ducks_array()
+	for i in ducks.size():
+		ducks[i].pond_state = p_states[i]
+
+func get_pond_state() -> State:
+	pond_state.tick = self.tick
+	pond_state.duck_amount = self.duck_amount
+	pond_state.duck_pond_states = self.duck_pond_states
+	return pond_state
+
+func set_pond_state(p_state : State) -> void:
+	self.tick = p_state.tick
+	self.duck_amount = p_state.duck_amount
+	self.duck_pond_states = p_state.duck_pond_states
+	pond_state = p_state
+
+# [TODO] Also store the "events". Or, at least, change it into two properties: VFX and SFX
 #JSONable class for PondMath
 class State extends JSONable:
-	var ball_position : Vector2
+	var tick : int
+	var duck_amount : int
+	var duck_pond_states : Array
+	# var events : Dictionary
+
 	
-	func _init(p_ball_position := Vector2.ZERO):
-		ball_position = p_ball_position
-	
-	func to() -> Dictionary:
-		return {"ball_position" : .vector2_to(ball_position)}
+	func _init(p_tick := -1, p_duck_amount := 0, p_duck_pond_states := []):
+	# func _init(p_tick := -1, p_duck_amount := 0, p_duck_pond_states := [], p_events):
+		tick = p_tick
+		duck_amount = p_duck_amount
+		duck_pond_states = p_duck_pond_states
+
+	func to(pond_match : PondMatch = null) -> Dictionary:
+		if pond_match:
+			tick = pond_match.tick
+			duck_amount = pond_match.duck_amount
+			duck_pond_states = pond_match.duck_pond_states
+
+		var states := []
+		for elem in duck_pond_states:
+			states.append(elem.to())
+
+		return {
+			"tick" : tick,
+			"duck_amount" : duck_amount,
+			"duck_pond_states" : states
+		}
 		
 	func from(from : Dictionary) -> JSONable:
-		ball_position = .vector2_from(from.ball_position)
+		tick = from.tick
+		duck_amount = from.duck_amount
+		duck_pond_states = []
+
+		# Populates `duck_pond_states` with states converted from the received Dictionary
+		for elem in from.duck_pond_states:
+			duck_pond_states.append(Duck.State.new().from(elem))
+		
 		return self
