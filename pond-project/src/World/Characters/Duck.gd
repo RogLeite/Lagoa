@@ -32,7 +32,6 @@ var color : Color = Color.white
 var pond_state : State setget set_pond_state, get_pond_state
 
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
-onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var tire_mutex := Mutex.new()
 onready var _base_modulate := modulate
 
@@ -125,22 +124,21 @@ func is_tired() -> bool :
 func scan(duck_idx, angle):
 	return CurrentVisualization.get_current().scan_field(duck_idx, angle, scan_resolution)
 
-# Create a new insatnce of Projectile, configure it, then call CurrentVisualization.get_current().add_projectile()
-# angle is in degrees
+# Passes Projectile parameters to CurrentVisualization.get_current().add_projectile()
+# Starts a cooldown timer for the launcher.
+# @ param angle is in degrees
 func launcher(angle, distance):
 	if can_launch:
 		can_launch = false
-		var dist = clamp(distance, 0, projectile_max_distance)
-		var projectile := projectile_scene.instance()
-		# [TODO] Consider if any calculation should be delegated to Projectile
-		projectile.angle_launched = deg2rad(angle)
-		projectile.color = Color.darkslategray
-		projectile.start_location = position
-		projectile.end_location = position+Vector2(dist,0).rotated(deg2rad(angle))
+		var p_dist := clamp(distance, 0, projectile_max_distance)
+		var p_color := Color.darkslategray
+		var p_start_location := position
+		var p_end_location := position+Vector2(p_dist,0).rotated(deg2rad(angle))
 		
-		CurrentVisualization.get_current().add_projectile(projectile)
+		CurrentVisualization.get_current().add_projectile(p_color, p_start_location, p_end_location, p_dist)
 		# Starts a cooldown timer for can_launch
-		var _err = get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
+		# warning-ignore: return_value_discarded
+		get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
 		
 func get_class() -> String :
 	return "Duck"

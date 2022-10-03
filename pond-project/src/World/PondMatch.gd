@@ -17,6 +17,7 @@ var controllers : Array
 
 var pond_state : State setget set_pond_state, get_pond_state
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
+var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -50,7 +51,7 @@ func _ready():
 	# Set the first script tab as visible
 	$ScriptTabs.current_tab = 0
 
-	pond_state = State.new(self.tick, self.duck_amount, self.duck_pond_states)
+	# pond_match initialization occurs in reset_pond_match()
 
 	reset_pond_match()
 
@@ -93,6 +94,9 @@ func reset_pond_match():
 
 	# The script execution threads use the instance_id of the LuaController node
 	ThreadSincronizer.prepare_participants(controller_ids)
+
+	# Initializes pond_state
+	pond_state = State.new(self.tick, self.duck_amount, self.duck_pond_states, self.projectile_pond_states)
 	
 
 func run():
@@ -173,16 +177,23 @@ func set_duck_pond_states(p_states : Array) :
 	for i in ducks.size():
 		ducks[i].pond_state = p_states[i]
 
+func get_projectile_pond_states() -> Array:
+	return CurrentVisualization.get_current().projectile_pond_states
+func set_projectile_pond_states(p_states : Array) :
+	CurrentVisualization.get_current().projectile_pond_states = p_states
+	
 func get_pond_state() -> State:
 	pond_state.tick = self.tick
 	pond_state.duck_amount = self.duck_amount
 	pond_state.duck_pond_states = self.duck_pond_states
+	pond_state.projectile_pond_states = self.projectile_pond_states
 	return pond_state
 
 func set_pond_state(p_state : State) -> void:
 	self.tick = p_state.tick
 	self.duck_amount = p_state.duck_amount
 	self.duck_pond_states = p_state.duck_pond_states
+	self.projectile_pond_states = p_state.projectile_pond_states
 	pond_state = p_state
 
 # [TODO] Also store the "events". Or, at least, change it into two properties: VFX and SFX
@@ -191,38 +202,55 @@ class State extends JSONable:
 	var tick : int
 	var duck_amount : int
 	var duck_pond_states : Array
+	var projectile_pond_states : Array
 	# var events : Dictionary
 
 	
-	func _init(p_tick := -1, p_duck_amount := 0, p_duck_pond_states := []):
+	func _init(
+		p_tick := -1,
+		p_duck_amount := 0,
+		p_duck_pond_states := [],
+		p_projectile_pond_states := []):
 	# func _init(p_tick := -1, p_duck_amount := 0, p_duck_pond_states := [], p_events):
 		tick = p_tick
 		duck_amount = p_duck_amount
 		duck_pond_states = p_duck_pond_states
+		projectile_pond_states = p_projectile_pond_states
 
 	func to(pond_match : PondMatch = null) -> Dictionary:
 		if pond_match:
 			tick = pond_match.tick
 			duck_amount = pond_match.duck_amount
 			duck_pond_states = pond_match.duck_pond_states
+			projectile_pond_states = pond_match.projectile_pond_states
 
-		var states := []
+		var duck_states := []
 		for elem in duck_pond_states:
-			states.append(elem.to())
+			duck_states.append(elem.to())
+
+		var projectile_states := []
+		for elem in projectile_pond_states:
+			projectile_states.append(elem.to())
 
 		return {
 			"tick" : tick,
 			"duck_amount" : duck_amount,
-			"duck_pond_states" : states
+			"duck_pond_states" : duck_states,
+			"projectile_pond_states" : projectile_states
 		}
 		
 	func from(from : Dictionary) -> JSONable:
 		tick = from.tick
 		duck_amount = from.duck_amount
 		duck_pond_states = []
+		projectile_pond_states = []
 
 		# Populates `duck_pond_states` with states converted from the received Dictionary
 		for elem in from.duck_pond_states:
 			duck_pond_states.append(Duck.State.new().from(elem))
+
+		# Populates `projectile_pond_states` with states converted from the received Dictionary
+		for elem in from.projectile_pond_states:
+			projectile_pond_states.append(Projectile.State.new().from(elem))
 		
 		return self

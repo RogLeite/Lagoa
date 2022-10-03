@@ -4,6 +4,10 @@ extends Node2D
 # or manually Build extensions of PondVisualization for each player count.
 export var duck_amount := 2
 
+# Indicates if the pond is simulating or just showing it's state visually
+# Enables physics_process for Projectiles.
+export var is_simulating := true
+
 # How many time bigger is the scale of this map versus the 100x100 map from blocly-games' pond
 const MAP_SCALE_FROM_BLOCKLY : float = 4.0
 const SOUNDS_EFFECTS_GROUP : String = "sound_effects"
@@ -11,6 +15,8 @@ const VISUAL_EFFECTS_GROUP : String = "visual_effects"
 const PROJECTILES_GROUP : String = "projectiles_effects"
 const MAX_DUCKS : int = 4
 
+var projectiles : Array setget _no_set, _no_get
+var projectile_pond_states : Array setget _set_projectile_pond_states, _get_projectile_pond_states
 
 # [TODO] Make a tool to edit starting positions and rotations
 onready var STARTING_POSITIONS := [Vector2(94,101), Vector2(279,101)]
@@ -18,6 +24,7 @@ onready var STARTING_ROTATIONS := [0.0, PI]
 
 onready var _ducks := []
 onready var _vision_cones := []
+onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var vision_cone_scene := preload("res://src/World/Effects/VisionCone.tscn")
 onready var boom_player_scene := preload("res://src/World/Effects/BoomPlayer.tscn")
 onready var blast_scene := preload("res://src/World/Effects/Blast.tscn")
@@ -43,6 +50,15 @@ func _ready() -> void:
 		new_cone.set_visible(false)
 		add_child(new_cone)
 	
+	# Prepares every Projectile ever needed
+	for i in duck_amount*3:
+		var proj := projectile_scene.instance()
+		projectiles.push_back(proj)
+		hide_projectile(proj)
+		# warning-ignore:return_value_discarded
+		proj.connect("arrived", self, "_on_Projectile_arrived")
+		proj.add_to_group(PROJECTILES_GROUP)
+		add_child(proj)
 	
 	PlayerData.ducks = duck_paths
 	
@@ -85,7 +101,7 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 	
 	return best_distance
 
-func _on_Projectile_arrived(landing_position : Vector2) :
+func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :
 	var has_hit := false
 	var max_exhaustion := 0.0
 	for duck in _ducks:
@@ -98,6 +114,7 @@ func _on_Projectile_arrived(landing_position : Vector2) :
 			duck.tire(exhaustion)
 			has_hit = true
 	projectile_splash(landing_position, has_hit, max_exhaustion)
+	hide_projectile(projectile)
 			
 func projectile_splash(landing_position : Vector2, has_hit : bool, exhaustion : float):
 	var player : AudioStreamPlayer = null
@@ -118,11 +135,42 @@ func projectile_splash(landing_position : Vector2, has_hit : bool, exhaustion : 
 		blast.play()
 		
 	
-func add_projectile(projectile : Projectile):
-	# warning-ignore:return_value_discarded
-	projectile.connect("arrived", self, "_on_Projectile_arrived")
-	projectile.add_to_group(PROJECTILES_GROUP)
-	add_child(projectile)
+func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location : Vector2, p_distance : float):
+	for proj in projectiles:
+		if not proj.is_processing():
+			proj.distance = p_distance
+			proj.color = p_color
+			proj.start_location = p_start_location
+			proj.end_location = p_end_location
+			proj.progress = 0.0
+			show_projectile(proj)
+
+func show_projectile(projectile : Projectile):
+	projectile.show()
+	projectile.set_process(true)
+	projectile.set_physics_process(is_simulating)
+func hide_projectile(projectile : Projectile):
+	projectile.hide()
+	projectile.set_physics_process(false)
+	projectile.set_process(false)
+
+func _set_projectile_pond_states(p_states : Array):
+	var proj : Projectile
+	for i in projectiles.size():
+		proj = projectiles[i]
+		if i < p_states.size() :
+			proj.pond_state = p_states[i]
+			show_projectile(proj)
+		else:
+			hide_projectile(proj)
+		
+
+func _get_projectile_pond_states() -> Array:
+	var states := []
+	for proj in projectiles:
+		if proj.is_processing():
+			states.push_back(proj.pond_state)
+	return states
 
 func _free_groups(effects : Array):
 	for effect in effects :
@@ -134,9 +182,17 @@ func reset():
 	var tree = get_tree()
 	_free_groups(tree.get_nodes_in_group(SOUNDS_EFFECTS_GROUP))
 	_free_groups(tree.get_nodes_in_group(VISUAL_EFFECTS_GROUP))
-	_free_groups(tree.get_nodes_in_group(PROJECTILES_GROUP))
+#	_free_groups(tree.get_nodes_in_group(PROJECTILES_GROUP))
+	for proj in projectiles:
+		hide_projectile(proj)
 	for i in _ducks.size():
 		_ducks[i].reset(STARTING_POSITIONS[i], STARTING_ROTATIONS[i])
 	for cone in _vision_cones:
 		cone.reset()
 		cone.set_visible(false)
+
+func _no_set(_p):
+	return
+
+func _no_get():
+	return

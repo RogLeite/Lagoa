@@ -4,7 +4,7 @@ class_name Projectile
 tool
 
 # Signals that the projectile arrived to it's destination
-signal arrived(position)
+signal arrived(position, projectile)
 
 const PROJECTILE_RADIUS := 5.0
 const PROJECTILE_SPEED := 480.0
@@ -16,8 +16,7 @@ var color := Color.white setget set_color
 var shadow_color := Color.white
 var start_location := Vector2.ZERO
 var end_location := Vector2.ZERO
-# Should be in radians
-var angle_launched : float = 0.0
+
 # How far the projectile will land 
 # In blockly-games' code, `distance` is called `range` 
 var distance := 280.0
@@ -58,9 +57,8 @@ func _process(_delta):
 func _physics_process(delta):
 	progress = min(progress+PROJECTILE_SPEED*delta, distance)
 	normal_progress = progress / distance
-	if progress == distance :
-		emit_signal("arrived", end_location)
-		queue_free()
+	if progress >= distance :
+		emit_signal("arrived", end_location, self)
 
 func get_class() -> String :
 	return "Projectile"
