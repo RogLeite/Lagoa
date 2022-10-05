@@ -1,5 +1,8 @@
 extends Node2D
 
+signal sfx_played (effect_name)
+signal vfx_played (effect_name, p_pond_state)
+
 # [TODO] Either programatically instanciate ducks, allowing variable quantities;
 # or manually Build extensions of PondVisualization for each player count.
 export var duck_amount := 2
@@ -44,7 +47,7 @@ func _ready() -> void:
 		duck_paths.append(_ducks[i].get_path())
 		
 		# Instances a vision cone for each duck
-		var new_cone = vision_cone_scene.instance()
+		var new_cone = vision_cone_scene.instance(i)
 		_vision_cones.append(new_cone)
 		new_cone.name = "VisionCone%d"%i
 		new_cone.set_visible(false)
@@ -96,10 +99,12 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 				best_distance = dist
 
 	_vision_cones[scanner].play_animation(start, radians)
+	emit_signal("vfx_played", "vision_cone", _vision_cones[scanner].pond_state)
 	
 	scan_mutex.unlock()
 	
 	return best_distance
+
 
 func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :
 	var has_hit := false
@@ -115,25 +120,62 @@ func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile)
 			has_hit = true
 	projectile_splash(landing_position, has_hit, max_exhaustion)
 	hide_projectile(projectile)
-			
-func projectile_splash(landing_position : Vector2, has_hit : bool, exhaustion : float):
+
+# Receives a Dictionary where every Key that has corresponding Value true is a sfx to play
+# Example:
+# {
+# 	"boom" : true,
+# 	"splash" : true
+# }
+func play_sfx(p_effects : Dictionary):
+	if p_effects.boom :
+		var player : AudioStreamPlayer = boom_player_scene.instance()
+		player.add_to_group(SOUNDS_EFFECTS_GROUP)
+		add_child(player)
+		player.play()
+	
+	if p_effects.splash :
+		var player : AudioStreamPlayer = splash_player_scene.instance()
+		player.add_to_group(SOUNDS_EFFECTS_GROUP)
+		add_child(player)
+		player.play()
+
+# Plays VFX according to a Dictionary of Arrays of States
+# The Keys of the Dictionary are the effect name, the Values are Arrays of States for that effect
+# {
+# 	"vision_cone" : [], 
+# 	"blast" : []
+# }
+func play_vfx(p_effects : Dictionary):
+	for cone_state in p_effects["vision_cone"]:
+		_vision_cones[cone_state.scanner].pond_state = cone_state
+	for blast_state in p_effects["blast"]:
+		_play_blast(blast_state.position, false)
+		
+func _play_blast(p_position : Vector2, p_emit : bool = true) -> void:
+	var blast = blast_scene.instance()
+	blast.position = p_position
+	blast.add_to_group(VISUAL_EFFECTS_GROUP)
+	add_child(blast)
+	blast.play()
+	if p_emit:
+		emit_signal("vfx_played", "blast", blast.pond_state)
+
+func projectile_splash(landing_position : Vector2, has_hit : bool, _exhaustion : float):
 	var player : AudioStreamPlayer = null
 	if has_hit:
 		player = boom_player_scene.instance()
-		player.volume_db = -40 + 40 * (exhaustion / 10)
+		# player.volume_db = -40 + 40 * (exhaustion / 10)
+		emit_signal("sfx_played", "boom")
 	elif Geometry.is_point_in_polygon(landing_position, $Water.polygon):
 		player = splash_player_scene.instance()
+		emit_signal("sfx_played", "splash")
 	if player != null:
 		player.add_to_group(SOUNDS_EFFECTS_GROUP)
 		add_child(player)
 		player.play()
 		
-		var blast = blast_scene.instance()
-		blast.position = landing_position
-		blast.add_to_group(VISUAL_EFFECTS_GROUP)
-		add_child(blast)
-		blast.play()
-		
+		_play_blast(landing_position)
 	
 func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location : Vector2, p_distance : float):
 	for proj in projectiles:

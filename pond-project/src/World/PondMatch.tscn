@@ -90,6 +90,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 tab_align = 0
 
+[connection signal="sfx_played" from="Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_sfx_played"]
+[connection signal="vfx_played" from="Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_vfx_played"]
 [connection signal="pressed" from="Gameplay/HBoxContainer/StepButton" to="." method="script_step"]
 [connection signal="reset" from="Gameplay/HBoxContainer/RunResetButton" to="." method="reset_pond_match"]
 [connection signal="run" from="Gameplay/HBoxContainer/RunResetButton" to="." method="run"]
