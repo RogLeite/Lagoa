@@ -1,4 +1,4 @@
-extends Node
+extends Control
 class_name PondMatch
 
 export var is_visualizing : bool = true
