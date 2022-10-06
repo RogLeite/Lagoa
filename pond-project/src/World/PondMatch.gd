@@ -1,12 +1,11 @@
-extends HBoxContainer
+extends Node
 class_name PondMatch
 
-# References to Buttons
-onready var run_reset_btn := $Gameplay/HBoxContainer/RunResetButton
-onready var step_btn := $Gameplay/HBoxContainer/StepButton
+export var is_visualizing : bool = true
+export var is_simulating : bool  = true
+export var is_step_by_step : bool = false
+export var duck_amount := 4
 
-export var is_step_by_step : bool = true
-export var duck_amount := 1
 
 var is_running : bool = false
 var threads : Array
@@ -21,17 +20,32 @@ var projectile_pond_states : Array setget set_projectile_pond_states, get_projec
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
-onready var visualization_scene := preload("res://src/World/PondVisualization.tscn")
+
+# References to Nodes
+onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
+onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
+onready var pond_visualization := $UI/Gameplay/PondContainer/PondViewport/PondVisualization
 
 func _init():
 	tick = 0
-	pond_events = {}
+	pond_events = {
+		"vfx" : {},
+		"sfx" : {}
+	}
 	duck_pond_states = []
 	projectile_pond_states = []
 	pond_state = State.new()
+
+	threads = []
+	scripts = []
+	controllers = []
 	
 func _ready():
 	step_btn.visible = is_step_by_step
+	
+	pond_visualization.duck_amount = duck_amount
+	pond_visualization.visible = is_visualizing
+	pond_visualization.is_simulating = is_simulating
 	
 	scripts.resize(duck_amount)
 	controllers.resize(duck_amount)
@@ -40,7 +54,7 @@ func _ready():
 
 		scripts[i] = script_scene.instance()
 		scripts[i].name = "PlayerScript%d"%i
-		$ScriptTabs.add_child(scripts[i])
+		$UI/ScriptTabs.add_child(scripts[i])
 		
 		controllers[i] = controller_scene.instance()
 		controllers[i].name = "DuckController%d"%i
@@ -53,7 +67,7 @@ func _ready():
 		PlayerData.get_duck(i).connect("energy_changed", find_node("EnergyBar%d"%i), "set_energy")
 		
 	# Set the first script tab as visible
-	$ScriptTabs.current_tab = 0
+	$UI/ScriptTabs.current_tab = 0
 
 	# pond_match initialization occurs in reset_pond_match()
 
@@ -234,6 +248,18 @@ func _on_PondVisualization_sfx_played(p_effect_name : String):
 func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
 	pond_events["vfx"][p_effect_name] = p_pond_state
 
+
+func _on_StepButton_pressed():
+	script_step()
+
+
+func _on_RunResetButton_reset():
+	reset_pond_match()
+
+
+func _on_RunResetButton_run():
+	run()
+
 #JSONable class for PondMath
 class State extends JSONable:
 	var tick : int
@@ -246,12 +272,12 @@ class State extends JSONable:
 	func _init(
 		p_tick := 0,
 		p_duck_amount := 0,
-		p_events_pond_state := {},
+		p_pond_events := {"vfx" : {},"sfx" : {}},
 		p_duck_pond_states := [],
 		p_projectile_pond_states := []):
 		tick = p_tick
 		duck_amount = p_duck_amount
-		pond_events = p_events_pond_state
+		pond_events = p_pond_events
 		duck_pond_states = p_duck_pond_states
 		projectile_pond_states = p_projectile_pond_states
 
@@ -272,15 +298,17 @@ class State extends JSONable:
 		for fx_name in pond_events["sfx"]:
 			events_dict["sfx"][fx_name] = "true" if pond_events["sfx"][fx_name] else "false"
 		
-		var cone_states := []
-		for cone_state in pond_events["vfx"]["vision_cone"] :
-			cone_states.append(cone_state.to())
-		events_dict["vfx"]["vision_cone"] = cone_states
+		if pond_events["vfx"].has("vision_cone"):
+			var cone_states := []
+			for cone_state in pond_events["vfx"]["vision_cone"] :
+				cone_states.append(cone_state.to())
+			events_dict["vfx"]["vision_cone"] = cone_states
 
-		var blast_states := []
-		for blast_state in pond_events["vfx"]["blast"] :
-			blast_states.append(blast_state.to())
-		events_dict["vfx"]["blast"] = blast_states
+		if pond_events["vfx"].has("blast"):
+			var blast_states := []
+			for blast_state in pond_events["vfx"]["blast"] :
+				blast_states.append(blast_state.to())
+			events_dict["vfx"]["blast"] = blast_states
 
 
 		var duck_states := []
@@ -311,11 +339,14 @@ class State extends JSONable:
 		for fx_name in from.pond_events["sfx"]:
 			pond_events[fx_name] = true if from.pond_events[fx_name] == "true" else false
 		
-		for i in pond_events["vfx"]["vision_cone"].size() :
-			pond_events["vfx"]["vision_cone"] = pond_events["vfx"]["vision_cone"].from()
+		
+		if pond_events["vfx"].has("vision_cone"):
+			for i in pond_events["vfx"]["vision_cone"].size() :
+				pond_events["vfx"]["vision_cone"] = pond_events["vfx"]["vision_cone"].from()
 
-		for i in pond_events["vfx"]["blast"].size() :
-			pond_events["vfx"]["blast"] = pond_events["vfx"]["blast"].from()
+		if pond_events["vfx"].has("blast"):
+			for i in pond_events["vfx"]["blast"].size() :
+				pond_events["vfx"]["blast"] = pond_events["vfx"]["blast"].from()
 
 		# Populates `duck_pond_states` with states converted from the received Dictionary
 		for elem in from.duck_pond_states:

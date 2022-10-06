@@ -5,3 +5,4 @@
 [node name="MainSingle" type="Node"]
 
 [node name="PondMatch" parent="." instance=ExtResource( 1 )]
+duck_amount = 2

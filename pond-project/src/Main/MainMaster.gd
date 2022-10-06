@@ -18,7 +18,7 @@ onready var _ball := $Ball
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 	# [TODO] Change use of PondState, should get directly from PondMatch.pond_state
-	pond_state = PondMatch.State.new(-1, 1, [Duck.State.new(_ball.position)])
+	pond_state = PondMatch.State.new(0, 1, {"vfx" : {},"sfx" : {}} , [Duck.State.new(_ball.position)])
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_login_and_register.set_is_enabled(false)
@@ -114,7 +114,7 @@ func add_script_tab(username : String, text : String) -> void :
 	if not _scripts.visible :
 		_scripts.show()
 	
-	yield(get_tree(),"idle_frame")
+	yield(Engine.get_main_loop(),"idle_frame")
 	
 	_scripts.add_child(new_page)
 	

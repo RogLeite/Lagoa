@@ -5,11 +5,11 @@ signal vfx_played (effect_name, p_pond_state)
 
 # [TODO] Either programatically instanciate ducks, allowing variable quantities;
 # or manually Build extensions of PondVisualization for each player count.
-export var duck_amount := 2
+var duck_amount := 4
 
 # Indicates if the pond is simulating or just showing it's state visually
 # Enables physics_process for Projectiles.
-export var is_simulating := true
+var is_simulating := true
 
 # How many time bigger is the scale of this map versus the 100x100 map from blocly-games' pond
 const MAP_SCALE_FROM_BLOCKLY : float = 4.0
@@ -22,8 +22,8 @@ var projectiles : Array setget _no_set, _no_get
 var projectile_pond_states : Array setget _set_projectile_pond_states, _get_projectile_pond_states
 
 # [TODO] Make a tool to edit starting positions and rotations
-onready var STARTING_POSITIONS := [Vector2(94,101), Vector2(279,101)]
-onready var STARTING_ROTATIONS := [0.0, PI]
+onready var STARTING_POSITIONS := [Vector2(92,100), Vector2(308,100), Vector2(92,300), Vector2(308,300)]
+onready var STARTING_ROTATIONS := [0.0, PI, 0.0, PI]
 
 onready var _ducks := []
 onready var _vision_cones := []
@@ -39,19 +39,14 @@ func _enter_tree():
 	CurrentVisualization.set_current(self)
 
 func _ready() -> void:
-	var duck_paths := []
-	for i in duck_amount :
-		# [TODO] Change this so it instances new ducks
-		#     will need to change the color somehow
-		_ducks.append(get_node("Duck%d"%i))
-		duck_paths.append(_ducks[i].get_path())
-		
-		# Instances a vision cone for each duck
+	
+	# Prepares every VisionCone ever needed
+	for i in MAX_DUCKS:
 		var new_cone = vision_cone_scene.instance(i)
 		_vision_cones.append(new_cone)
 		new_cone.name = "VisionCone%d"%i
 		new_cone.set_visible(false)
-		add_child(new_cone)
+		add_child(new_cone)	
 	
 	# Prepares every Projectile ever needed
 	for i in duck_amount*3:
@@ -63,7 +58,6 @@ func _ready() -> void:
 		proj.add_to_group(PROJECTILES_GROUP)
 		add_child(proj)
 	
-	PlayerData.ducks = duck_paths
 	
 	# Sets collision metadata for the walls
 	$PondEdges.set_meta("collider_type", "wall")
@@ -191,6 +185,7 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 			proj.end_location = p_end_location
 			proj.progress = 0.0
 			show_projectile(proj)
+			break
 
 func show_projectile(projectile : Projectile):
 	projectile.show()
@@ -230,10 +225,27 @@ func reset():
 	_free_groups(tree.get_nodes_in_group(SOUNDS_EFFECTS_GROUP))
 	_free_groups(tree.get_nodes_in_group(VISUAL_EFFECTS_GROUP))
 #	_free_groups(tree.get_nodes_in_group(PROJECTILES_GROUP))
+
 	for proj in projectiles:
 		hide_projectile(proj)
-	for i in _ducks.size():
-		_ducks[i].reset(STARTING_POSITIONS[i], STARTING_ROTATIONS[i])
+		
+	# Resets Ducks
+	var duck_paths := []
+	_ducks = []
+	for i in duck_amount :
+		# [TODO] Change this so it instances new ducks
+		#     will need to change the color somehow
+		_ducks.append(get_node("Duck%d"%i))
+		duck_paths.append(_ducks[i].get_path())
+		
+	PlayerData.ducks = duck_paths
+	
+	for i in MAX_DUCKS:
+		if i < _ducks.size():
+			_ducks[i].reset(STARTING_POSITIONS[i], STARTING_ROTATIONS[i])
+			_ducks[i].show()
+		else:
+			get_node("Duck%d"%i).hide()
 	for cone in _vision_cones:
 		cone.reset()
 		cone.set_visible(false)

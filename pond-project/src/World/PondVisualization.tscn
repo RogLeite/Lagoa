@@ -42,11 +42,20 @@ color = Color( 0.321569, 0.494118, 0.74902, 1 )
 polygon = PoolVector2Array( 0, 0, 400, 0, 400, 400, 0, 400 )
 
 [node name="Duck0" parent="." instance=ExtResource( 1 )]
-position = Vector2( 94, 101 )
+position = Vector2(92,100)
 
 [node name="Duck1" parent="." instance=ExtResource( 1 )]
 modulate = Color( 0.835294, 0.0392157, 0.0392157, 1 )
-position = Vector2( 279, 101 )
+position = Vector2(308,100)
+rotation = -3.14159
+
+[node name="Duck2" parent="." instance=ExtResource( 1 )]
+modulate = Color( 0.0392157, 0.835294, 0.239216, 1 )
+position = Vector2(92,300)
+
+[node name="Duck3" parent="." instance=ExtResource( 1 )]
+modulate = Color( 0.603922, 0.0392157, 0.835294, 1 )
+position = Vector2(308,300)
 rotation = -3.14159
 
 [node name="Debugger" type="VBoxContainer" parent="."]
