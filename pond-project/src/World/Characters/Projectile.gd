@@ -22,8 +22,6 @@ var end_location := Vector2.ZERO
 var distance := 280.0
 # Projectile progress in absolute distance
 var progress := 0.0
-# Projectile progress normalized between 0.0 and 1.0
-var normal_progress := 0.0
 
 var pond_state : State setget set_pond_state, get_pond_state
 
@@ -35,6 +33,8 @@ func _ready():
 	pond_state = State.new(color, start_location, end_location, progress, distance)
 
 func _draw():
+	# Projectile progress normalized between 0.0 and 1.0
+	var normal_progress := progress / distance
 	var dx = (end_location.x - start_location.x) * normal_progress
 	var dy = (end_location.y - start_location.y) * normal_progress # [TODO] May need to invert progress, this line may be overcompensating for the coordinates
 	#  Calculate parabolic arc.
@@ -56,7 +56,6 @@ func _process(_delta):
 
 func _physics_process(delta):
 	progress = min(progress+PROJECTILE_SPEED*delta, distance)
-	normal_progress = progress / distance
 	if progress >= distance :
 		emit_signal("arrived", end_location, self)
 

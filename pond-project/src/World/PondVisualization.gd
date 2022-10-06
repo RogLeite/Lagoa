@@ -188,9 +188,9 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 			break
 
 func show_projectile(projectile : Projectile):
-	projectile.show()
 	projectile.set_process(true)
 	projectile.set_physics_process(is_simulating)
+	projectile.show()
 func hide_projectile(projectile : Projectile):
 	projectile.hide()
 	projectile.set_physics_process(false)
