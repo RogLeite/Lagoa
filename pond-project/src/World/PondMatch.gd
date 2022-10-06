@@ -8,14 +8,13 @@ onready var step_btn := $Gameplay/HBoxContainer/StepButton
 export var is_step_by_step : bool = true
 export var duck_amount := 1
 
-var tick : int
-
 var is_running : bool = false
 var threads : Array
 var scripts : Array
 var controllers : Array
 
 var pond_state : State setget set_pond_state, get_pond_state
+var tick : int
 var pond_events: Dictionary setget set_pond_events, get_pond_events
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
@@ -24,10 +23,14 @@ onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn"
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 onready var visualization_scene := preload("res://src/World/PondVisualization.tscn")
 
-
+func _init():
+	tick = 0
+	pond_events = {}
+	duck_pond_states = []
+	projectile_pond_states = []
+	pond_state = State.new()
+	
 func _ready():
-	tick = -1
-
 	step_btn.visible = is_step_by_step
 	
 	scripts.resize(duck_amount)
@@ -241,7 +244,7 @@ class State extends JSONable:
 
 	
 	func _init(
-		p_tick := -1,
+		p_tick := 0,
 		p_duck_amount := 0,
 		p_events_pond_state := {},
 		p_duck_pond_states := [],

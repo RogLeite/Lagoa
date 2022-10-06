@@ -39,7 +39,6 @@ func set_pond_state(p_state : State) -> void:
 	self.position = p_state.position
 	self.rotation = p_state.rotation
 	self.scanner = p_state.scanner
-	play_animation(self.position, self.rotation)
 	pond_state = p_state
 
 class State extends JSONable:

@@ -67,6 +67,8 @@ func _ready() -> void:
 	
 	# Sets collision metadata for the walls
 	$PondEdges.set_meta("collider_type", "wall")
+	
+	reset()
 
 
 func _physics_process(_delta):
@@ -148,7 +150,10 @@ func play_sfx(p_effects : Dictionary):
 # }
 func play_vfx(p_effects : Dictionary):
 	for cone_state in p_effects["vision_cone"]:
-		_vision_cones[cone_state.scanner].pond_state = cone_state
+		var scanner : int = cone_state.scanner
+		var cone : VisionCone = _vision_cones[scanner]
+		cone.pond_state = cone_state
+		cone.play_animation(cone.position, cone.rotation)
 	for blast_state in p_effects["blast"]:
 		_play_blast(blast_state.position, false)
 		
