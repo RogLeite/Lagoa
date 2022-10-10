@@ -11,11 +11,15 @@ extends Node
 # 	“pond_state” : {}   , Dictionary storing the state of the match
 # 	“scripts” : {}		, //Dictionary with every script 
 # }
+# END_POND_MATCH = 3:
 
 ## Signals
 
 # Connection closed unexpectedly. Authentication may still be valid. To reconnect, call connect_to_server_aync
 signal connection_closed()
+
+# Master has declared the match has ended
+signal pond_match_ended()
 
 # Emited when a message with OpCode.SEND_SCRIPT is received
 # parameter are the contents of the specified message format
@@ -32,7 +36,7 @@ signal pond_state_updated(pond_state, scripts)
 enum OpCodes {
 	SEND_SCRIPT = 1, 		# Emits signal `script_received`
 	UPDATE_POND_STATE = 2,	# Emits signal `pond_state_received`
-	INITIAL_STATE = 3,
+	END_POND_MATCH = 3,		# Emits signal `pond_match_ended`
 	MANUAL_DEBUG = 99
 }
 
@@ -206,6 +210,11 @@ func get_username() -> String:
 		return _authenticator.session.username
 	return ""
 
+func end_pond_match() -> void:
+	if _socket:
+		var payload := {}
+		_socket.send_match_state_async(_world_id, OpCodes.END_POND_MATCH, JSON.print(payload))
+
  # Sends a message to the server stating a change in the script for the player.
 func send_script(p_script: String) -> void:
 	if _socket:
@@ -260,6 +269,9 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			var pond_state: PondMatch.State = PondMatch.State.new().from(decoded.pond_state)
 			var scripts: Dictionary = decoded.scripts
 			emit_signal("pond_state_updated", pond_state, scripts)
+		OpCodes.END_POND_MATCH:
+#			var decoded: Dictionary = JSON.parse(raw).result
+			emit_signal("pond_match_ended")
 		OpCodes.MANUAL_DEBUG:
 			pass
 

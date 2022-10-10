@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
 [ext_resource path="res://src/Main/MainPlayer.gd" type="Script" id=2]
-[ext_resource path="res://assets/icon.png" type="Texture" id=3]
+[ext_resource path="res://src/World/PondMatch.tscn" type="PackedScene" id=3]
 [ext_resource path="res://src/UI/LoginAndRegister.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/spinner.png" type="Texture" id=5]
+[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=6]
 
 [sub_resource type="Animation" id=1]
 resource_name = "spin"
@@ -40,49 +41,24 @@ texture = ExtResource( 5 )
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Spinner"]
 anims/spin = SubResource( 1 )
 
+[node name="Label" type="Label" parent="CanvasLayer"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -49.0
+margin_right = 49.0
+margin_bottom = 31.0
+theme = ExtResource( 6 )
+text = "Player"
+uppercase = true
+
 [node name="LoginAndRegister" parent="." instance=ExtResource( 4 )]
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-margin_left = 454.0
-margin_top = 263.0
-margin_right = 569.0
-margin_bottom = 337.0
-
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
-margin_right = 115.0
-margin_bottom = 14.0
-text = "Main Player Client"
-
-[node name="TextEdit" type="TextEdit" parent="CenterContainer/VBoxContainer"]
-margin_top = 18.0
-margin_right = 115.0
-margin_bottom = 32.0
-rect_min_size = Vector2( 0, 14 )
-
-[node name="SendTextButton" type="Button" parent="CenterContainer/VBoxContainer"]
-margin_top = 36.0
-margin_right = 115.0
-margin_bottom = 56.0
-text = "Send Text"
-
-[node name="TotalScripts" type="Label" parent="CenterContainer/VBoxContainer"]
-margin_top = 60.0
-margin_right = 115.0
-margin_bottom = 74.0
-text = "Total Scripts: 0"
-
-[node name="Ball" type="Sprite" parent="."]
-visible = false
-position = Vector2( 50, 50 )
-texture = ExtResource( 3 )
+is_simulating = false
 
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
+[connection signal="pond_match_ended" from="PlayerClient" to="." method="_on_PlayerClient_pond_match_ended"]
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/SendTextButton" to="." method="_on_SendTextButton_pressed"]

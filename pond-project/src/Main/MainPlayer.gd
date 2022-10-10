@@ -1,23 +1,23 @@
 extends Node
 
-var _last_tick := -1
 var _email := ""
 
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $PlayerClient
-onready var _ball := $Ball
-onready var _text_box := $CenterContainer/VBoxContainer/TextEdit
-onready var _total_scripts:= $CenterContainer/VBoxContainer/TotalScripts
-onready var _login_and_register := $LoginAndRegister
-
+onready var login_and_register := $LoginAndRegister
+onready var pond_match := $PondMatch
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 
+func reset():
+	login_and_register.reset()
+	login_and_register.show()
+	pond_match.hide()
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
-	_login_and_register.set_is_enabled(false)
+	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
 	
@@ -28,8 +28,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		result = yield(_client.login_async(email, password, do_remember_email), "completed")
 	
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -38,8 +38,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 
 	result = yield(_client.connect_async(), "completed")
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -50,8 +50,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	
 	result = yield(_client.join_async(), "completed")
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -60,8 +60,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	
 	_email = email.left(email.find("@"))
 	
-	_login_and_register.hide()
-	_login_and_register.reset()
+	login_and_register.hide()
+	login_and_register.reset()
 		
 	_spinner_animator.stop(true)
 	_spinner.hide()
@@ -71,23 +71,22 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	call_deferred("elapse")
 
 func elapse() -> void:
-	$CenterContainer.show()
-	$CenterContainer/VBoxContainer/Label.text = _email
-	_ball.show()
+	pond_match.show()
 	
 func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
-	if pond_state.tick > _last_tick:
-		# [TODO] Change use of PondState, should be passed directly to PondMatch.pond_state
-		_ball.position = pond_state.duck_pond_states[0].position
-		_total_scripts.text = "Total Scripts: %d"%scripts.size()
+	if pond_state.tick > pond_match.tick:
+		pond_match.pond_state = pond_state
+		
 	
 func result() -> void:
-	_last_tick = -1
-	_total_scripts.text = "Connection closed"
+	# [TODO] Have some flag in "start" indicatig if the match has started and 
+	# reset that flag here, so a delayed "pond_state_updated" message does not
+	# update de state even though reset_pond_match has just been called (or 
+	# pond_state has a "pond_match_id" indicating which match is running and 
+	# MainPlayer knows which is it because it was communicated in the
+	# "end_pond_match" message
+	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
-
-func _on_SendTextButton_pressed():
-	_client.send_script(_text_box.text)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare",email, password, do_remember_email, false)
@@ -99,4 +98,7 @@ func _on_PlayerClient_pond_state_updated(pond_state, scripts):
 	call_deferred("start", pond_state, scripts)
 
 func _on_PlayerClient_connection_closed() -> void:
+	call_deferred("reset")
+
+func _on_PlayerClient_pond_match_ended():
 	call_deferred("result")

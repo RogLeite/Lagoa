@@ -4,6 +4,7 @@ class_name MultiplayerClient
 # Connection closed unexpectedly. Authentication may still be valid.
 signal connection_closed()
 
+signal pond_match_ended()
 signal script_received(user_id, script)
 signal pond_state_updated(pond_state, scripts)
 
@@ -54,6 +55,8 @@ func join_async() -> int :
 		ServerConnection.connect("script_received", self, "_on_ServerConnection_script_received")
 	else:
 		# warning-ignore:return_value_discarded
+		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
+		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
 		
 	return OK
@@ -80,6 +83,9 @@ func _exit_tree():
 	ServerConnection.end_client()
 
 
+func end_pond_match() -> void:
+	ServerConnection.end_pond_match()
+	
 func send_script(p_script : String) -> void:
 	ServerConnection.send_script(p_script)
 
@@ -92,11 +98,15 @@ func _on_ServerConnection_connection_closed() -> void:
 	emit_signal("connection_closed")
 
 
+func _on_ServerConnection_pond_match_ended() -> void :
+	emit_signal("pond_match_ended")
+
 func _on_ServerConnection_script_received(user_id : String, script : String) -> void :
 	emit_signal("script_received", user_id, script)
 	
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
 	emit_signal("pond_state_updated", p_pond_state, p_scripts)
+
 
 
 func _no_set(_value) -> void:

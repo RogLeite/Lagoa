@@ -47,22 +47,56 @@ margin_bottom = 500.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="EnergyBar0" parent="UI/Gameplay/EnergyBars" instance=ExtResource( 2 )]
-anchor_right = 0.0
-anchor_bottom = 0.0
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Gameplay/EnergyBars"]
 margin_right = 400.0
 margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="EnergyBar0" parent="UI/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 192.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Duck0"
 
-[node name="EnergyBar1" parent="UI/Gameplay/EnergyBars" instance=ExtResource( 2 )]
+[node name="EnergyBar1" parent="UI/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
+margin_left = 208.0
+margin_right = 400.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Duck1"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Gameplay/EnergyBars"]
 margin_top = 50.0
 margin_right = 400.0
 margin_bottom = 84.0
+size_flags_horizontal = 3
 size_flags_vertical = 3
-text = "Duck1"
+
+[node name="EnergyBar2" parent="UI/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 192.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Duck2"
+
+[node name="EnergyBar3" parent="UI/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 208.0
+margin_right = 400.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Duck3"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/Gameplay"]
 margin_top = 516.0

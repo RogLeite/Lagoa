@@ -1,27 +1,27 @@
 extends Node
 
 var is_pond_match_running := false
-var _all_scripts := {}
-var _tick := 0
 var _email := "[no email]"
-# [TODO] Use a true PondMatch as node and get *it's* State
-var pond_state : PondMatch.State
 
+onready var _scripts := {}
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $MasterClient
-onready var _scripts := $CenterContainer/HBoxContainer/Scripts
-onready var _login_and_register := $LoginAndRegister
-
-onready var _ball := $Ball
+onready var login_and_register := $LoginAndRegister
+onready var pond_match := $PondMatch
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 	# [TODO] Change use of PondState, should get directly from PondMatch.pond_state
-	pond_state = PondMatch.State.new(0, 1, {"vfx" : {},"sfx" : {}} , [Duck.State.new(_ball.position)])
+	call_deferred("reset")
 
+func reset():
+	login_and_register.reset()
+	login_and_register.show()
+	pond_match.hide()
+	
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
-	_login_and_register.set_is_enabled(false)
+	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
 	
@@ -32,8 +32,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		result = yield(_client.login_async(email, password, do_remember_email), "completed")
 	
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -42,8 +42,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 
 	result = yield(_client.connect_async(), "completed")
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -55,8 +55,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	result = yield(_client.join_async(), "completed")
 	
 	if result != OK:
-		_login_and_register.set_is_enabled(true)
-		_login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
+		login_and_register.set_is_enabled(true)
+		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
 		
 		_spinner_animator.stop(true)
 		_spinner.hide()
@@ -65,8 +65,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	
 	_email = email.left(email.find("@"))
 	
-	_login_and_register.hide()
-	_login_and_register.reset()
+	login_and_register.hide()
+	login_and_register.reset()
 		
 	_spinner_animator.stop(true)
 	_spinner.hide()
@@ -74,53 +74,29 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	# Call to next state "elapse"
 	call_deferred("elapse")
 	
-func elapse() -> void:	
-	$CenterContainer/HBoxContainer/VBoxContainer/Description.text = _email
-	$CenterContainer.show()
-	_ball.show()
+func elapse() -> void:
+	pond_match.show()
 
 func start() -> void:
-	is_pond_match_running = true
-	$Ball/AnimationPlayer.play("wobble")
-	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.hide()
-	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.show()
+	pond_match.run()
 
-func result() -> void:
-	$Ball/AnimationPlayer.stop(true)
-	$CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton.hide()
-	$CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton.show()
-	is_pond_match_running = false
-	_all_scripts.clear()
-	for child in _scripts.get_children():
-		_scripts.remove_child(child)
-		child.queue_free()
-
-	
-func _physics_process(_delta):
-	if is_pond_match_running :
-		_tick += 1
-		pond_state.tick = _tick
-		pond_state.duck_pond_states[0].position = _ball.position
-		_client.update_pond_state(pond_state, _all_scripts)
-
-func add_script_tab(username : String, text : String) -> void :
-	var new_page := Label.new()
-	new_page.autowrap = true
-	new_page.name = username.left(username.find("@"))
-	new_page.text = text
-	
-	_all_scripts[username] = text
-	
-	if not _scripts.visible :
-		_scripts.show()
-	
-	yield(Engine.get_main_loop(),"idle_frame")
-	
-	_scripts.add_child(new_page)
+func result(p_result : String) -> void:
+	match p_result :
+		"reset_requested":
+			pond_match.reset_pond_match()
+			_client.end_pond_match()
+			call_deferred("elapse")
+		"scripts_ended":
+			pond_match.reset_pond_match()
+			_client.end_pond_match()
+			call_deferred("elapse")
+		
+		
 	
 
 func _on_MasterClient_script_received(username, script):
-	add_script_tab(username, script)
+	_scripts[username] = script
+	pond_match.add_script(username, script)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, false)
@@ -128,12 +104,25 @@ func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, true)
 
-func _on_StartMatchButton_pressed():
+func _on_PondMatch_match_reset_requested():
+	call_deferred("result", "reset_requested")
+	
+
+func _on_PondMatch_match_scripts_ended():
+	call_deferred("result", "scripts_ended")
+
+
+func _on_PondMatch_match_run_requested():
 	call_deferred("start")
 	
-func _on_StopMatchButton_pressed():
-	call_deferred("result")
-	
 func _on_MasterClient_connection_closed() -> void:
-	call_deferred("result")
+	call_deferred("reset")
 	# [TODO] Possibly handle reconnection attempt
+
+
+func _on_PondMatch_pond_state_updated():
+	_client.update_pond_state(pond_match.pond_state, _scripts)
+
+
+func _on_PondMatch_match_step_requested():
+	pond_match.script_step()

@@ -124,13 +124,13 @@ func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile)
 # 	"splash" : true
 # }
 func play_sfx(p_effects : Dictionary):
-	if p_effects.boom :
+	if p_effects.has("boom") and p_effects.boom :
 		var player : AudioStreamPlayer = boom_player_scene.instance()
 		player.add_to_group(SOUNDS_EFFECTS_GROUP)
 		add_child(player)
 		player.play()
 	
-	if p_effects.splash :
+	if p_effects.has("splash") and p_effects.splash :
 		var player : AudioStreamPlayer = splash_player_scene.instance()
 		player.add_to_group(SOUNDS_EFFECTS_GROUP)
 		add_child(player)
@@ -220,6 +220,10 @@ func _free_groups(effects : Array):
 		effect.queue_free()
 		remove_child(effect)
 
+func stop():
+	# set_process(false)
+	set_physics_process(false)
+
 func reset():
 	var tree = get_tree()
 	_free_groups(tree.get_nodes_in_group(SOUNDS_EFFECTS_GROUP))
@@ -243,12 +247,17 @@ func reset():
 	for i in MAX_DUCKS:
 		if i < _ducks.size():
 			_ducks[i].reset(STARTING_POSITIONS[i], STARTING_ROTATIONS[i])
-			_ducks[i].show()
+			_ducks[i].set_participating(true)
+			# _ducks[i].show()
 		else:
-			get_node("Duck%d"%i).hide()
+			get_node("Duck%d"%i).set_participating(false)
+			# get_node("Duck%d"%i).hide()
 	for cone in _vision_cones:
 		cone.reset()
 		cone.set_visible(false)
+	
+	# set_process(true)
+	set_physics_process(true)
 
 func _no_set(_p):
 	return

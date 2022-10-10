@@ -2,9 +2,10 @@
 
 [ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
 [ext_resource path="res://src/Main/MainMaster.gd" type="Script" id=2]
-[ext_resource path="res://assets/icon.png" type="Texture" id=3]
+[ext_resource path="res://src/World/PondMatch.tscn" type="PackedScene" id=3]
 [ext_resource path="res://src/UI/LoginAndRegister.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/spinner.png" type="Texture" id=5]
+[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=6]
 
 [sub_resource type="Animation" id=2]
 resource_name = "spin"
@@ -21,23 +22,6 @@ tracks/0/keys = {
 "transitions": PoolRealArray( 1.10957, 1 ),
 "update": 0,
 "values": [ 0.0, 360.0 ]
-}
-
-[sub_resource type="Animation" id=1]
-resource_name = "wobble"
-length = 2.0
-loop = true
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:position")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 1 ),
-"transitions": PoolRealArray( 1, 1 ),
-"update": 0,
-"values": [ Vector2( 50, 50 ), Vector2( 972, 550 ) ]
 }
 
 [node name="MainMaster" type="Node"]
@@ -58,57 +42,28 @@ texture = ExtResource( 5 )
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Spinner"]
 anims/spin = SubResource( 2 )
 
+[node name="Label" type="Label" parent="CanvasLayer"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -51.5
+margin_right = 51.5
+margin_bottom = 31.0
+theme = ExtResource( 6 )
+text = "Master"
+uppercase = true
+
 [node name="LoginAndRegister" parent="." instance=ExtResource( 4 )]
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer"]
-margin_left = 300.0
-margin_top = 281.0
-margin_right = 724.0
-margin_bottom = 319.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/HBoxContainer"]
-margin_right = 120.0
-margin_bottom = 38.0
-
-[node name="Description" type="Label" parent="CenterContainer/HBoxContainer/VBoxContainer"]
-margin_right = 120.0
-margin_bottom = 14.0
-text = "Main Master Client"
-
-[node name="StartMatchButton" type="Button" parent="CenterContainer/HBoxContainer/VBoxContainer"]
-margin_top = 18.0
-margin_right = 120.0
-margin_bottom = 38.0
-text = "Start Match"
-
-[node name="StopMatchButton" type="Button" parent="CenterContainer/HBoxContainer/VBoxContainer"]
-visible = false
-margin_right = 12.0
-margin_bottom = 20.0
-text = "Stop"
-
-[node name="Scripts" type="TabContainer" parent="CenterContainer/HBoxContainer"]
-margin_left = 124.0
-margin_right = 424.0
-margin_bottom = 38.0
-rect_min_size = Vector2( 300, 0 )
-
-[node name="Ball" type="Sprite" parent="."]
-visible = false
-position = Vector2( 50, 50 )
-texture = ExtResource( 3 )
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Ball"]
-anims/wobble = SubResource( 1 )
+duck_amount = 2
 
 [connection signal="connection_closed" from="MasterClient" to="." method="_on_MasterClient_connection_closed"]
 [connection signal="script_received" from="MasterClient" to="." method="_on_MasterClient_script_received"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
-[connection signal="pressed" from="CenterContainer/HBoxContainer/VBoxContainer/StartMatchButton" to="." method="_on_StartMatchButton_pressed"]
-[connection signal="pressed" from="CenterContainer/HBoxContainer/VBoxContainer/StopMatchButton" to="." method="_on_StopMatchButton_pressed"]
+[connection signal="match_reset_requested" from="PondMatch" to="." method="_on_PondMatch_match_reset_requested"]
+[connection signal="match_run_requested" from="PondMatch" to="." method="_on_PondMatch_match_run_requested"]
+[connection signal="match_scripts_ended" from="PondMatch" to="." method="_on_PondMatch_match_scripts_ended"]
+[connection signal="match_step_requested" from="PondMatch" to="." method="_on_PondMatch_match_step_requested"]
+[connection signal="pond_state_updated" from="PondMatch" to="." method="_on_PondMatch_pond_state_updated"]

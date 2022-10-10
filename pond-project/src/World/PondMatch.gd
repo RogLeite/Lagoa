@@ -1,6 +1,12 @@
 extends Control
 class_name PondMatch
 
+signal pond_state_updated
+signal match_run_requested
+signal match_reset_requested
+signal match_step_requested
+signal match_scripts_ended
+
 export var is_visualizing : bool = true
 export var is_simulating : bool  = true
 export var is_step_by_step : bool = false
@@ -24,7 +30,6 @@ onready var controller_scene := preload("res://src/World/Characters/DuckControll
 # References to Nodes
 onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
-onready var pond_visualization := $UI/Gameplay/PondContainer/PondViewport/PondVisualization
 
 func _init():
 	tick = 0
@@ -41,8 +46,7 @@ func _init():
 	controllers = []
 	
 func _ready():
-	step_btn.visible = is_step_by_step
-	
+	var pond_visualization := CurrentVisualization.get_current()
 	pond_visualization.duck_amount = duck_amount
 	pond_visualization.visible = is_visualizing
 	pond_visualization.is_simulating = is_simulating
@@ -61,11 +65,6 @@ func _ready():
 		controllers[i].duck_idx = i
 		add_child(controllers[i])
 		
-		#Connects a Duck's energy_changed signal to it's corresponding energy bar
-		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
-		#warning-ignore: return_value_discarded
-		PlayerData.get_duck(i).connect("energy_changed", find_node("EnergyBar%d"%i), "set_energy")
-		
 	# Set the first script tab as visible
 	$UI/ScriptTabs.current_tab = 0
 
@@ -76,10 +75,15 @@ func _ready():
 func _physics_process(_delta: float) -> void:
 	if not is_step_by_step:
 		script_step()
-		# [TODO] If is a master in a multiplayer match, emit the state.
 	if is_running and are_controllers_finished() :
 		is_running = false
 		join_controllers()
+		CurrentVisualization.get_current().stop()
+		emit_signal("match_scripts_ended")
+
+# [TODO] Implement
+func add_script(_username : String, _script : String) -> void:
+	pass
 
 # If it's is_running, busy waits for every thread to arrive
 func script_step():
@@ -90,11 +94,14 @@ func script_step():
 	tick += 1
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
+	if is_simulating:
+		emit_signal("pond_state_updated")
 	ThreadSincronizer.give_permission() 
 		
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
 func reset_pond_match():
 	run_reset_btn.swap_role("run")
+	step_btn.hide()
 
 	tick = 0
 	clear_events()
@@ -112,6 +119,14 @@ func reset_pond_match():
 		threads[i] = Thread.new()		
 		# Store the instance id to use with ThreadSincronizer.prepare_participants()
 		controller_ids[i] = controllers[i].get_instance_id()
+		
+		#Connects a Duck's energy_changed signal to it's corresponding energy bar
+		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
+		#warning-ignore: return_value_discarded
+		var duck : Duck = PlayerData.get_duck(i)
+		var bar : EnergyBar = find_node("EnergyBar%d"%i)
+		if not duck.is_connected("energy_changed", bar, "set_energy"):
+			duck.connect("energy_changed", bar, "set_energy")
 
 	# The script execution threads use the instance_id of the LuaController node
 	ThreadSincronizer.prepare_participants(controller_ids)
@@ -122,6 +137,7 @@ func reset_pond_match():
 
 func run():
 	run_reset_btn.swap_role("reset")
+	step_btn.visible = is_step_by_step
 
 	var successfully_compiled := true
 	for i in duck_amount:
@@ -218,7 +234,13 @@ func get_duck_pond_states() -> Array:
 func set_duck_pond_states(p_states : Array) :
 	var ducks := PlayerData.get_ducks_array()
 	for i in ducks.size():
-		ducks[i].pond_state = p_states[i]
+		if i < p_states.size():
+			ducks[i].pond_state = p_states[i]
+			ducks[i].set_participating(true)
+			# ducks[i].show()
+		else:
+			ducks[i].set_participating(false)
+			# ducks[i].hide()
 
 func get_projectile_pond_states() -> Array:
 	return CurrentVisualization.get_current().projectile_pond_states
@@ -250,15 +272,15 @@ func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
 
 
 func _on_StepButton_pressed():
-	script_step()
+	emit_signal("match_step_requested")
 
 
 func _on_RunResetButton_reset():
-	reset_pond_match()
+	emit_signal("match_reset_requested")
 
 
 func _on_RunResetButton_run():
-	run()
+	emit_signal("match_run_requested")
 
 #JSONable class for PondMath
 class State extends JSONable:

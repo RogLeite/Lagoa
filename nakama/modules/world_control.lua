@@ -10,7 +10,7 @@ local TICK_RATE = 30
 local OpCodes = {
     send_script = 1,
     update_pond_state = 2,
-    initial_state = 3,
+    end_pond_match = 3,
     manual_debug = 99         -- Used when running a non-production debug test
 }
 
@@ -266,6 +266,10 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
                 nakama.logger_warn("PlayerClients are sending messages with op_code 'send_script' when no MasterClient is connected")
             end
         elseif op_code == OpCodes.update_pond_state then
+            -- Broadcasts the message to all PlayerClients
+            -- my_logger_debug(string.format("Attempting a broadcast of OpCode %d", op_code))
+            dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)
+        elseif op_code == OpCodes.end_pond_match then
             -- Broadcasts the message to all PlayerClients
             -- my_logger_debug(string.format("Attempting a broadcast of OpCode %d", op_code))
             dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)

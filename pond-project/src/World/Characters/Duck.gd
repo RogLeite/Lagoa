@@ -34,9 +34,10 @@ var pond_state : State setget set_pond_state, get_pond_state
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
 onready var tire_mutex := Mutex.new()
 onready var _base_modulate := modulate
+onready var collision := $Collision
 
 func _ready():
-	$Collision.shape.radius = COLLISION_CIRCLE_RADIUS
+	collision.shape.radius = COLLISION_CIRCLE_RADIUS
 	# Sets metadata for collision
 	set_meta("collider_type", "duck")
 	pond_state = State.new(position, color, rotation, speed, player, energy)
@@ -48,14 +49,14 @@ func _physics_process(delta):
 	# Needs delta in calculations because move_and_collide doesn't use it
 	# automatically like move_and_slide does
 	var velocity : Vector2 = Vector2(speed, 0).rotated(rotation) * delta
-	var collision :=  move_and_collide(velocity, true, true, false)
+	var collision_result :=  move_and_collide(velocity, true, true, false)
 	
-	# [TODO] better check to see if should check the collision (even if stopped, the ducks keep colliding)
-	#   maybe a move on both parties so they get out of collision range?
-	if collision and collision.collider:
-		match collision.collider.get_meta("collider_type"):
+	# [TODO] better check to see if should check the collision_result (even if stopped, the ducks keep colliding)
+	#   maybe a move on both parties so they get out of collision_result range?
+	if collision_result and collision_result.collider:
+		match collision_result.collider.get_meta("collider_type"):
 			"duck":
-				if (speed!=0 and collision.collider.speed != 0):
+				if (speed!=0 and collision_result.collider.speed != 0):
 					call_deferred("tire", COLLISION_DAMAGE_DUCK)
 					call_deferred("emergency_stop")
 					# print("Collided with duck")
@@ -80,6 +81,10 @@ func set_energy(value : int) :
 	
 func set_can_launch(value : bool):
 	can_launch = value
+
+func set_participating(p_participating : bool) -> void:
+	self.visible = p_participating
+	collision.disabled = not p_participating
 	
 func tire(value : int) :
 	tire_mutex.lock()
