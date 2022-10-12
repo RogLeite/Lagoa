@@ -16,9 +16,7 @@ var _is_connected := false
 
 
 func _ready():
-	ServerConnection.start_client()
-	# warning-ignore:return_value_discarded
-	ServerConnection.connect("connection_closed", self, "_on_ServerConnection_connection_closed")
+	start()
 
 func login_async(email : String, password : String, do_remember_email : bool) -> int :
 	var result : int = yield(ServerConnection.login_async(email, password), "completed")
@@ -61,8 +59,16 @@ func join_async() -> int :
 		
 	return OK
 
-func _exit_tree():
-	
+func start() -> void:
+	ServerConnection.start_client()
+	# warning-ignore:return_value_discarded
+	ServerConnection.connect("connection_closed", self, "_on_ServerConnection_connection_closed")
+
+func reset() -> void: 
+	end()
+	start()
+
+func end() -> void:
 	# `disconnect` is called because ServerConnection won't be destroyed
 	ServerConnection.disconnect("connection_closed", self, "_on_ServerConnection_connection_closed")
 
@@ -82,6 +88,8 @@ func _exit_tree():
 	
 	ServerConnection.end_client()
 
+func _exit_tree():
+	end()
 
 func end_pond_match() -> void:
 	ServerConnection.end_pond_match()

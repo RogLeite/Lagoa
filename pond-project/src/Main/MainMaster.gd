@@ -18,6 +18,9 @@ func _ready():
 func reset():
 	login_and_register.reset()
 	login_and_register.show()
+
+	_client.reset()
+
 	pond_match.hide()
 	
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
