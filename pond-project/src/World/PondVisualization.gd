@@ -172,7 +172,8 @@ func projectile_splash(landing_position : Vector2, has_hit : bool, _exhaustion :
 	if player != null:
 		player.add_to_group(SOUNDS_EFFECTS_GROUP)
 		add_child(player)
-		player.play()
+		if visible:
+			player.play()
 		
 		_play_blast(landing_position)
 	
