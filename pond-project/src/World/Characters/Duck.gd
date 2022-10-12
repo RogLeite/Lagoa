@@ -132,9 +132,18 @@ func scan(duck_idx, angle):
 # Passes Projectile parameters to CurrentVisualization.get_current().add_projectile()
 # Starts a cooldown timer for the launcher.
 # @ param angle is in degrees
-func launcher(angle, distance):
+func launcher(angle, p_distance):
 	if can_launch:
 		can_launch = false
+		var distance : float
+		if p_distance is String:
+			match p_distance.to_lower():
+				"infinity":
+					distance = INF
+				_:
+					distance = float(distance)
+		else:
+			distance = p_distance
 		var p_dist := clamp(distance, 0, projectile_max_distance)
 		var p_color := Color.darkslategray
 		var p_start_location := position
