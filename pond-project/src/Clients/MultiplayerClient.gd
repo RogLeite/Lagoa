@@ -12,17 +12,21 @@ export var is_master : bool = false
 
 var error_message : String = "" setget _no_set, _get_error_message
 
-var _is_connected := false
+var _is_connected : bool = false
+var _force_new_session : bool = false
 
 
 func _ready():
 	start()
 
 func login_async(email : String, password : String, do_remember_email : bool) -> int :
-	var result : int = yield(ServerConnection.login_async(email, password), "completed")
+	var result : int = yield(ServerConnection.login_async(email, password, _force_new_session), "completed")
+
 
 	if do_remember_email:
 		ServerConnection.save_email(email)
+
+	_force_new_session = false
 
 	return result
 	
@@ -31,6 +35,8 @@ func register_async(email : String, password : String, do_remember_email : bool)
 	
 	if do_remember_email:
 		ServerConnection.save_email(email)
+
+	_force_new_session = false
 		
 	return result
 
@@ -63,6 +69,7 @@ func start() -> void:
 	ServerConnection.start_client()
 	# warning-ignore:return_value_discarded
 	ServerConnection.connect("connection_closed", self, "_on_ServerConnection_connection_closed")
+	_force_new_session = true
 
 func reset() -> void: 
 	end()

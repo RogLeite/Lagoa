@@ -11,9 +11,15 @@ onready var pond_match := $PondMatch
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 
-func reset():
+func reset(p_status : String = ""):
+	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
 	login_and_register.show()
+	if not p_status.empty():
+		login_and_register.set_status(p_status)
+		
+	_spinner_animator.stop(true)
+	_spinner.hide()
 
 	_client.reset()
 
@@ -31,34 +37,19 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 		result = yield(_client.login_async(email, password, do_remember_email), "completed")
 	
 	if result != OK:
-		login_and_register.set_is_enabled(true)
-		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
-		
-		_spinner_animator.stop(true)
-		_spinner.hide()
-		
+		call_deferred("reset","Error code %s: %s"%[result, _client.error_message])
 		return
 
 	result = yield(_client.connect_async(), "completed")
 	if result != OK:
-		login_and_register.set_is_enabled(true)
-		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
-		
-		_spinner_animator.stop(true)
-		_spinner.hide()
-		
+		call_deferred("reset","Error code %s: %s"%[result, _client.error_message])
 		return
 
 	# [TODO] Choose a Match to enter
 	
 	result = yield(_client.join_async(), "completed")
 	if result != OK:
-		login_and_register.set_is_enabled(true)
-		login_and_register.set_status("Error code %s: %s"%[result, _client.error_message])
-		
-		_spinner_animator.stop(true)
-		_spinner.hide()
-		
+		call_deferred("reset","Error code %s: %s"%[result, _client.error_message])
 		return
 	
 	_email = email.left(email.find("@"))

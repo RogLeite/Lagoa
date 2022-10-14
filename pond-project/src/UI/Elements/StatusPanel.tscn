@@ -13,9 +13,6 @@ margin_top = 19.0
 margin_bottom = 48.0
 rect_min_size = Vector2( 0, 32 )
 script = ExtResource( 2 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Label" type="Label" parent="."]
 anchor_right = 1.0
@@ -25,11 +22,11 @@ margin_top = 3.04999
 margin_right = -15.0
 margin_bottom = -2.95001
 size_flags_vertical = 6
-custom_fonts/font = ExtResource( 1 )
 custom_colors/font_color = Color( 1, 1, 1, 0.6 )
+custom_fonts/font = ExtResource( 1 )
 text = "Optional error message"
 valign = 1
-clip_text = true
+autowrap = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
