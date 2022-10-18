@@ -9,6 +9,8 @@ signal script_received(user_id, script)
 signal pond_state_updated(pond_state, scripts)
 
 export var is_master : bool = false
+# Sets the log level of NakamaLogger
+export(NakamaLogger.LOG_LEVEL) var log_level = NakamaLogger.LOG_LEVEL.WARNING
 
 var error_message : String = "" setget _no_set, _get_error_message
 
@@ -66,7 +68,7 @@ func join_async() -> int :
 	return OK
 
 func start() -> void:
-	ServerConnection.start_client()
+	ServerConnection.start_client(log_level)
 	# warning-ignore:return_value_discarded
 	ServerConnection.connect("connection_closed", self, "_on_ServerConnection_connection_closed")
 	_force_new_session = true

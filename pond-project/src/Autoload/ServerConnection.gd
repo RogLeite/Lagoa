@@ -63,9 +63,16 @@ var _exception_handler := ExceptionHandler.new()
 var _authenticator : Authenticator
 
 # Starts the Nakama Client and connects it to the server
-func start_client() -> void:
+func start_client(log_level : int =  Nakama.DEFAULT_LOG_LEVEL) -> void:
 # [TODO] When the server is hosted non-locally, change the IP address used
-	_client = Nakama.create_client(KEY, "127.0.0.1", 7350, "http")
+	_client = Nakama.create_client(
+			KEY,
+			"127.0.0.1",
+			7350,
+			"http",
+			Nakama.DEFAULT_TIMEOUT,
+			log_level
+		)
 	_authenticator = Authenticator.new(_client, _exception_handler)
 
 # Resets ServerConnection, assumes caller checked if the connection was live

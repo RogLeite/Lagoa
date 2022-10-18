@@ -73,13 +73,14 @@ func _ready():
 	reset_pond_match()
 
 func _physics_process(_delta: float) -> void:
-	if not is_step_by_step:
-		script_step()
-	if is_running and are_controllers_finished() :
-		is_running = false
-		join_controllers()
-		CurrentVisualization.get_current().stop()
-		emit_signal("match_scripts_ended")
+	if is_running:
+		if not is_step_by_step:
+			script_step()
+		if are_controllers_finished() :
+			is_running = false
+			join_controllers()
+			CurrentVisualization.get_current().stop()
+			emit_signal("match_scripts_ended")
 
 # [TODO] Implement
 func add_script(_username : String, _script : String) -> void:
