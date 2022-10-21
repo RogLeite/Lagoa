@@ -33,6 +33,7 @@ onready var boom_player_scene := preload("res://src/World/Effects/BoomPlayer.tsc
 onready var blast_scene := preload("res://src/World/Effects/Blast.tscn")
 onready var splash_player_scene := preload("res://src/World/Effects/SplashPlayer.tscn")
 onready var scan_mutex := Mutex.new()
+onready var projectile_mutex := Mutex.new()
 
 func _enter_tree():
 	# Sets itself as the current visualization
@@ -178,6 +179,8 @@ func projectile_splash(landing_position : Vector2, has_hit : bool, _exhaustion :
 		_play_blast(landing_position)
 	
 func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location : Vector2, p_distance : float):
+	projectile_mutex.lock()
+
 	for proj in projectiles:
 		if not proj.is_processing():
 			proj.distance = p_distance
@@ -187,6 +190,8 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 			proj.progress = 0.0
 			show_projectile(proj)
 			break
+
+	projectile_mutex.unlock()
 
 func show_projectile(projectile : Projectile):
 	projectile.set_process(true)

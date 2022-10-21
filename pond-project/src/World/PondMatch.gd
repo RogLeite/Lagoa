@@ -24,6 +24,8 @@ var pond_events: Dictionary setget set_pond_events, get_pond_events
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
 
+var pond_events_mutex : Mutex
+
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 
@@ -32,6 +34,12 @@ onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
 
 func _init():
+
+	threads = []
+	scripts = []
+	controllers = []
+	
+	pond_state = State.new()
 	tick = 0
 	pond_events = {
 		"vfx" : {},
@@ -39,12 +47,9 @@ func _init():
 	}
 	duck_pond_states = []
 	projectile_pond_states = []
-	pond_state = State.new()
 
-	threads = []
-	scripts = []
-	controllers = []
-	
+	pond_events_mutex = Mutex.new()
+
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
 	pond_visualization.duck_amount = duck_amount
@@ -206,15 +211,22 @@ func _exit_tree():
 	# print("Match seemingly exited the tree graciously")
 
 func set_pond_events(p_events_state : Dictionary):
+	pond_events_mutex.lock()
+
 	var current := CurrentVisualization.get_current()
 	# Pushes sfx
 	current.play_sfx(p_events_state["sfx"])
 	
 	# Pushes vfx
 	current.play_vfx(p_events_state["vfx"])
+	
+	pond_events_mutex.unlock()
 
 func get_pond_events() -> Dictionary :
-	return pond_events
+	pond_events_mutex.lock()
+	var ret = pond_events
+	pond_events_mutex.unlock()
+	return ret
 
 
 func clear_events():
@@ -266,10 +278,14 @@ func set_pond_state(p_state : State) -> void:
 
 
 func _on_PondVisualization_sfx_played(p_effect_name : String):
+	pond_events_mutex.lock()
 	pond_events["sfx"][p_effect_name] = true
+	pond_events_mutex.unlock()
 
 func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
+	pond_events_mutex.lock()
 	pond_events["vfx"][p_effect_name] = p_pond_state
+	pond_events_mutex.unlock()
 
 
 func _on_StepButton_pressed():
