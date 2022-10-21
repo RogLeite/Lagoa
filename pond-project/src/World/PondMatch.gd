@@ -1,7 +1,7 @@
 extends Control
 class_name PondMatch
 
-signal pond_state_updated
+signal pond_state_updated (p_pond_state)
 signal match_run_requested
 signal match_reset_requested
 signal match_step_requested
@@ -96,12 +96,13 @@ func script_step():
 	if not is_running : 
 		return
 	# Clears the events to register
-	clear_events()
 	tick += 1
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
 	if is_simulating:
-		emit_signal("pond_state_updated")
+		emit_signal("pond_state_updated", self.pond_state)
+	
+	clear_events()
 	ThreadSincronizer.give_permission() 
 		
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
@@ -284,7 +285,7 @@ func _on_PondVisualization_sfx_played(p_effect_name : String):
 
 func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
 	pond_events_mutex.lock()
-	pond_events["vfx"][p_effect_name] = p_pond_state
+	pond_events["vfx"][p_effect_name].push_back(p_pond_state)
 	pond_events_mutex.unlock()
 
 
@@ -311,7 +312,13 @@ class State extends JSONable:
 	func _init(
 		p_tick := 0,
 		p_duck_amount := 0,
-		p_pond_events := {"vfx" : {},"sfx" : {}},
+		p_pond_events := {
+			"vfx" : {
+				"vision_cone" : [],
+				"blast" : []
+			},
+			"sfx" : {}
+		},
 		p_duck_pond_states := [],
 		p_projectile_pond_states := []):
 		tick = p_tick
@@ -331,7 +338,10 @@ class State extends JSONable:
 		# Populates `pond_events` with Strings converted from the State's booleans
 		# To possibly avoid bugs when Nakama receives the message
 		var events_dict := {
-			"vfx" : {},
+			"vfx" : {
+				"vision_cone" : [],
+				"blast" : []
+			},
 			"sfx" : {}
 		}
 		for fx_name in pond_events["sfx"]:
@@ -366,33 +376,33 @@ class State extends JSONable:
 			"projectile_pond_states" : projectile_states
 		}
 		
-	func from(from : Dictionary) -> JSONable:
-		tick = from.tick
-		duck_amount = from.duck_amount
+	func from(p_from : Dictionary) -> JSONable:
+		tick = p_from.tick
+		duck_amount = p_from.duck_amount
 		pond_events = {}
 		duck_pond_states = []
 		projectile_pond_states = []
 
-		# Populates `pond_events` with booleans converted from the received Dictionary's Strings
-		pond_events = from.pond_events.duplicate(true)
-		for fx_name in from.pond_events["sfx"]:
-			pond_events[fx_name] = true if from.pond_events[fx_name] == "true" else false
+		# Populates `pond_events` with booleans converted p_from the received Dictionary's Strings
+		pond_events = p_from.pond_events.duplicate(true)
+		for fx_name in p_from.pond_events["sfx"]:
+			pond_events[fx_name] = true if p_from.pond_events.has(fx_name) and p_from.pond_events[fx_name] == "true" else false
 		
 		
 		if pond_events["vfx"].has("vision_cone"):
 			for i in pond_events["vfx"]["vision_cone"].size() :
-				pond_events["vfx"]["vision_cone"] = pond_events["vfx"]["vision_cone"].from()
+				pond_events["vfx"]["vision_cone"][i] = VisionCone.State.new().from(pond_events["vfx"]["vision_cone"][i])
 
 		if pond_events["vfx"].has("blast"):
 			for i in pond_events["vfx"]["blast"].size() :
-				pond_events["vfx"]["blast"] = pond_events["vfx"]["blast"].from()
+				pond_events["vfx"]["blast"][i] = Blast.State.new().from(pond_events["vfx"]["blast"][i])
 
 		# Populates `duck_pond_states` with states converted from the received Dictionary
-		for elem in from.duck_pond_states:
+		for elem in p_from.duck_pond_states:
 			duck_pond_states.append(Duck.State.new().from(elem))
 
 		# Populates `projectile_pond_states` with states converted from the received Dictionary
-		for elem in from.projectile_pond_states:
+		for elem in p_from.projectile_pond_states:
 			projectile_pond_states.append(Projectile.State.new().from(elem))
 		
 		return self

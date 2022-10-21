@@ -114,8 +114,8 @@ func _on_MasterClient_connection_closed() -> void:
 	# [TODO] Possibly handle reconnection attempt
 
 
-func _on_PondMatch_pond_state_updated():
-	_client.update_pond_state(pond_match.pond_state, _scripts)
+func _on_PondMatch_pond_state_updated(p_pond_state):
+	_client.update_pond_state(p_pond_state, _scripts)
 
 
 func _on_PondMatch_match_step_requested():

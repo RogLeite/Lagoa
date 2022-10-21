@@ -51,3 +51,6 @@ class State extends JSONable:
 	func from(from : Dictionary) -> JSONable:
 		position = .vector2_from(from.position)
 		return self
+
+	func _to_string():
+		return "Blast.State:{%s}"%position

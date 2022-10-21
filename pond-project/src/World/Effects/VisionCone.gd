@@ -72,3 +72,6 @@ class State extends JSONable:
 		rotation = from.rotation
 		scanner = from.scanner
 		return self
+
+	func _to_string():
+		return "VisionCone.State:{ %s, %s, %s}"%[position, rotation, scanner]

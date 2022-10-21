@@ -10,16 +10,22 @@ margin_right = -4.0
 margin_bottom = -4.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = "for i = 1,5 do
-	swim(0,20)
-	stop()
-	swim(90,20)
-	stop()
-	swim(180,20)
-	stop()
-	swim(270,20)
-	stop()
-end"
+text = "while true do
+	swim(90,10)
+	launch(0,scan(0))
+end
+
+--for i = 1,5 do
+--	swim(0,20)
+--	stop()
+--	swim(90,20)
+--	stop()
+--	swim(180,20)
+--	stop()
+--	swim(270,20)
+--	stop()
+--end
+"
 highlight_current_line = true
 syntax_highlighting = true
 show_line_numbers = true
