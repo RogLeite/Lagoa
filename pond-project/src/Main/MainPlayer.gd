@@ -24,6 +24,7 @@ func reset(p_status : String = ""):
 	_client.reset()
 
 	pond_match.hide()
+	pond_match.reset_pond_match()
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	login_and_register.set_is_enabled(false)
