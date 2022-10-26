@@ -5,6 +5,7 @@ local world_control = {}
 local nakama = require("nakama")
 
 local TICK_RATE = 30
+local MAX_PLAYERS_PER_MATCH = 4
 
 -- OpCodes less or equal to zero are reserved for Nakama
 local OpCodes = {
@@ -109,12 +110,14 @@ end
 -- Source https://heroiclabs.com/docs/nakama/server-framework/lua-runtime/function-reference/match-handler/#match_init
 function world_control.match_init(context, params)
     local state = {
-        presence_counter = 0,
-        presences = {}, -- Every presence, including the master
-        player_presences = {},   -- Array of every presence excluding the MasterClient (for broadcasting messages)
-        master = {              -- Information from MasterClient
-            user_id = false,             -- String representing the "user_id"
-            presence = false        -- Table representing the presence
+        player_reservations = {},       -- Set of players participating in the match
+        player_reservations_count = 0,  -- Counter for player reservations. If is equal to MAX_PLAYERS_PER_MATCH, only lets players in `player_reservations` join
+        presence_counter = 0,           -- Used to check if every presence leaves the match, then kills it
+        presences = {},                 -- Every presence, including the master
+        player_presences = {},          -- Array of every presence excluding the MasterClient (for broadcasting messages)
+        master = {                      -- Information from MasterClient
+            user_id = false,            -- String representing the "user_id"
+            presence = false            -- Table representing the presence
         }
     }
     local tick_rate = TICK_RATE
@@ -142,7 +145,10 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
 
     -- my_logger_debug(string.format("match_join_attempt: presence = %s, metadata = %s", presence2string(presence), metadata2string(metadata)))
 
-    if state.presences and state.presences[presence.user_id] then
+    local user_id = presence.user_id
+
+    -- Presence is already in the match
+    if state.presences and state.presences[user_id] then
         return state, false, "user_id already has presence on the match"
     end
 
@@ -154,14 +160,30 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
         end
 
         -- Check the whitelist if the user_id can be a MasterClient
-        if not Whitelist.is_whitelisted(presence.user_id) then
+        if not Whitelist.is_whitelisted(user_id) then
             return state, false, "user_id is not whitelisted to the role of MasterClient"
         end
 
         -- Since match_join does not have a "metadata" linked to the presence,
         -- it cannot distinguish who wants to be a Master. So register it here.
-        state.master.user_id = presence.user_id
+        state.master.user_id = user_id
         state.master.presence = presence
+    
+    -- If the presence wants to be a player
+    else
+
+        -- If every spot is reserved, checks if the player has a reservation
+        if state.player_reservations_count == MAX_PLAYERS_PER_MATCH then
+            if state.player_reservations[user_id] then
+                return state, true
+            end
+            return state, false, "Match is full"
+        end
+
+        -- When there is a open spot, lets the presence in
+        state.player_reservations[user_id] = true
+        state.player_reservations_count = state.player_reservations_count + 1
+
     end
 
     -- my_logger_debug("match_join_attempt: join allowed")

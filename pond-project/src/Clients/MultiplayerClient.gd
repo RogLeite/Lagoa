@@ -74,7 +74,7 @@ func start() -> void:
 	_force_new_session = true
 
 func reset() -> void: 
-	end()
+	yield(end(), "completed")
 	start()
 
 func end() -> void:
