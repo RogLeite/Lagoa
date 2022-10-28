@@ -2,6 +2,7 @@ extends Node
 
 var is_pond_match_running := false
 var _email := "[no email]"
+var _main_state := "initial"
 
 onready var _scripts := {}
 onready var _spinner := $CanvasLayer/Spinner
@@ -16,6 +17,7 @@ func _ready():
 	call_deferred("reset")
 
 func reset(p_status : String = ""):
+	_main_state = "reset"
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
 	login_and_register.show()
@@ -32,6 +34,7 @@ func reset(p_status : String = ""):
 	
 	
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
+	_main_state = "prepare"
 	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
@@ -71,12 +74,15 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	call_deferred("elapse")
 	
 func elapse() -> void:
+	_main_state = "elapse"
 	pond_match.show()
 
 func start() -> void:
+	_main_state = "start"
 	pond_match.run()
 
 func result(p_result : String) -> void:
+	_main_state = "result"
 	match p_result :
 		"reset_requested":
 			pond_match.reset_pond_match()

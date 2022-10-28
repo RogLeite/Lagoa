@@ -1,6 +1,7 @@
 extends Node
 
 var _email := ""
+var _main_state := "initial"
 
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
@@ -12,6 +13,7 @@ func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 
 func reset(p_status : String = ""):
+	_main_state = "reset"
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
 	login_and_register.show()
@@ -27,6 +29,7 @@ func reset(p_status : String = ""):
 	pond_match.reset_pond_match()
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
+	_main_state = "prepare"
 	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
@@ -66,14 +69,17 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	call_deferred("elapse")
 
 func elapse() -> void:
+	_main_state = "elapse"
 	pond_match.show()
 	
 func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
+	_main_state = "start"
 	if pond_state.tick > pond_match.tick:
 		pond_match.pond_state = pond_state
 		
 	
 func result() -> void:
+	_main_state = "result"
 	# [TODO] Have some flag in "start" indicatig if the match has started and 
 	# reset that flag here, so a delayed "pond_state_updated" message does not
 	# update de state even though reset_pond_match has just been called (or 
