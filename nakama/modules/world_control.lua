@@ -9,7 +9,7 @@ local MAX_PLAYERS_PER_MATCH = 4
 
 -- OpCodes less or equal to zero are reserved for Nakama
 local OpCodes = {
-    send_script = 1,
+    send_pond_script = 1,
     update_pond_state = 2,
     end_pond_match = 3,
     manual_debug = 99         -- Used when running a non-production debug test
@@ -280,12 +280,12 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
             command(decoded, state)
         end
 
-        if op_code == OpCodes.send_script then
+        if op_code == OpCodes.send_pond_script then
             if state.master.user_id then
                 -- Sends the PlayerClient message (the actual message is in message.data) to the MasterClient
                 dispatcher.broadcast_message(op_code, message.data, {state.master.presence}, message.sender)
             else
-                nakama.logger_warn("PlayerClients are sending messages with op_code 'send_script' when no MasterClient is connected")
+                nakama.logger_warn("PlayerClients are sending messages with op_code 'send_pond_script' when no MasterClient is connected")
             end
         elseif op_code == OpCodes.update_pond_state then
             -- Broadcasts the message to all PlayerClients

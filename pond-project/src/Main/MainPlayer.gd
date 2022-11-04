@@ -95,8 +95,9 @@ func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
 	call_deferred("prepare",email, password, do_remember_email, true)
 
-func _on_PlayerClient_pond_state_updated(pond_state, scripts):
-	call_deferred("start", pond_state, scripts)
+func _on_PlayerClient_pond_state_updated(pond_state, pond_scripts):
+	if _main_state == "elapse" or _main_state == "start":
+		call_deferred("start", pond_state, pond_scripts)
 
 func _on_PlayerClient_connection_closed() -> void:
 	call_deferred("reset")

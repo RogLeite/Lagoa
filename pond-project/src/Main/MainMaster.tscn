@@ -59,7 +59,7 @@ visible = false
 duck_amount = 2
 
 [connection signal="connection_closed" from="MasterClient" to="." method="_on_MasterClient_connection_closed"]
-[connection signal="script_received" from="MasterClient" to="." method="_on_MasterClient_script_received"]
+[connection signal="pond_script_received" from="MasterClient" to="." method="_on_MasterClient_pond_script_received"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
 [connection signal="match_reset_requested" from="PondMatch" to="." method="_on_PondMatch_match_reset_requested"]

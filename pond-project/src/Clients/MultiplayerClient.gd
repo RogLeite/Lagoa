@@ -5,8 +5,8 @@ class_name MultiplayerClient
 signal connection_closed()
 
 signal pond_match_ended()
-signal script_received(user_id, script)
-signal pond_state_updated(pond_state, scripts)
+signal pond_script_received(user_id, pond_script)
+signal pond_state_updated(pond_state, pond_scripts)
 
 export var is_master : bool = false
 # Sets the log level of NakamaLogger
@@ -58,7 +58,7 @@ func join_async() -> int :
 		
 	if is_master:
 		# warning-ignore:return_value_discarded
-		ServerConnection.connect("script_received", self, "_on_ServerConnection_script_received")
+		ServerConnection.connect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
 	else:
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
@@ -82,8 +82,8 @@ func end() -> void:
 	ServerConnection.disconnect("connection_closed", self, "_on_ServerConnection_connection_closed")
 
 	if is_master:
-		if ServerConnection.is_connected("script_received", self, "_on_ServerConnection_script_received"):
-			ServerConnection.disconnect("script_received", self, "_on_ServerConnection_script_received")
+		if ServerConnection.is_connected("pond_script_received", self, "_on_ServerConnection_pond_script_received"):
+			ServerConnection.disconnect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
 	else:
 		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
 			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
@@ -118,11 +118,11 @@ func _on_ServerConnection_connection_closed() -> void:
 func _on_ServerConnection_pond_match_ended() -> void :
 	emit_signal("pond_match_ended")
 
-func _on_ServerConnection_script_received(user_id : String, script : String) -> void :
-	emit_signal("script_received", user_id, script)
+func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script : String) -> void :
+	emit_signal("pond_script_received", p_user_id, p_pond_script)
 	
-func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
-	emit_signal("pond_state_updated", p_pond_state, p_scripts)
+func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_pond_scripts : Dictionary) -> void:
+	emit_signal("pond_state_updated", p_pond_state, p_pond_scripts)
 
 
 

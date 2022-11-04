@@ -4,7 +4,7 @@ var is_pond_match_running := false
 var _email := "[no email]"
 var _main_state := "initial"
 
-onready var _scripts := {}
+onready var _pond_scripts := {}
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $MasterClient
@@ -96,9 +96,9 @@ func result(p_result : String) -> void:
 		
 	
 
-func _on_MasterClient_script_received(username, script):
-	_scripts[username] = script
-	pond_match.add_script(username, script)
+func _on_MasterClient_pond_script_received(username, pond_script):
+	_pond_scripts[username] = pond_script
+	pond_match.add_pond_script(username, pond_script)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, false)
@@ -123,8 +123,8 @@ func _on_MasterClient_connection_closed() -> void:
 
 
 func _on_PondMatch_pond_state_updated(p_pond_state):
-	_client.update_pond_state(p_pond_state, _scripts)
+	_client.update_pond_state(p_pond_state, _pond_scripts)
 
 
 func _on_PondMatch_match_step_requested():
-	pond_match.script_step()
+	pond_match.pond_script_step()

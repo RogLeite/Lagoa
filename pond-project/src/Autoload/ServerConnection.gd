@@ -1,15 +1,15 @@
 extends Node
 
 # Message formats by OpCode:
-# SEND_SCRIPT = 1:
+# SEND_POND_SCRIPT = 1:
 # {
 # 	“user_id” : String,
-# 	“script” : String
+# 	“pond_script” : String
 # }
 # UPDATE_POND_STATE = 2:
 # {
 # 	“pond_state” : {}   , Dictionary storing the state of the match
-# 	“scripts” : {}		, //Dictionary with every script 
+# 	“pond_scripts” : {}		, //Dictionary with every pond_script
 # }
 # END_POND_MATCH = 3:
 
@@ -21,20 +21,20 @@ signal connection_closed()
 # Master has declared the match has ended
 signal pond_match_ended()
 
-# Emited when a message with OpCode.SEND_SCRIPT is received
+# Emited when a message with OpCode.SEND_POND_SCRIPT is received
 # parameter are the contents of the specified message format
-signal script_received(user_id, script)
+signal pond_script_received(user_id, pond_script)
 
 # Emited when a message with OpCode.UPDATE_POND_STATE is received
 # message is a Dictionary in the specified message format
-signal pond_state_updated(pond_state, scripts) 
+signal pond_state_updated(pond_state, pond_scripts) 
 
 
 ## Enums
 
 # Custom operational codes for state messages.
 enum OpCodes {
-	SEND_SCRIPT = 1, 		# Emits signal `script_received`
+	SEND_POND_SCRIPT = 1, 		# Emits signal `pond_script_received`
 	UPDATE_POND_STATE = 2,	# Emits signal `pond_state_received`
 	END_POND_MATCH = 3,		# Emits signal `pond_match_ended`
 	MANUAL_DEBUG = 99
@@ -222,19 +222,19 @@ func end_pond_match() -> void:
 		var payload := {}
 		_socket.send_match_state_async(_world_id, OpCodes.END_POND_MATCH, JSON.print(payload))
 
- # Sends a message to the server stating a change in the script for the player.
-func send_script(p_script: String) -> void:
+ # Sends a message to the server stating a change in the pond_script for the player.
+func send_pond_script(p_pond_script: String) -> void:
 	if _socket:
-		var payload := {username = get_username(), script = p_script}
-		_socket.send_match_state_async(_world_id, OpCodes.SEND_SCRIPT, JSON.print(payload))
+		var payload := {username = get_username(), pond_script = p_pond_script}
+		_socket.send_match_state_async(_world_id, OpCodes.SEND_POND_SCRIPT, JSON.print(payload))
 
 
- # Sends a message to the server stating a change in the script for the player.
-func update_pond_state(p_pond_state : PondMatch.State, p_scripts : Dictionary) -> void:
+ # Sends a message to the server stating a change in the pond_script for the player.
+func update_pond_state(p_pond_state : PondMatch.State, p_pond_scripts : Dictionary) -> void:
 	if _socket:
 		var payload := {
 			pond_state = p_pond_state.to(),
-			scripts = p_scripts
+			pond_scripts = p_pond_scripts
 		}
 		# print("sent pond_state: %s"%p_pond_state)
 		# print("sent pond_state.to(): %s"%p_pond_state.to())
@@ -264,18 +264,18 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 	var code := match_state.op_code
 	var raw := match_state.data
 	match code:
-		OpCodes.SEND_SCRIPT:
+		OpCodes.SEND_POND_SCRIPT:
 			var decoded: Dictionary = JSON.parse(raw).result
 			var username: String = decoded.username
-			var script: String = decoded.script
-			emit_signal("script_received", username, script)
+			var pond_script: String = decoded.pond_script
+			emit_signal("pond_script_received", username, pond_script)
 		OpCodes.UPDATE_POND_STATE:
 			var decoded: Dictionary = JSON.parse(raw).result
 			# print("decoded.pond_state: %s"%decoded.pond_state)
 			# print(".from(decoded.pond_state): %s"%PondMatch.State.new().from(decoded.pond_state))
 			var pond_state: PondMatch.State = PondMatch.State.new().from(decoded.pond_state)
-			var scripts: Dictionary = decoded.scripts
-			emit_signal("pond_state_updated", pond_state, scripts)
+			var pond_scripts: Dictionary = decoded.pond_scripts
+			emit_signal("pond_state_updated", pond_state, pond_scripts)
 		OpCodes.END_POND_MATCH:
 #			var decoded: Dictionary = JSON.parse(raw).result
 			emit_signal("pond_match_ended")

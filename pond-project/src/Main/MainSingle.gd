@@ -37,4 +37,4 @@ func _on_PondMatch_match_run_requested():
 	call_deferred("start")
 
 func _on_PondMatch_match_step_requested():
-	pond_match.script_step()
+	pond_match.pond_script_step()
