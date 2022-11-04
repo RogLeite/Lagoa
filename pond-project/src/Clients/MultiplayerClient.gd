@@ -87,6 +87,8 @@ func end() -> void:
 	if is_master:
 		if ServerConnection.is_connected("pond_script_received", self, "_on_ServerConnection_pond_script_received"):
 			ServerConnection.disconnect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
+		if ServerConnection.is_connected("joins_received", self, "_on_ServerConnection_joins_received"):
+			ServerConnection.disconnect("joins_received", self, "_on_ServerConnection_joins_received")
 	else:
 		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
 			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
