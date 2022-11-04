@@ -22,7 +22,7 @@ func tire(value) -> void :
 		return
 	
 	ThreadSincronizer.await_permission(thread_id)
-	var duck = get_duck()
+	var duck = get_duck_node()
 	if duck:
 		duck.tire(value)
 
@@ -31,7 +31,7 @@ func swim(angle, target) -> void :
 		return
 	
 	ThreadSincronizer.await_permission(thread_id)
-	var duck = get_duck()
+	var duck = get_duck_node()
 	if duck:
 		duck.swim(angle, target)
 	
@@ -40,7 +40,7 @@ func stop() -> void :
 		return
 
 	ThreadSincronizer.await_permission(thread_id)
-	var duck = get_duck()
+	var duck = get_duck_node()
 	if duck:
 		duck.stop()
 
@@ -49,7 +49,7 @@ func scan(angle):
 		return "infinity"
 
 	ThreadSincronizer.await_permission(thread_id)
-	var duck = get_duck()
+	var duck = get_duck_node()
 	if duck:
 		var result = duck.scan(duck_idx, angle)
 		if result == INF:
@@ -62,9 +62,9 @@ func launch(angle, distance) :
 		return
 
 	ThreadSincronizer.await_permission(thread_id)
-	var duck = get_duck()
+	var duck = get_duck_node()
 	if duck:
 		duck.launcher(angle, distance)
 
-func get_duck():
 	return PlayerData.get_duck(duck_idx)
+func get_duck_node():
