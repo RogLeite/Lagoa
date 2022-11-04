@@ -78,6 +78,8 @@ func elapse() -> void:
 	pond_match.show()
 
 func start() -> void:
+	if PlayerData.count() == 0:
+		return
 	_main_state = "start"
 	pond_match.run()
 
@@ -92,8 +94,6 @@ func result(p_result : String) -> void:
 			pond_match.reset_pond_match()
 			_client.end_pond_match()
 			call_deferred("elapse")
-		
-		
 	
 
 func _on_MasterClient_pond_script_received(username, pond_script):
