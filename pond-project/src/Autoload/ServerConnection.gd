@@ -29,6 +29,10 @@ signal pond_script_received(user_id, pond_script)
 # message is a Dictionary in the specified message format
 signal pond_state_updated(pond_state, pond_scripts) 
 
+# Emited when _socket signals `received_match_presence` and there are users joining
+# p_joins is an array of Dictionaries : {username, user_id}
+signal joins_received(p_joins)
+
 
 ## Enums
 
@@ -135,6 +139,8 @@ func connect_to_server_async() -> int :
 		_socket.connect("closed", self, "_on_NakamaSocket_closed")
 		#warning-ignore: return_value_discarded
 		_socket.connect("received_match_state", self, "_on_NakamaSocket_received_match_state")
+		#warning-ignore: return_value_discarded
+		_socket.connect("received_match_presence", self, "_on_NakamaSocket_received_match_presence")
 		
 	return parsed_result
 
@@ -281,6 +287,23 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			emit_signal("pond_match_ended")
 		OpCodes.MANUAL_DEBUG:
 			pass
+
+func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPresenceEvent
+	if _world_id != p_match_presence_event.match_id:
+		var msg := String([ "Receiving presences from incorrect match.",
+							"\n\t@ServerConnection._on_NakamaSocket_received_match_presence",
+							"\n\t_world_id is %s"%_world_id,
+							"\n\treceived id is %s"%p_match_presence_event.match_id])
+		push_warning(msg)
+		return
+	
+
+	var joins := []
+	for presence in p_match_presence_event.joins:
+		if presence.user_id == get_user_id():
+			continue
+		joins.push_back({"username" : presence.username, "user_id" : presence.user_id})
+	emit_signal("joins_received", joins)
 
 # Used as a setter function for read-only variables.
 func _no_set(_value) -> void:

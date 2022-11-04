@@ -10,7 +10,6 @@ signal match_scripts_ended
 export var is_visualizing : bool = true
 export var is_simulating : bool  = true
 export var is_step_by_step : bool = false
-export var duck_amount := 4
 
 
 var is_running : bool = false
@@ -23,8 +22,10 @@ var tick : int
 var pond_events: Dictionary setget set_pond_events, get_pond_events
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
-
 var pond_events_mutex : Mutex
+
+var _reset_requested : bool
+
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -49,34 +50,29 @@ func _init():
 	projectile_pond_states = []
 
 	pond_events_mutex = Mutex.new()
+	
+	_reset_requested = false
 
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
-	pond_visualization.duck_amount = duck_amount
 	pond_visualization.visible = is_visualizing
 	pond_visualization.is_simulating = is_simulating
 	
-	scripts.resize(duck_amount)
-	controllers.resize(duck_amount)
+	scripts.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
+	controllers.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 
-	for i in duck_amount:
-
-		scripts[i] = script_scene.instance()
-		scripts[i].name = "PlayerScript%d"%i
-		$UI/ScriptTabs.add_child(scripts[i])
-		
-		controllers[i] = controller_scene.instance()
-		controllers[i].name = "DuckController%d"%i
-		controllers[i].duck_idx = i
-		add_child(controllers[i])
-		
-	# Set the first script tab as visible
-	$UI/ScriptTabs.current_tab = 0
+	# If there are already players, enable them
+	for i in PlayerData.count():
+		enable_player(i)
 
 	# pond_match initialization occurs in reset_pond_match()
 
 	reset_pond_match()
 
+	
+	# Connects signals
+	# warning-ignore:return_value_discarded
+	PlayerData.connect("player_joined", self, "_on_PlayerData_player_joined")
 func _physics_process(_delta: float) -> void:
 	if is_running:
 		if not is_step_by_step:
@@ -104,9 +100,17 @@ func script_step():
 	
 	clear_events()
 	ThreadSincronizer.give_permission() 
-		
+
+
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
-func reset_pond_match():
+# No matter how many times its called, the reset occurs once in the next idle frame
+func reset_pond_match() -> void:
+	if not _reset_requested:
+		call_deferred("_reset_pond_match")
+		_reset_requested = true
+		set_deferred("_reset_requested", false)
+	
+func _reset_pond_match() -> void:
 	run_reset_btn.swap_role("run")
 	step_btn.hide()
 
@@ -115,22 +119,25 @@ func reset_pond_match():
 
 	force_join_controllers()
 
+	var player_count : int = PlayerData.count()
+
 	var controller_ids := []
-	controller_ids.resize(duck_amount)
+	controller_ids.resize(player_count)
 	
-	threads.resize(duck_amount)
+	threads.resize(player_count)
 
 	CurrentVisualization.get_current().reset()
 
-	for i in duck_amount:
+	for i in player_count:
 		threads[i] = Thread.new()		
 		# Store the instance id to use with ThreadSincronizer.prepare_participants()
-		controller_ids[i] = controllers[i].get_instance_id()
+		if controllers[i]:
+			controller_ids[i] = controllers[i].get_instance_id()
 		
 		#Connects a Duck's energy_changed signal to it's corresponding energy bar
 		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
 		#warning-ignore: return_value_discarded
-		var duck : Duck = PlayerData.get_duck(i)
+		var duck : Duck = PlayerData.get_duck_node(i)
 		var bar : EnergyBar = find_node("EnergyBar%d"%i)
 		if not duck.is_connected("energy_changed", bar, "set_energy"):
 			duck.connect("energy_changed", bar, "set_energy")
@@ -139,31 +146,46 @@ func reset_pond_match():
 	ThreadSincronizer.prepare_participants(controller_ids)
 
 	# Initializes pond_state
-	pond_state = State.new(self.tick, self.duck_amount, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
+	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
 	
 
 func run():
 	run_reset_btn.swap_role("reset")
 	step_btn.visible = is_step_by_step
 
+	var player_count : int = PlayerData.count()
 	var successfully_compiled := true
-	for i in duck_amount:
+	var offset := 0
+	var offset_index : int
+	for i in player_count:
+		# Skips any uninstanced controllers
+		offset_index = i + offset
+		while not controllers[offset_index]:
+			offset += 1
+			offset_index = i + offset
+		
 		# [TODO] when implemented, grab the script from PlayerData/Datum
-		controllers[i].set_lua_code(scripts[i].text)
+		controllers[offset_index].set_lua_code(scripts[offset_index].text)
 		var error_message = ""
-		if controllers[i].compile() != OK :
+		if controllers[offset_index].compile() != OK :
 			successfully_compiled = false
-			error_message = controllers[i].get_error_message()
+			error_message = controllers[offset_index].get_error_message()
 			if error_message != "" :
-				# [TODO] Better compilation error treatment; Maybe a alert icon.
+				# [TODO] Better compilation error treatment; Maybe a signal warning the error
 				# I could also parse the error message to get the line with error and highlight it 
 				print("Compilation error in controller %d " % i + error_message)
 
 	if successfully_compiled:
 		var any_thread_failed := false
-		for i in duck_amount:
-			if threads[i].start(self, "controller_run_wrapper", i) != OK:
-				push_error("thread for controller %d can't be created" % i)
+		offset = 0
+		for i in player_count:
+			# Skips any uninstanced controllers
+			offset_index = i + offset
+			while not controllers[offset_index]:
+				offset += 1
+				offset_index = i + offset
+			if threads[i].start(self, "controller_run_wrapper", offset_index) != OK:
+				push_error("thread for controller %d can't be created" % offset_index)
 				any_thread_failed = true
 				break
 		if any_thread_failed:
@@ -176,7 +198,6 @@ func run():
 func controller_run_wrapper(index : int) -> int :
 	var return_code = controllers[index].run()
 	ThreadSincronizer.remove_participant(controllers[index].get_instance_id())
-	# print("Thread %d finished"%index)
 	if return_code != OK:
 		# [TODO] Better error treatment. Maybe a log? Maybe a return value?
 		print("When thread %d finished: " % index + controllers[index].get_error_message())
@@ -188,7 +209,8 @@ func force_join_controllers() :
 		return
 
 	for ctrl in controllers:
-		ctrl.set_force_stop(true)
+		if ctrl:
+			ctrl.set_force_stop(true)
 	
 	ThreadSincronizer.give_permission()
 
@@ -197,7 +219,7 @@ func force_join_controllers() :
 # join_controllers() only checks if a thread exists before trying to join 
 func join_controllers():
 	for thread in threads :
-		if thread != null :
+		if thread :
 			var _run_return = thread.wait_to_finish()
 	is_running = false
 
@@ -207,9 +229,26 @@ func are_controllers_finished() -> bool :
 			return false
 	return true
 
+func enable_player(p_index : int):
+	scripts[p_index] = script_scene.instance()
+	scripts[p_index].name = PlayerData.players[p_index].username
+	$UI/ScriptTabs.add_child(scripts[p_index])
+	
+	controllers[p_index] = controller_scene.instance()
+	controllers[p_index].name = "DuckController%d"%p_index
+	controllers[p_index].duck_idx = p_index
+	add_child(controllers[p_index])
+	
+	reset_pond_match()
+
+func _on_PlayerData_player_joined(p_index : int):
+	if not is_running:
+		enable_player(p_index)
+
 func _exit_tree():
 	force_join_controllers()
-	# print("Match seemingly exited the tree graciously")
+	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
+		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
 
 func set_pond_events(p_events_state : Dictionary):
 	pond_events_mutex.lock()
@@ -241,20 +280,19 @@ func clear_events():
 
 
 func get_duck_pond_states() -> Array:
-	var states := PlayerData.get_ducks_array()
-	for i in states.size():
-		states[i] = states[i].pond_state
+	var nodes : Array =  PlayerData.get_duck_nodes()
+	var states := []
+	for node in nodes:
+		states.push_back(node.pond_state)
 	return states
 func set_duck_pond_states(p_states : Array) :
-	var ducks := PlayerData.get_ducks_array()
+	var ducks : Array = PlayerData.get_duck_nodes()
 	for i in ducks.size():
 		if i < p_states.size():
 			ducks[i].pond_state = p_states[i]
 			ducks[i].set_participating(true)
-			# ducks[i].show()
 		else:
 			ducks[i].set_participating(false)
-			# ducks[i].hide()
 
 func get_projectile_pond_states() -> Array:
 	return CurrentVisualization.get_current().projectile_pond_states
@@ -263,7 +301,6 @@ func set_projectile_pond_states(p_states : Array) :
 	
 func get_pond_state() -> State:
 	pond_state.tick = self.tick
-	pond_state.duck_amount = self.duck_amount
 	pond_state.pond_events = self.pond_events
 	pond_state.duck_pond_states = self.duck_pond_states
 	pond_state.projectile_pond_states = self.projectile_pond_states
@@ -271,7 +308,6 @@ func get_pond_state() -> State:
 
 func set_pond_state(p_state : State) -> void:
 	self.tick = p_state.tick
-	self.duck_amount = p_state.duck_amount
 	self.pond_events = p_state.pond_events
 	self.duck_pond_states = p_state.duck_pond_states
 	self.projectile_pond_states = p_state.projectile_pond_states
@@ -303,7 +339,6 @@ func _on_RunResetButton_run():
 #JSONable class for PondMath
 class State extends JSONable:
 	var tick : int
-	var duck_amount : int
 	var pond_events : Dictionary
 	var duck_pond_states : Array
 	var projectile_pond_states : Array
@@ -311,7 +346,6 @@ class State extends JSONable:
 	
 	func _init(
 		p_tick := 0,
-		p_duck_amount := 0,
 		p_pond_events := {
 			"vfx" : {
 				"vision_cone" : [],
@@ -322,7 +356,6 @@ class State extends JSONable:
 		p_duck_pond_states := [],
 		p_projectile_pond_states := []):
 		tick = p_tick
-		duck_amount = p_duck_amount
 		pond_events = p_pond_events
 		duck_pond_states = p_duck_pond_states
 		projectile_pond_states = p_projectile_pond_states
@@ -330,7 +363,6 @@ class State extends JSONable:
 	func to(pond_match : PondMatch = null) -> Dictionary:
 		if pond_match:
 			tick = pond_match.tick
-			duck_amount = pond_match.duck_amount
 			pond_events = pond_match.pond_events
 			duck_pond_states = pond_match.duck_pond_states
 			projectile_pond_states = pond_match.projectile_pond_states
@@ -370,7 +402,6 @@ class State extends JSONable:
 
 		return {
 			"tick" : tick,
-			"duck_amount" : duck_amount,
 			"pond_events" : events_dict,
 			"duck_pond_states" : duck_states,
 			"projectile_pond_states" : projectile_states
@@ -378,7 +409,6 @@ class State extends JSONable:
 		
 	func from(p_from : Dictionary) -> JSONable:
 		tick = p_from.tick
-		duck_amount = p_from.duck_amount
 		pond_events = {}
 		duck_pond_states = []
 		projectile_pond_states = []

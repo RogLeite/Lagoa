@@ -1,6 +1,13 @@
 extends Node
 
 var _main_state := "initial"
+var _player_joins := [
+	{"username" : "Player1", "user_id" : "Player1"},
+	{"username" : "Player2", "user_id" : "Player2"},
+	{"username" : "Player3", "user_id" : "Player3"},
+	{"username" : "Player4", "user_id" : "Player4"}
+]
+
 
 onready var pond_match := $PondMatch
 
@@ -10,6 +17,13 @@ func _ready():
 func reset():
 	_main_state = "reset"
 	pond_match.reset_pond_match()
+	
+	for join in _player_joins:
+		if PlayerData.is_returning_player(join.user_id):
+			PlayerData.join_player(join)
+		else:
+			PlayerData.add_player(join)
+
 	# For now, immediatelly skips to "elapse
 	call_deferred("elapse")
 	

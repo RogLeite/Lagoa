@@ -3,10 +3,6 @@ extends Node2D
 signal sfx_played (effect_name)
 signal vfx_played (effect_name, p_pond_state)
 
-# [TODO] Either programatically instanciate ducks, allowing variable quantities;
-# or manually Build extensions of PondVisualization for each player count.
-var duck_amount := 4
-
 # Indicates if the pond is simulating or just showing it's state visually
 # Enables physics_process for Projectiles.
 var is_simulating := true
@@ -16,24 +12,26 @@ const MAP_SCALE_FROM_BLOCKLY : float = 4.0
 const SOUNDS_EFFECTS_GROUP : String = "sound_effects"
 const VISUAL_EFFECTS_GROUP : String = "visual_effects"
 const PROJECTILES_GROUP : String = "projectiles_effects"
-const MAX_DUCKS : int = 4
 
 var projectiles : Array setget _no_set, _no_get
 var projectile_pond_states : Array setget _set_projectile_pond_states, _get_projectile_pond_states
 
 # [TODO] Make a tool to edit starting positions and rotations
-onready var STARTING_POSITIONS := [Vector2(92,100), Vector2(308,100), Vector2(92,300), Vector2(308,300)]
-onready var STARTING_ROTATIONS := [0.0, PI, 0.0, PI]
+var starting_positions := [Vector2(92,100), Vector2(308,100), Vector2(92,300), Vector2(308,300)]
+var starting_rotations := [0.0, PI, 0.0, PI]
 
-onready var _ducks := []
-onready var _vision_cones := []
+var _every_duck := []
+# Every duck that is participating in the match. MAY NOT BE IN THE REAL DUCK ORDER!
+var _participating_ducks := []
+var _vision_cones := []
+var scan_mutex := Mutex.new()
+var projectile_mutex := Mutex.new()
+
 onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var vision_cone_scene := preload("res://src/World/Effects/VisionCone.tscn")
 onready var boom_player_scene := preload("res://src/World/Effects/BoomPlayer.tscn")
 onready var blast_scene := preload("res://src/World/Effects/Blast.tscn")
 onready var splash_player_scene := preload("res://src/World/Effects/SplashPlayer.tscn")
-onready var scan_mutex := Mutex.new()
-onready var projectile_mutex := Mutex.new()
 
 func _enter_tree():
 	# Sets itself as the current visualization
@@ -42,22 +40,31 @@ func _enter_tree():
 func _ready() -> void:
 	
 	# Prepares every VisionCone ever needed
-	for i in MAX_DUCKS:
+	for i in PlayerData.MAX_PLAYERS_PER_MATCH:
+		# Sets every duck as not participating
+		var duck : Duck = get_node("Duck%d"%i)
+		duck.set_participating(false)
+		_every_duck.append(duck)
+
 		var new_cone = vision_cone_scene.instance(i)
 		_vision_cones.append(new_cone)
 		new_cone.name = "VisionCone%d"%i
 		new_cone.set_visible(false)
 		add_child(new_cone)	
-	
-	# Prepares every Projectile ever needed
-	for i in duck_amount*3:
-		var proj := projectile_scene.instance()
-		projectiles.push_back(proj)
-		hide_projectile(proj)
-		# warning-ignore:return_value_discarded
-		proj.connect("arrived", self, "_on_Projectile_arrived")
-		proj.add_to_group(PROJECTILES_GROUP)
-		add_child(proj)
+
+		# Prepares every Projectile ever needed 3 per player
+		for j in 3:
+			var proj := projectile_scene.instance()
+			projectiles.push_back(proj)
+			hide_projectile(proj)
+			# warning-ignore:return_value_discarded
+			proj.connect("arrived", self, "_on_Projectile_arrived")
+			proj.add_to_group(PROJECTILES_GROUP)
+			add_child(proj)
+
+	# If there are already players, adds a duck to PlayerData
+	for i in PlayerData.count():
+		enable_duck(i)
 	
 	
 	# Sets collision metadata for the walls
@@ -65,26 +72,34 @@ func _ready() -> void:
 	
 	reset()
 
+	# Connects signals
+	# warning-ignore:return_value_discarded
+	PlayerData.connect("player_joined", self, "_on_PlayerData_player_joined")
+
 
 func _physics_process(_delta):
 	$Debugger/Label.text = "Duck0 speed = %f\nDuck1 speed = %f\nDuck0 pos = %s\nDuck1 pos = %s\n"% \
 						[$Duck0.speed,$Duck1.speed,String($Duck0.position),String($Duck1.position)]
+
+func _exit_tree():
+	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
+		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
 
 # If the center of a duck is visible, returns distance to it. Else returns INF
 func scan_field(scanner : int, degree, angular_resolution) -> float:
 	scan_mutex.lock()
 
 	# [TODO] Consider if thread protection with mutexes is needed
-	var start : Vector2 = _ducks[scanner].position
+	var start : Vector2 = _every_duck[scanner].position
 	var radians := deg2rad(degree)
 	var scanning_to := Vector2(1,0).rotated(radians).normalized()
 	var best_distance := INF
 	
-	for i in _ducks.size():
-		if i == scanner :
+	for i in _participating_ducks.size():
+		if _participating_ducks[i] == _every_duck[scanner] :
 			continue
 		# Position to other duck
-		var target_pos : Vector2 = _ducks[i].position
+		var target_pos : Vector2 = _participating_ducks[i].position
 		var direction_to = start.direction_to(target_pos)
 		var angular_dist := abs(scanning_to.angle_to(direction_to))
 		
@@ -101,22 +116,6 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 	scan_mutex.unlock()
 	
 	return best_distance
-
-
-func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :
-	var has_hit := false
-	var max_exhaustion := 0.0
-	for duck in _ducks:
-		if duck.is_tired() :
-		  continue
-		var distance = landing_position.distance_to(duck.position) / MAP_SCALE_FROM_BLOCKLY
-		var exhaustion = (1 - distance / 4) * 10
-		if exhaustion > 0 :
-			max_exhaustion = max(exhaustion, max_exhaustion)
-			duck.tire(exhaustion)
-			has_hit = true
-	projectile_splash(landing_position, has_hit, max_exhaustion)
-	hide_projectile(projectile)
 
 # Receives a Dictionary where every Key that has corresponding Value true is a sfx to play
 # Example:
@@ -238,26 +237,10 @@ func reset():
 
 	for proj in projectiles:
 		hide_projectile(proj)
-		
-	# Resets Ducks
-	var duck_paths := []
-	_ducks = []
-	for i in duck_amount :
-		# [TODO] Change this so it instances new ducks
-		#     will need to change the color somehow
-		_ducks.append(get_node("Duck%d"%i))
-		duck_paths.append(_ducks[i].get_path())
-		
-	PlayerData.ducks = duck_paths
-	
-	for i in MAX_DUCKS:
-		if i < _ducks.size():
-			_ducks[i].reset(STARTING_POSITIONS[i], STARTING_ROTATIONS[i])
-			_ducks[i].set_participating(true)
-			# _ducks[i].show()
-		else:
-			get_node("Duck%d"%i).set_participating(false)
-			# get_node("Duck%d"%i).hide()
+
+	for i in _every_duck.size():
+		_every_duck[i].reset(starting_positions[i], starting_rotations[i])
+
 	for cone in _vision_cones:
 		cone.reset()
 		cone.set_visible(false)
@@ -265,8 +248,40 @@ func reset():
 	# set_process(true)
 	set_physics_process(true)
 
+func add_duck(p_index):
+	var duck = _every_duck[p_index]
+	_participating_ducks.append(duck)
+	PlayerData.set_duck_path(p_index, duck.get_path())
+
+# Sets a duck as participating and sets it's path in PlayerData. 
+func enable_duck(p_index):
+	var duck = _every_duck[p_index]
+	duck.reset(starting_positions[p_index], starting_rotations[p_index])
+	duck.set_participating(true)
+
 func _no_set(_p):
 	return
 
 func _no_get():
 	return
+
+func _on_PlayerData_player_joined(p_index : int) -> void:
+	if not PlayerData.has_duck(p_index):
+		add_duck(p_index)
+	enable_duck(p_index)
+	
+
+func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :
+	var has_hit := false
+	var max_exhaustion := 0.0
+	for duck in _participating_ducks:
+		if duck.is_tired() :
+			continue
+		var distance = landing_position.distance_to(duck.position) / MAP_SCALE_FROM_BLOCKLY
+		var exhaustion = (1 - distance / 4) * 10
+		if exhaustion > 0 :
+			max_exhaustion = max(exhaustion, max_exhaustion)
+			duck.tire(exhaustion)
+			has_hit = true
+	projectile_splash(landing_position, has_hit, max_exhaustion)
+	hide_projectile(projectile)

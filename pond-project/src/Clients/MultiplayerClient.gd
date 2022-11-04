@@ -7,6 +7,7 @@ signal connection_closed()
 signal pond_match_ended()
 signal pond_script_received(user_id, pond_script)
 signal pond_state_updated(pond_state, pond_scripts)
+signal joins_received(p_joins)
 
 export var is_master : bool = false
 # Sets the log level of NakamaLogger
@@ -59,6 +60,8 @@ func join_async() -> int :
 	if is_master:
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
+		# warning-ignore:return_value_discarded
+		ServerConnection.connect("joins_received", self, "_on_ServerConnection_joins_received")
 	else:
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
@@ -126,6 +129,8 @@ func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_pond_scripts : Dictionary) -> void:
 	emit_signal("pond_state_updated", p_pond_state, p_pond_scripts)
 
+func _on_ServerConnection_joins_received(p_joins : Array) -> void :
+	emit_signal("joins_received", p_joins)
 
 
 func _no_set(_value) -> void:

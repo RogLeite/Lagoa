@@ -7,7 +7,6 @@
 script = ExtResource( 2 )
 
 [node name="PondMatch" parent="." instance=ExtResource( 1 )]
-duck_amount = 2
 
 [connection signal="match_reset_requested" from="PondMatch" to="." method="_on_PondMatch_match_reset_requested"]
 [connection signal="match_run_requested" from="PondMatch" to="." method="_on_PondMatch_match_run_requested"]

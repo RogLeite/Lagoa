@@ -80,12 +80,6 @@ func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
 	
 func result() -> void:
 	_main_state = "result"
-	# [TODO] Have some flag in "start" indicatig if the match has started and 
-	# reset that flag here, so a delayed "pond_state_updated" message does not
-	# update de state even though reset_pond_match has just been called (or 
-	# pond_state has a "pond_match_id" indicating which match is running and 
-	# MainPlayer knows which is it because it was communicated in the
-	# "end_pond_match" message
 	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
 

@@ -100,6 +100,14 @@ func _on_MasterClient_pond_script_received(username, pond_script):
 	_pond_scripts[username] = pond_script
 	pond_match.add_pond_script(username, pond_script)
 
+func _on_MasterClient_joins_received(p_joins):
+	if _main_state == "elapse":
+		for join in p_joins:
+			if PlayerData.is_returning_player(join.user_id):
+				PlayerData.join_player(join)
+			else:
+				PlayerData.add_player(join)
+
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, false)
 

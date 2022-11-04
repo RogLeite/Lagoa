@@ -66,5 +66,5 @@ func launch(angle, distance) :
 	if duck:
 		duck.launcher(angle, distance)
 
-	return PlayerData.get_duck(duck_idx)
 func get_duck_node():
+	return PlayerData.get_duck_node(duck_idx)
