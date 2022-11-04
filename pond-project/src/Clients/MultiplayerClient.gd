@@ -94,6 +94,8 @@ func end() -> void:
 			push_error("%s : Disconnect error '%d': \"%s\""%[self.to_string(), result, ServerConnection.error_message])
 			return
 		_is_connected = false
+	else:
+		yield(Engine.get_main_loop(), "idle_frame")
 	
 	ServerConnection.end_client()
 
