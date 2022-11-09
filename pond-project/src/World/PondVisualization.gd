@@ -64,7 +64,8 @@ func _ready() -> void:
 
 	# If there are already players, adds a duck to PlayerData
 	for i in PlayerData.count():
-		enable_duck(i)
+		if PlayerData.is_present(i):
+			enable_duck(i)
 	
 	
 	# Sets collision metadata for the walls
@@ -75,6 +76,8 @@ func _ready() -> void:
 	# Connects signals
 	# warning-ignore:return_value_discarded
 	PlayerData.connect("player_joined", self, "_on_PlayerData_player_joined")
+	# warning-ignore:return_value_discarded
+	PlayerData.connect("player_left", self, "_on_PlayerData_player_left")
 
 
 func _physics_process(_delta):
@@ -84,6 +87,8 @@ func _physics_process(_delta):
 func _exit_tree():
 	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
 		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
+	if PlayerData.is_connected("player_left", self, "_on_PlayerData_player_left"):
+		PlayerData.disconnect("player_left", self, "_on_PlayerData_player_left")
 
 # If the center of a duck is visible, returns distance to it. Else returns INF
 func scan_field(scanner : int, degree, angular_resolution) -> float:
@@ -250,7 +255,6 @@ func reset():
 
 func add_duck(p_index):
 	var duck = _every_duck[p_index]
-	_participating_ducks.append(duck)
 	PlayerData.set_duck_path(p_index, duck.get_path())
 
 # Sets a duck as participating and sets it's path in PlayerData. 
@@ -258,6 +262,14 @@ func enable_duck(p_index):
 	var duck = _every_duck[p_index]
 	duck.reset(starting_positions[p_index], starting_rotations[p_index])
 	duck.set_participating(true)
+	if _participating_ducks.find(duck) == -1:
+		_participating_ducks.push_back(duck)
+
+func disable_duck(p_index):
+	var duck = _every_duck[p_index]
+	duck.reset(starting_positions[p_index], starting_rotations[p_index])
+	duck.set_participating(false)
+	_participating_ducks.erase(duck)
 
 func _no_set(_p):
 	return
@@ -269,6 +281,10 @@ func _on_PlayerData_player_joined(p_index : int) -> void:
 	if not PlayerData.has_duck(p_index):
 		add_duck(p_index)
 	enable_duck(p_index)
+
+func _on_PlayerData_player_left(p_index : int) -> void:
+	if PlayerData.has_duck(p_index):
+		disable_duck(p_index)
 	
 
 func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :

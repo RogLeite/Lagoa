@@ -33,6 +33,9 @@ signal pond_state_updated(pond_state, pond_scripts)
 # p_joins is an array of Dictionaries : {username, user_id}
 signal joins_received(p_joins)
 
+# Emited when _socket signals `received_match_presence` and there are users leaveing
+# p_leaves is an array of Dictionaries : {username, user_id}
+signal leaves_received(p_leaves)
 
 ## Enums
 
@@ -304,6 +307,15 @@ func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPre
 			continue
 		joins.push_back({"username" : presence.username, "user_id" : presence.user_id})
 	emit_signal("joins_received", joins)
+
+	var leaves := []
+	for presence in p_match_presence_event.leaves:
+		if presence.user_id == get_user_id():
+			continue
+		leaves.push_back({"username" : presence.username, "user_id" : presence.user_id})
+		emit_signal("leaves_received", leaves)
+	
+
 
 # Used as a setter function for read-only variables.
 func _no_set(_value) -> void:

@@ -16,6 +16,7 @@ var is_running : bool = false
 var threads : Array
 var scripts : Array
 var controllers : Array
+var controller_ids : Array
 
 var pond_state : State setget set_pond_state, get_pond_state
 var tick : int
@@ -38,7 +39,8 @@ func _init():
 
 	threads = []
 	scripts = []
-	controllers = []
+	controllers = [] 
+	controller_ids = [] 
 	
 	pond_state = State.new()
 	tick = 0
@@ -58,12 +60,14 @@ func _ready():
 	pond_visualization.visible = is_visualizing
 	pond_visualization.is_simulating = is_simulating
 	
+	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	scripts.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	controllers.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 
 	# If there are already players, enable them
 	for i in PlayerData.count():
-		enable_player(i)
+		if PlayerData.is_present(i):
+			enable_player(i)
 
 	# pond_match initialization occurs in reset_pond_match()
 
@@ -73,6 +77,9 @@ func _ready():
 	# Connects signals
 	# warning-ignore:return_value_discarded
 	PlayerData.connect("player_joined", self, "_on_PlayerData_player_joined")
+	# warning-ignore:return_value_discarded
+	PlayerData.connect("player_left", self, "_on_PlayerData_player_left")
+
 func _physics_process(_delta: float) -> void:
 	if is_running:
 		if not is_step_by_step:
@@ -119,20 +126,13 @@ func _reset_pond_match() -> void:
 
 	force_join_controllers()
 
-	var player_count : int = PlayerData.count()
-
-	var controller_ids := []
-	controller_ids.resize(player_count)
-	
-	threads.resize(player_count)
+	var player_count : int = PlayerData.count()	
 
 	CurrentVisualization.get_current().reset()
 
 	for i in player_count:
-		threads[i] = Thread.new()		
-		# Store the instance id to use with ThreadSincronizer.prepare_participants()
-		if controllers[i]:
-			controller_ids[i] = controllers[i].get_instance_id()
+		if not PlayerData.is_present(i):
+			continue
 		
 		#Connects a Duck's energy_changed signal to it's corresponding energy bar
 		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
@@ -155,21 +155,17 @@ func run():
 
 	var player_count : int = PlayerData.count()
 	var successfully_compiled := true
-	var offset := 0
-	var offset_index : int
 	for i in player_count:
-		# Skips any uninstanced controllers
-		offset_index = i + offset
-		while not controllers[offset_index]:
-			offset += 1
-			offset_index = i + offset
+		# Skips absent Players
+		if not PlayerData.is_present(i):
+			continue
 		
 		# [TODO] when implemented, grab the script from PlayerData/Datum
-		controllers[offset_index].set_lua_code(scripts[offset_index].text)
+		controllers[i].set_lua_code(scripts[i].text)
 		var error_message = ""
-		if controllers[offset_index].compile() != OK :
+		if controllers[i].compile() != OK :
 			successfully_compiled = false
-			error_message = controllers[offset_index].get_error_message()
+			error_message = controllers[i].get_error_message()
 			if error_message != "" :
 				# [TODO] Better compilation error treatment; Maybe a signal warning the error
 				# I could also parse the error message to get the line with error and highlight it 
@@ -177,15 +173,13 @@ func run():
 
 	if successfully_compiled:
 		var any_thread_failed := false
-		offset = 0
 		for i in player_count:
-			# Skips any uninstanced controllers
-			offset_index = i + offset
-			while not controllers[offset_index]:
-				offset += 1
-				offset_index = i + offset
-			if threads[i].start(self, "controller_run_wrapper", offset_index) != OK:
-				push_error("thread for controller %d can't be created" % offset_index)
+			# Skips absent Players
+			if not PlayerData.is_present(i):
+				continue
+			
+			if threads[i].start(self, "controller_run_wrapper", i) != OK:
+				push_error("thread for controller %d can't be created" % i)
 				any_thread_failed = true
 				break
 		if any_thread_failed:
@@ -225,19 +219,48 @@ func join_controllers():
 
 func are_controllers_finished() -> bool :
 	for thread in threads : 
-		if thread.is_alive():
+		if thread and thread.is_alive():
 			return false
 	return true
 
 func enable_player(p_index : int):
-	scripts[p_index] = script_scene.instance()
-	scripts[p_index].name = PlayerData.players[p_index].username
-	$UI/ScriptTabs.add_child(scripts[p_index])
+	var new_script : bool = not scripts[p_index]
+	if new_script:
+		scripts[p_index] = script_scene.instance()
+		$UI/ScriptTabs.add_child(scripts[p_index])
 	
+	scripts[p_index].name = PlayerData.players[p_index].username
+
+	threads[p_index] = Thread.new()
+
+	if controllers[p_index]:
+		push_error("In PondMatch.enable_player:\n\tOverwriting a controller without removing it first. controller_ids will hold invalid ids and there will be more controllers than expected in the tree. Somehow a enable was called after a enable. If this is expected, I need to protect controllers and controller_ids.")
+
 	controllers[p_index] = controller_scene.instance()
 	controllers[p_index].name = "DuckController%d"%p_index
 	controllers[p_index].duck_idx = p_index
 	add_child(controllers[p_index])
+	
+	controller_ids.push_back(controllers[p_index].get_instance_id())
+
+	reset_pond_match()
+
+# Remover controllers e scripts dos players que não participarão
+func disable_player(p_index : int):
+	scripts[p_index] = null
+
+	threads[p_index] = null
+
+	if not controllers[p_index]:
+		push_error("In PondMatch.disable_player:\n\tTrying to twice remove a controller. Somehow a disable was called after a disable. If this is expected, I need to protect controllers.")
+
+	var node = get_node(controllers[p_index].name)
+	controllers[p_index] = null
+	remove_child(node)
+
+	controller_ids.erase(node.get_instance_id())
+
+	node.queue_free()
 	
 	reset_pond_match()
 
@@ -245,10 +268,16 @@ func _on_PlayerData_player_joined(p_index : int):
 	if not is_running:
 		enable_player(p_index)
 
+func _on_PlayerData_player_left(p_index : int):
+	if not is_running:
+		disable_player(p_index)
+
 func _exit_tree():
 	force_join_controllers()
 	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
 		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
+	if PlayerData.is_connected("player_left", self, "_on_PlayerData_player_left"):
+		PlayerData.disconnect("player_left", self, "_on_PlayerData_player_left")
 
 func set_pond_events(p_events_state : Dictionary):
 	pond_events_mutex.lock()

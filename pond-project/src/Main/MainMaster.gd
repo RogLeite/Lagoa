@@ -78,7 +78,7 @@ func elapse() -> void:
 	pond_match.show()
 
 func start() -> void:
-	if PlayerData.count() == 0:
+	if PlayerData.present_count() == 0:
 		return
 	_main_state = "start"
 	pond_match.run()
@@ -103,10 +103,17 @@ func _on_MasterClient_pond_script_received(username, pond_script):
 func _on_MasterClient_joins_received(p_joins):
 	if _main_state == "elapse":
 		for join in p_joins:
-			if PlayerData.is_returning_player(join.user_id):
+			if PlayerData.is_registered_player(join.user_id):
 				PlayerData.join_player(join)
 			else:
 				PlayerData.add_player(join)
+
+
+func _on_MasterClient_leaves_received(p_leaves):
+	if _main_state == "elapse":
+		for leave in p_leaves:
+			if PlayerData.is_registered_player(leave.user_id):
+				PlayerData.leave_player(leave)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, false)

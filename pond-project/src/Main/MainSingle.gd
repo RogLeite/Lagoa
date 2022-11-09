@@ -19,7 +19,7 @@ func reset():
 	pond_match.reset_pond_match()
 	
 	for join in _player_joins:
-		if PlayerData.is_returning_player(join.user_id):
+		if PlayerData.is_registered_player(join.user_id):
 			PlayerData.join_player(join)
 		else:
 			PlayerData.add_player(join)
