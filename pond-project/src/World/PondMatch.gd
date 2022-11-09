@@ -214,7 +214,8 @@ func force_join_controllers() :
 func join_controllers():
 	for thread in threads :
 		if thread :
-			var _run_return = thread.wait_to_finish()
+			# warning-ignore:return_value_discarded
+			thread.wait_to_finish()
 	is_running = false
 
 func are_controllers_finished() -> bool :

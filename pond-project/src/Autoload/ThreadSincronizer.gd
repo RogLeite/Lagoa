@@ -76,7 +76,8 @@ func remove_participant(unique_id) :
 	assert(semaphores.has(unique_id), "In ScriptSincronizer.remove_participant: semaphores has no key \"%s\""%var2str(unique_id) )
 	
 	semaphores_mutex.lock()
-	var _val = semaphores.erase(unique_id)
+	# warning-ignore:return_value_discarded
+	semaphores.erase(unique_id)
 	semaphores_mutex.unlock()
 
 	total_participants_mutex.lock()
