@@ -64,6 +64,7 @@ var _socket : NakamaSocket
 
 # The identifier of the match this client participates
 var _world_id:= ""
+var _presence : NakamaRTAPI.UserPresence
 
 # Delegates
 var _exception_handler := ExceptionHandler.new()
@@ -170,19 +171,26 @@ func join_world_async( is_master : bool) -> int:
 			return parsed_result
 
 		_world_id = rpc_result.payload
-		
 
+	var metadata =  {"is_master" : String(is_master)}
 	# Joins the match represented by _world_id
 	# [TODO] Maybe the metadata sent can identify if this client wants to be a MasterClient
 	var match_join_result: NakamaRTAPI.Match = \
-		yield(_socket.join_match_async(_world_id, {"is_master" : String(is_master)}), "completed")
+		yield(_socket.join_match_async(_world_id, metadata), "completed")
 	var parsed_result := _exception_handler.parse_exception(match_join_result)
+	
 
 	if parsed_result == OK:
-		# Can enter chat, register presences from match_join_result etc.
-		pass
-	else:
-		return parsed_result
+		_presence = match_join_result.self_user
+		# print("type of _presence is '%s'"%JSONable.TYPE_NAMES[typeof(_presence)])
+		# print("presence is {%s}"%_presence)
+		var parameters := {
+			"world_id" : _world_id,
+			"presence" : _presence.serialize(),
+			"metadata" : metadata
+		}
+		
+		yield(_client.rpc_async(_authenticator.session,"join_player", JSON.print(parameters)), "completed")
 
 	return parsed_result
 
@@ -192,6 +200,14 @@ func join_world_async( is_master : bool) -> int:
 func disconnect_from_server_async() -> int:
 	var parsed_result := OK
 		
+	var parameters := {
+		"world_id" : _world_id,
+		"presence" : _presence.serialize()
+	}
+	var rpc_result = _client.rpc_async(_authenticator.session,"leave_player", JSON.print(parameters))
+	print("rpc_result = %s"%rpc_result)
+
+
 	var result: NakamaAsyncResult = yield(_socket.leave_match_async(_world_id), "completed")
 	parsed_result = _exception_handler.parse_exception(result)
 
@@ -200,6 +216,36 @@ func disconnect_from_server_async() -> int:
 		cleanup()
 
 	return parsed_result
+	
+# Remote calls `get_presences()`
+# Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
+func get_presences_async() -> int: 
+	# Debug assertions
+	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
+	assert(_socket, "_socket was not initialized, remember to call ServerConnection.connect_to_server_async()")
+	
+	# Non-debug assertions
+	if not _socket:
+		_exception_handler.error_message = "Server not connected"
+		return ERR_UNAVAILABLE
+	
+	if _world_id and not _world_id.empty():
+		var rpc_result : NakamaAPI.ApiRpc = yield(_client.rpc_async(_authenticator.session,"get_presences", _world_id), "completed")
+
+		var parsed_result := _exception_handler.parse_exception(rpc_result)
+
+		if parsed_result != OK:
+			return parsed_result
+
+		var state = JSON.parse(rpc_result.payload).result
+		
+		# print("state = [")
+		# for v in state:		
+		# 	print("\t{user_id : %s, presence.username = %s}"%[v.user_id.substr(0,8), v.presence.username if v.presence is Dictionary else v.presence])
+		# print("]")
+	
+	return OK
+	
 
 # Saves the email in the config file.
 func save_email(email: String) -> void:
@@ -257,6 +303,7 @@ func _get_error_message() -> String:
 func cleanup() -> void:
 	_socket = null
 	_world_id = ""
+	_presence = null
 	# Cleanup of other data, such as asny presences stored
 	if _authenticator :
 		_authenticator.cleanup()

@@ -71,6 +71,11 @@ func join_async() -> int :
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
 		
+	# [TODO] Trocar onde chamar isso
+	result = yield(ServerConnection.get_presences_async(), "completed")
+	if result != OK:
+		return result
+
 	return OK
 
 func start() -> void:
@@ -110,7 +115,7 @@ func end() -> void:
 	ServerConnection.end_client()
 
 func _exit_tree():
-	end()
+	yield(end(), "completed")
 
 func end_pond_match() -> void:
 	ServerConnection.end_pond_match()
