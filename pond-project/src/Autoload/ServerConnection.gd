@@ -205,7 +205,7 @@ func disconnect_from_server_async() -> int:
 		"presence" : _presence.serialize()
 	}
 	var rpc_result = _client.rpc_async(_authenticator.session,"leave_player", JSON.print(parameters))
-	print("rpc_result = %s"%rpc_result)
+	# print("rpc_result = %s"%rpc_result)
 
 
 	var result: NakamaAsyncResult = yield(_socket.leave_match_async(_world_id), "completed")
@@ -218,6 +218,7 @@ func disconnect_from_server_async() -> int:
 	return parsed_result
 	
 # Remote calls `get_presences()`
+# Emits the joins for every player, then leaves for every absent player
 # Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
 func get_presences_async() -> int: 
 	# Debug assertions
@@ -237,11 +238,21 @@ func get_presences_async() -> int:
 		if parsed_result != OK:
 			return parsed_result
 
-		var state = JSON.parse(rpc_result.payload).result
+		var presences = JSON.parse(rpc_result.payload).result
+		var joins := []
+		var leaves := []
+		# print("get_presences_async: receives array of size %s"%presences.size())
+		for player in presences:
+			joins.push_back({"username" : player.username, "user_id" : player.user_id})
+			if player.presence is bool and not player.presence:
+				leaves.push_back({"username" : player.username, "user_id" : player.user_id})
 		
-		# print("state = [")
-		# for v in state:		
-		# 	print("\t{user_id : %s, presence.username = %s}"%[v.user_id.substr(0,8), v.presence.username if v.presence is Dictionary else v.presence])
+		emit_signal("joins_received", joins)
+		emit_signal("leaves_received", leaves)
+
+		# print("presences = [")
+		# for v in presences:		
+		# 	print("\t{present = %s, username = %s, user_id : %s}"%["true" if v.presence is Dictionary else "false", v.username, v.user_id.substr(0,8)])
 		# print("]")
 	
 	return OK
@@ -309,7 +320,6 @@ func cleanup() -> void:
 		_authenticator.cleanup()
 
 
-
 # De-references the _socket object
 func _on_NakamaSocket_closed() -> void:
 	_socket = null
@@ -360,7 +370,7 @@ func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPre
 		if presence.user_id == get_user_id():
 			continue
 		leaves.push_back({"username" : presence.username, "user_id" : presence.user_id})
-		emit_signal("leaves_received", leaves)
+	emit_signal("leaves_received", leaves)
 	
 
 

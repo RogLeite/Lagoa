@@ -101,7 +101,8 @@ func _on_MasterClient_pond_script_received(username, pond_script):
 	pond_match.add_pond_script(username, pond_script)
 
 func _on_MasterClient_joins_received(p_joins):
-	if _main_state == "elapse":
+	if _main_state == "prepare" or _main_state == "elapse":
+		# print("_on_MasterClient_joins_received:%s"%String(p_joins))
 		for join in p_joins:
 			if PlayerData.is_registered_player(join.user_id):
 				PlayerData.join_player(join)
@@ -110,7 +111,8 @@ func _on_MasterClient_joins_received(p_joins):
 
 
 func _on_MasterClient_leaves_received(p_leaves):
-	if _main_state == "elapse":
+	if _main_state == "prepare" or _main_state == "elapse":
+		# print("_on_MasterClient_leaves_received: %s"%String(p_leaves))
 		for leave in p_leaves:
 			if PlayerData.is_registered_player(leave.user_id):
 				PlayerData.leave_player(leave)

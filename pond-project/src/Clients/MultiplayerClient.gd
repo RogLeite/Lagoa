@@ -57,14 +57,15 @@ func join_async() -> int :
 	var result: int = yield(ServerConnection.join_world_async(is_master), "completed")
 	if result != OK:
 		return result
-		
+
+	# warning-ignore:return_value_discarded
+	ServerConnection.connect("joins_received", self, "_on_ServerConnection_joins_received")
+	# warning-ignore:return_value_discarded
+	ServerConnection.connect("leaves_received", self, "_on_ServerConnection_leaves_received")	
+	
 	if is_master:
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("joins_received", self, "_on_ServerConnection_joins_received")
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("leaves_received", self, "_on_ServerConnection_leaves_received")
 	else:
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
@@ -92,13 +93,14 @@ func end() -> void:
 	# `disconnect` is called because ServerConnection won't be destroyed
 	ServerConnection.disconnect("connection_closed", self, "_on_ServerConnection_connection_closed")
 
+	if ServerConnection.is_connected("joins_received", self, "_on_ServerConnection_joins_received"):
+		ServerConnection.disconnect("joins_received", self, "_on_ServerConnection_joins_received")
+	if ServerConnection.is_connected("leaves_received", self, "_on_ServerConnection_leaves_received"):
+		ServerConnection.disconnect("leaves_received", self, "_on_ServerConnection_leaves_received")
+
 	if is_master:
 		if ServerConnection.is_connected("pond_script_received", self, "_on_ServerConnection_pond_script_received"):
 			ServerConnection.disconnect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
-		if ServerConnection.is_connected("joins_received", self, "_on_ServerConnection_joins_received"):
-			ServerConnection.disconnect("joins_received", self, "_on_ServerConnection_joins_received")
-		if ServerConnection.is_connected("leaves_received", self, "_on_ServerConnection_leaves_received"):
-			ServerConnection.disconnect("leaves_received", self, "_on_ServerConnection_leaves_received")
 	else:
 		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
 			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
@@ -142,9 +144,11 @@ func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_p
 	emit_signal("pond_state_updated", p_pond_state, p_pond_scripts)
 
 func _on_ServerConnection_joins_received(p_joins : Array) -> void :
+	# print("_on_ServerConnection_joins_received:%s"%String(p_joins))
 	emit_signal("joins_received", p_joins)
-
+	
 func _on_ServerConnection_leaves_received(p_leaves : Array) -> void :
+	# print("_on_ServerConnection_leaves_received: %s"%String(p_leaves))
 	emit_signal("leaves_received", p_leaves)
 
 

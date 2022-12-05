@@ -98,3 +98,19 @@ func _on_PlayerClient_connection_closed() -> void:
 
 func _on_PlayerClient_pond_match_ended():
 	call_deferred("result")
+
+func _on_PlayerClient_joins_received(p_joins):
+	if _main_state == "prepare" or _main_state == "elapse":
+		# print("_on_PlayerClient_joins_received:%s"%String(p_joins))
+		for join in p_joins:
+			if PlayerData.is_registered_player(join.user_id):
+				PlayerData.join_player(join)
+			else:
+				PlayerData.add_player(join)
+
+func _on_PlayerClient_leaves_received(p_leaves):
+	if _main_state == "prepare" or _main_state == "elapse":
+		# print("_on_PlayerClient_leaves_received: %s"%String(p_leaves))
+		for leave in p_leaves:
+			if PlayerData.is_registered_player(leave.user_id):
+				PlayerData.leave_player(leave)

@@ -3,14 +3,6 @@ local worlds = require("world_maintenance")
 
 local MAX_PLAYERS_PER_MATCH = 4
 
--- Creats a string out of the table keys and type of the values
-local function table_keys(t)
-    local ret = {}
-    for k,v in pairs(t) do 
-        ret[#ret+1] = k..":"..type(v)
-    end
-    return table.concat(ret, ", ")
-end
 
 local world_table = {}
 
@@ -44,22 +36,25 @@ end
 
 local function match_join_maintenance(world_id, presence, metadata)
     -- nakama.logger_warn(string.format("match_join_maintenance: presence = '%s'", presence))
-    -- nakama.logger_warn(string.format("match_join_maintenance: presence.user_id = '%s', keys(presence) = {%s}", presence.user_id, table_keys(presence)))
-    
+    -- nakama.logger_warn(string.format("match_join_maintenance: presence.user_id = '%s', keys(presence) = {%s}", presence.user_id, worlds.table_keys(presence)))
+    -- nakama.logger_warn(string.format("match_join_maintenance: username = '%s'", presence.username))
 
     local user_id = presence.user_id
+    local username = presence.username
 
     if metadata and string.lower(metadata.is_master) == "true" then
         worlds.add_master(world_table, world_id, user_id)
     else
-        worlds.add_reservation(world_table, world_id, user_id)
+        worlds.add_reservation(world_table, world_id, user_id, username)
         worlds.add_presence(world_table, world_id, presence)
     end
 end
 
 local function match_leave_maintenance(world_id, presence)
     -- nakama.logger_warn(string.format("match_leave_maintenance: presence.user_id = '%s'", presence.user_id))
-    -- nakama.logger_warn(string.format("match_leave_maintenance: presence.user_id = '%s', keys(presence) = {%s}", presence.user_id, table_keys(presence)))
+    -- nakama.logger_warn(string.format("match_leave_maintenance: presence.user_id = '%s', keys(presence) = {%s}", presence.user_id, worlds.table_keys(presence)))
+    -- nakama.logger_warn(string.format("match_leave_maintenance: username = '%s'", presence.username))
+
     local user_id = presence.user_id
     if user_id == worlds.get_world(world_table, world_id).master then
         worlds.remove_master(world_table, world_id)
@@ -71,6 +66,7 @@ end
 
 local function join_player(context, payload)
     local decoded = nakama.json_decode(payload)
+    -- nakama.logger_warn(string.format("join_player: username = '%s'", decoded.presence.username))
     match_join_maintenance(decoded.world_id, decoded.presence, decoded.metadata)
 end
 local function leave_player(context, payload)
@@ -85,8 +81,9 @@ local function get_presences(_context, payload)
     local world = worlds.get_world(world_table, payload)
     local ret = {}
     for k, v in ipairs(world.player_reservations) do
-        ret[#ret+1] = {user_id = v, presence = world.player_presences[v] or false}
+        ret[#ret+1] = {user_id = v.user_id, username = v.username, presence = world.player_presences[v.user_id] or false}
     end
+    -- nakama.logger_warn(string.format("get_presences: returns array of size %d", #ret))
     return nakama.json_encode(ret)
 end
 
