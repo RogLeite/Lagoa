@@ -265,6 +265,10 @@ func enable_duck(p_index):
 	if _participating_ducks.find(duck) == -1:
 		_participating_ducks.push_back(duck)
 
+# [TODO] Force the removal of the player
+func remove_duck(_p_index):
+	pass
+
 func disable_duck(p_index):
 	var duck = _every_duck[p_index]
 	duck.reset(starting_positions[p_index], starting_rotations[p_index])

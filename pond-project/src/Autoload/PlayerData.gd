@@ -87,6 +87,10 @@ func add_player(p_join : Dictionary) -> void:
 	players.push_back(datum)
 	join_player(p_join)
 
+# [TODO] Force the removal of the player.
+func remove_player():
+	pass	
+
 func _no_set(_val):
 	pass
 
