@@ -80,10 +80,15 @@ local function get_presences(_context, payload)
     -- nakama.logger_warn(string.format("get_presences: payload %s", payload))
     local world = worlds.get_world(world_table, payload)
     local ret = {}
+    local player_presences = {}
     for k, v in ipairs(world.player_reservations) do
-        ret[#ret+1] = {user_id = v.user_id, username = v.username, presence = world.player_presences[v.user_id] or false}
+        player_presences[#player_presences+1] = {user_id = v.user_id, username = v.username, presence = world.player_presences[v.user_id] or false}
     end
-    -- nakama.logger_warn(string.format("get_presences: returns array of size %d", #ret))
+    ret.player_presences = player_presences
+    -- nakama.logger_warn(string.format("get_presences: returns array of size %d", #ret.player_presences))
+    
+    ret.master_id = {world.master}
+
     return nakama.json_encode(ret)
 end
 

@@ -238,7 +238,7 @@ func get_presences_async() -> int:
 		if parsed_result != OK:
 			return parsed_result
 
-		var presences = JSON.parse(rpc_result.payload).result
+		var presences = JSON.parse(rpc_result.payload).result.player_presences
 		var joins := []
 		var leaves := []
 		# print("get_presences_async: receives array of size %s"%presences.size())
