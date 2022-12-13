@@ -246,6 +246,11 @@ func reset():
 	for i in _every_duck.size():
 		_every_duck[i].reset(starting_positions[i], starting_rotations[i])
 
+	# If there are already players, adds a duck to PlayerData
+	for i in PlayerData.count():
+		if not PlayerData.is_present(i):
+			disable_duck(i)
+
 	for cone in _vision_cones:
 		cone.reset()
 		cone.set_visible(false)
