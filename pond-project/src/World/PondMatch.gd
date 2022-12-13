@@ -318,7 +318,7 @@ func get_duck_pond_states() -> Array:
 func set_duck_pond_states(p_states : Array) :
 	var ducks : Array = PlayerData.get_duck_nodes()
 	for i in ducks.size():
-		if i < p_states.size():
+		if i < p_states.size() and PlayerData.is_present(i):
 			ducks[i].pond_state = p_states[i]
 			ducks[i].set_participating(true)
 		else:
