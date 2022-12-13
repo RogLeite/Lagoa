@@ -205,7 +205,7 @@ func disconnect_from_server_async() -> int:
 		"presence" : _presence.serialize()
 	}
 	var rpc_result = _client.rpc_async(_authenticator.session,"leave_player", JSON.print(parameters))
-	# print("rpc_result = %s"%rpc_result)
+	print("rpc_result = %s"%rpc_result)
 
 
 	var result: NakamaAsyncResult = yield(_socket.leave_match_async(_world_id), "completed")
