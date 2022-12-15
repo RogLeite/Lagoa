@@ -13,6 +13,7 @@ onready var pond_match := $PondMatch
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
+	PlayerCache.responsible = self
 	# [TODO] Change use of PondState, should get directly from PondMatch.pond_state
 	call_deferred("reset")
 
@@ -76,6 +77,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 func elapse() -> void:
 	_main_state = "elapse"
 	pond_match.show()
+	PlayerCache.release()
 
 func start() -> void:
 	if PlayerData.present_count() == 0:
@@ -96,26 +98,36 @@ func result(p_result : String) -> void:
 			call_deferred("elapse")
 	
 
+func join(p_join):
+	if PlayerData.is_registered_player(p_join.user_id):
+		PlayerData.join_player(p_join)
+	else:
+		PlayerData.add_player(p_join)
+
+func leave(p_leave):
+	if PlayerData.is_registered_player(p_leave.user_id):
+		PlayerData.leave_player(p_leave)
+
 func _on_MasterClient_pond_script_received(username, pond_script):
 	_pond_scripts[username] = pond_script
 	pond_match.add_pond_script(username, pond_script)
 
 func _on_MasterClient_joins_received(p_joins):
-	if _main_state == "prepare" or _main_state == "elapse":
-		# print("_on_MasterClient_joins_received:%s"%String(p_joins))
-		for join in p_joins:
-			if PlayerData.is_registered_player(join.user_id):
-				PlayerData.join_player(join)
-			else:
-				PlayerData.add_player(join)
+	# print("_on_MasterClient_joins_received:%s"%String(p_joins))
+	for player in p_joins:
+		if _main_state == "elapse":
+			join(player)
+		else:
+			PlayerCache.add_join(player)
 
 
 func _on_MasterClient_leaves_received(p_leaves):
-	if _main_state == "prepare" or _main_state == "elapse":
-		# print("_on_MasterClient_leaves_received: %s"%String(p_leaves))
-		for leave in p_leaves:
-			if PlayerData.is_registered_player(leave.user_id):
-				PlayerData.leave_player(leave)
+	# print("_on_MasterClient_leaves_received: %s"%String(p_leaves))
+	for player in p_leaves:
+		if _main_state == "elapse":
+			leave(player)
+		else:
+			PlayerCache.add_leave(player)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, false)

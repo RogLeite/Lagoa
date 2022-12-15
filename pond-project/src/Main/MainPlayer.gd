@@ -11,6 +11,7 @@ onready var pond_match := $PondMatch
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
+	PlayerCache.responsible = self
 
 func reset(p_status : String = ""):
 	_main_state = "reset"
@@ -72,6 +73,9 @@ func elapse() -> void:
 	_main_state = "elapse"
 	pond_match.show()
 	
+	# print("PlayerCache.print: %s"%PlayerCache)
+	PlayerCache.release()
+	
 func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
 	_main_state = "start"
 	if pond_state.tick > pond_match.tick:
@@ -82,6 +86,17 @@ func result() -> void:
 	_main_state = "result"
 	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
+	call_deferred("elapse")
+	
+func join(p_join):
+	if PlayerData.is_registered_player(p_join.user_id):
+		PlayerData.join_player(p_join)
+	else:
+		PlayerData.add_player(p_join)
+
+func leave(p_leave):
+	if PlayerData.is_registered_player(p_leave.user_id):
+		PlayerData.leave_player(p_leave)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
 	call_deferred("prepare",email, password, do_remember_email, false)
@@ -99,18 +114,20 @@ func _on_PlayerClient_connection_closed() -> void:
 func _on_PlayerClient_pond_match_ended():
 	call_deferred("result")
 
+
 func _on_PlayerClient_joins_received(p_joins):
-	if _main_state == "prepare" or _main_state == "elapse":
-		# print("_on_PlayerClient_joins_received:%s"%String(p_joins))
-		for join in p_joins:
-			if PlayerData.is_registered_player(join.user_id):
-				PlayerData.join_player(join)
-			else:
-				PlayerData.add_player(join)
+	# print("_on_PlayerClient_joins_received:%s"%String(p_joins))
+	for player in p_joins:
+		if _main_state == "elapse":
+			join(player)
+		else:
+			PlayerCache.add_join(player)
+
 
 func _on_PlayerClient_leaves_received(p_leaves):
-	if _main_state == "prepare" or _main_state == "elapse":
-		# print("_on_PlayerClient_leaves_received: %s"%String(p_leaves))
-		for leave in p_leaves:
-			if PlayerData.is_registered_player(leave.user_id):
-				PlayerData.leave_player(leave)
+	# print("_on_PlayerClient_leaves_received: %s"%String(p_leaves))
+	for player in p_leaves:
+		if _main_state == "elapse":
+			leave(player)
+		else:
+			PlayerCache.add_leave(player)
