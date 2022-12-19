@@ -10,6 +10,7 @@ signal match_scripts_ended
 export var is_visualizing : bool = true
 export var is_simulating : bool  = true
 export var is_step_by_step : bool = false
+export var can_send_script : bool = false
 
 
 var is_running : bool = false
@@ -34,6 +35,7 @@ onready var controller_scene := preload("res://src/World/Characters/DuckControll
 # References to Nodes
 onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
+onready var send_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
 
 func _init():
 
@@ -59,6 +61,8 @@ func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
 	pond_visualization.visible = is_visualizing
 	pond_visualization.is_simulating = is_simulating
+	
+	send_script_btn.visible = can_send_script
 	
 	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	scripts.resize(PlayerData.MAX_PLAYERS_PER_MATCH)

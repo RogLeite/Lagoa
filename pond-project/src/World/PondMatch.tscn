@@ -120,6 +120,14 @@ size_flags_horizontal = 3
 text = "Run"
 script = ExtResource( 4 )
 
+[node name="SendScriptButton" type="Button" parent="UI/Gameplay/HBoxContainer"]
+visible = false
+margin_left = 260.0
+margin_right = 400.0
+margin_bottom = 84.0
+size_flags_horizontal = 3
+text = "Send Script"
+
 [node name="ScriptTabs" type="TabContainer" parent="UI"]
 margin_left = 416.0
 margin_right = 1024.0
