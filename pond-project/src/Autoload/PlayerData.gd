@@ -5,6 +5,8 @@ extends Node
 signal player_joined(p_index)
 # Emmited when a player leaves
 signal player_left(p_index)
+# Emmited when a player's script has changed
+signal pond_script_changed(p_index, p_script)
 
 const MAX_PLAYERS_PER_MATCH : int = 4
 
@@ -49,6 +51,21 @@ func set_duck_paths(p_paths : Array) -> void:
 
 func set_duck_path(p_index : int, p_path : NodePath) -> void:
 	players[p_index].duck_path = p_path
+
+func set_script(p_index : int, p_script : String) -> String:
+	if players[p_index].pond_script != p_script:
+		players[p_index].pond_script = p_script
+		emit_signal("pond_script_changed", p_index, p_script)
+
+func get_script(p_index : int) -> String:
+	return players[p_index].pond_script
+
+func get_scripts() -> Array:
+	var ret = []
+	for i in players.size():
+		ret.push_back(get_script(i))
+	return ret
+
 
 # Checks if a Player with p_user_id is already present in `players`
 func is_registered_player(p_user_id : String) -> bool:
