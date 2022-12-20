@@ -98,13 +98,13 @@ func result(p_result : String) -> void:
 			call_deferred("elapse")
 	
 
-func join(p_join):
+func join(p_join : Presence):
 	if PlayerData.is_registered_player(p_join.user_id):
 		PlayerData.join_player(p_join)
 	else:
 		PlayerData.add_player(p_join)
 
-func leave(p_leave):
+func leave(p_leave : Presence):
 	if PlayerData.is_registered_player(p_leave.user_id):
 		PlayerData.leave_player(p_leave)
 

@@ -52,18 +52,18 @@ func set_duck_paths(p_paths : Array) -> void:
 func set_duck_path(p_index : int, p_path : NodePath) -> void:
 	players[p_index].duck_path = p_path
 
-func set_script(p_index : int, p_script : String) -> String:
+func set_pond_script(p_index : int, p_script : String) -> void:
 	if players[p_index].pond_script != p_script:
 		players[p_index].pond_script = p_script
 		emit_signal("pond_script_changed", p_index, p_script)
 
-func get_script(p_index : int) -> String:
+func get_pond_script(p_index : int) -> String:
 	return players[p_index].pond_script
 
-func get_scripts() -> Array:
+func get_pond_scripts() -> Array:
 	var ret = []
 	for i in players.size():
-		ret.push_back(get_script(i))
+		ret.push_back(get_pond_script(i))
 	return ret
 
 
@@ -76,7 +76,7 @@ func is_registered_player(p_user_id : String) -> bool:
 
 # If the specified player is already in `players`, sets `is_present` to `true`
 # and emits `player_joined`
-func join_player(p_join : Dictionary) -> void:
+func join_player(p_join : Presence) -> void:
 	for i in players.size():
 		if players[i].user_id == p_join.user_id:
 			if not players[i].is_present :
@@ -86,7 +86,7 @@ func join_player(p_join : Dictionary) -> void:
 			return
 	
 # Marks a player as absent
-func leave_player(p_leave : Dictionary) -> void:
+func leave_player(p_leave : Presence) -> void:
 	for i in players.size():
 		if players[i].user_id == p_leave.user_id:
 			if players[i].is_present :
@@ -97,7 +97,7 @@ func leave_player(p_leave : Dictionary) -> void:
 
 # Adds a new player and joins it
 # DOES NOT CHECK IF PLAYER IS ALREADY PRESENT
-func add_player(p_join : Dictionary) -> void:
+func add_player(p_join : Presence) -> void:
 	var datum = PlayerDatum.new()
 	datum.user_id = p_join.user_id
 	datum.username = p_join.username

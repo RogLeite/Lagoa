@@ -243,9 +243,9 @@ func get_presences_async() -> int:
 		var leaves := []
 		# print("get_presences_async: receives array of size %s"%presences.size())
 		for player in presences:
-			joins.push_back({"username" : player.username, "user_id" : player.user_id})
+			joins.push_back(Presence.new(player.user_id, player.username))
 			if player.presence is bool and not player.presence:
-				leaves.push_back({"username" : player.username, "user_id" : player.user_id})
+				leaves.push_back(Presence.new(player.user_id, player.username))
 		
 		emit_signal("joins_received", joins)
 		emit_signal("leaves_received", leaves)
@@ -362,14 +362,14 @@ func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPre
 	for presence in p_match_presence_event.joins:
 		if presence.user_id == get_user_id():
 			continue
-		joins.push_back({"username" : presence.username, "user_id" : presence.user_id})
+		joins.push_back(Presence.new(presence.user_id, presence.username))
 	emit_signal("joins_received", joins)
 
 	var leaves := []
 	for presence in p_match_presence_event.leaves:
 		if presence.user_id == get_user_id():
 			continue
-		leaves.push_back({"username" : presence.username, "user_id" : presence.user_id})
+		leaves.push_back(Presence.new(presence.user_id, presence.username))
 	emit_signal("leaves_received", leaves)
 	
 
