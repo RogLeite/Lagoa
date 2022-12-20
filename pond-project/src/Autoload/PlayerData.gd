@@ -87,7 +87,7 @@ func join_player(p_join : Dictionary) -> void:
 	
 # Marks a player as absent
 func leave_player(p_leave : Dictionary) -> void:
-	for i in p_leave.size():
+	for i in players.size():
 		if players[i].user_id == p_leave.user_id:
 			if players[i].is_present :
 				_present_count -= 1
