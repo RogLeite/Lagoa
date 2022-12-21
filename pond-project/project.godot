@@ -44,6 +44,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/UI/Elements/LineEditValidate.gd"
 }, {
+"base": "Resource",
+"class": "LuaScript",
+"language": "GDScript",
+"path": "res://src/ResourceClasses/LuaScript.gd"
+}, {
 "base": "Control",
 "class": "Menu",
 "language": "GDScript",
@@ -162,6 +167,7 @@ _global_script_class_icons={
 "ExceptionHandler": "",
 "JSONable": "",
 "LineEditValidate": "",
+"LuaScript": "",
 "Menu": "",
 "MenuList": "",
 "MultiplayerClient": "",

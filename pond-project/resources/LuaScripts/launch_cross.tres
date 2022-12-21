@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://src/ResourceClasses/LuaScript.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+lua_script = "local dist = \"infinity\"
+local angle_increment = 90
+while true do
+	for i = 0,4 do
+		dist = scan(i*angle_increment)
+		if dist != \"infinity\" then
+			launch(i*angle_increment, dist)
+		end
+		dist = \"infinity\"
+	end
+end"
