@@ -82,6 +82,7 @@ func join_player(p_join : Presence) -> void:
 			if not players[i].is_present :
 				_present_count += 1
 			players[i].is_present = true
+			set_pond_script(i, p_join.pond_script)
 			emit_signal("player_joined", i)
 			return
 	
@@ -102,6 +103,7 @@ func add_player(p_join : Presence) -> void:
 	datum.user_id = p_join.user_id
 	datum.username = p_join.username
 	players.push_back(datum)
+	set_pond_script(players.size()-1, p_join.pond_script)
 	join_player(p_join)
 
 # [TODO] Force the removal of the player.
