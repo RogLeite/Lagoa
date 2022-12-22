@@ -1,15 +1,20 @@
 extends Node
 
+var _player_joins : Array
 var _main_state := "initial"
-var _player_joins := [
-	Presence.new("Player1","Player1"),
-	Presence.new("Player2","Player2"),
-	Presence.new("Player3","Player3"),
-	Presence.new("Player4","Player4")
-]
-
 
 onready var pond_match := $PondMatch
+
+func _init():
+	
+	var script1 : Resource = preload("res://resources/LuaScripts/launch_cross.tres")
+	var script2 : Resource = preload("res://resources/LuaScripts/swim_up_launch_right.tres")
+	_player_joins = [
+		Presence.new("Player1","Player1", script1.lua_script),
+		Presence.new("Player2","Player2", script1.lua_script),
+		Presence.new("Player3","Player3", script2.lua_script),
+		Presence.new("Player4","Player4", script2.lua_script)
+	]
 
 func _ready():
 	call_deferred("reset")
