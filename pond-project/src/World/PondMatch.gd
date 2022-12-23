@@ -83,6 +83,8 @@ func _ready():
 	PlayerData.connect("player_joined", self, "_on_PlayerData_player_joined")
 	# warning-ignore:return_value_discarded
 	PlayerData.connect("player_left", self, "_on_PlayerData_player_left")
+	# warning-ignore:return_value_discarded
+	PlayerData.connect("pond_script_changed", self, "_on_PlayerData_pond_script_changed")
 
 func _physics_process(_delta: float) -> void:
 	if is_running:
@@ -269,20 +271,14 @@ func disable_player(p_index : int):
 	
 	reset_pond_match()
 
-func _on_PlayerData_player_joined(p_index : int):
-	if not is_running:
-		enable_player(p_index)
-
-func _on_PlayerData_player_left(p_index : int):
-	if not is_running:
-		disable_player(p_index)
-
 func _exit_tree():
 	force_join_controllers()
 	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
 		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
 	if PlayerData.is_connected("player_left", self, "_on_PlayerData_player_left"):
 		PlayerData.disconnect("player_left", self, "_on_PlayerData_player_left")
+	if PlayerData.is_connected("pond_script_changed", self, "_on_PlayerData_pond_script_changed"):
+		PlayerData.disconnect("pond_script_changed", self, "_on_PlayerData_pond_script_changed")
 
 func set_pond_events(p_events_state : Dictionary):
 	pond_events_mutex.lock()
@@ -357,6 +353,17 @@ func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
 	pond_events_mutex.lock()
 	pond_events["vfx"][p_effect_name].push_back(p_pond_state)
 	pond_events_mutex.unlock()
+
+func _on_PlayerData_player_joined(p_index : int):
+	if not is_running:
+		enable_player(p_index)
+
+func _on_PlayerData_player_left(p_index : int):
+	if not is_running:
+		disable_player(p_index)
+
+func _on_PlayerData_pond_script_changed(p_index : int, p_pond_script : String):
+	pass
 
 
 func _on_StepButton_pressed():
