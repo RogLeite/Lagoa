@@ -15,7 +15,7 @@ export var can_send_script : bool = false
 
 var is_running : bool = false
 var threads : Array
-var scripts : Array
+var script_editors : Array # Array of TextEdit
 var controllers : Array
 var controller_ids : Array
 
@@ -36,11 +36,12 @@ onready var controller_scene := preload("res://src/World/Characters/DuckControll
 onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
 onready var send_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
+onready var script_tabs := $UI/ScriptTabs
 
 func _init():
 
 	threads = []
-	scripts = []
+	script_editors = []
 	controllers = [] 
 	controller_ids = [] 
 	
@@ -65,7 +66,7 @@ func _ready():
 	send_script_btn.visible = can_send_script
 	
 	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
-	scripts.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
+	script_editors.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	controllers.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 
 	# If there are already players, enable them
@@ -167,7 +168,7 @@ func run():
 			continue
 		
 		# [TODO] when implemented, grab the script from PlayerData/Datum
-		controllers[i].set_lua_code(scripts[i].text)
+		controllers[i].set_lua_code(script_editors[i].text)
 		var error_message = ""
 		if controllers[i].compile() != OK :
 			successfully_compiled = false
@@ -231,12 +232,8 @@ func are_controllers_finished() -> bool :
 	return true
 
 func enable_player(p_index : int):
-	var new_script : bool = not scripts[p_index]
-	if new_script:
-		scripts[p_index] = script_scene.instance()
-		$UI/ScriptTabs.add_child(scripts[p_index])
 	
-	scripts[p_index].name = PlayerData.players[p_index].username
+	enable_pond_script(p_index)
 
 	threads[p_index] = Thread.new()
 
@@ -252,10 +249,10 @@ func enable_player(p_index : int):
 
 	reset_pond_match()
 
-# Remover controllers e scripts dos players que não participarão
+# Remover controllers e script_editors dos players que não participarão
 func disable_player(p_index : int):
-	scripts[p_index] = null
-
+	disable_pond_script(p_index)
+	
 	threads[p_index] = null
 
 	if not controllers[p_index]:
@@ -270,6 +267,35 @@ func disable_player(p_index : int):
 	node.queue_free()
 	
 	reset_pond_match()
+
+# Assures the order of tabs in script_tabs corresponds to player order
+func reorder_pond_scripts() -> void:
+	var curr := 0
+	for edit in script_editors:
+		if edit == null:
+			continue
+		script_tabs.move_child(edit, curr)
+		curr += 1
+
+# Updates name and text of the corresponding TextEdit
+func update_pond_script_editor(p_index : int) -> void:
+	var edit : TextEdit = script_editors[p_index]
+	edit.name = PlayerData.players[p_index].username
+	edit.text = PlayerData.get_pond_script(p_index)
+
+# Creates (if necessary), shows and updates a script editor tab
+func enable_pond_script(p_index : int) -> void:
+	if not script_editors[p_index]:
+		script_editors[p_index] = script_scene.instance()
+		script_tabs.add_child(script_editors[p_index])
+		reorder_pond_scripts()
+	
+	script_tabs.set_tab_hidden(p_index, false)
+	update_pond_script_editor(p_index)
+
+# Hides a script editor tab
+func disable_pond_script(p_index : int) -> void:
+	script_tabs.set_tab_hidden(p_index, true)
 
 func _exit_tree():
 	force_join_controllers()
