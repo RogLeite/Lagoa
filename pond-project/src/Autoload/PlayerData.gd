@@ -52,10 +52,13 @@ func set_duck_paths(p_paths : Array) -> void:
 func set_duck_path(p_index : int, p_path : NodePath) -> void:
 	players[p_index].duck_path = p_path
 
-func set_pond_script(p_index : int, p_script : String) -> void:
+# Sets the player's script as p_script, if is different
+# then, is p_supress_signal is not true, emits "pond_script_changed"
+func set_pond_script(p_index : int, p_script : String, p_supress_signal : bool = false) -> void:
 	if players[p_index].pond_script != p_script:
 		players[p_index].pond_script = p_script
-		emit_signal("pond_script_changed", p_index, p_script)
+		if not p_supress_signal:
+			emit_signal("pond_script_changed", p_index, p_script)
 
 func get_pond_script(p_index : int) -> String:
 	return players[p_index].pond_script
