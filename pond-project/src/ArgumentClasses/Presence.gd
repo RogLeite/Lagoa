@@ -6,7 +6,7 @@ var user_id : String
 var username : String
 var pond_script : String
 
-func _init(p_user_id : String = "", p_username : String = "", p_pond_script : String = ""):
+func _init(p_user_id : String = "", p_username : String = "", p_pond_script : String = LuaScript.new().lua_script):
 	user_id = p_user_id
 	username = p_username
 	pond_script = p_pond_script

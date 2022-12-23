@@ -9,7 +9,7 @@ local angle_increment = 90
 while true do
 	for i = 0,4 do
 		dist = scan(i*angle_increment)
-		if dist != \"infinity\" then
+		if dist ~= \"infinity\" then
 			launch(i*angle_increment, dist)
 		end
 		dist = \"infinity\"
