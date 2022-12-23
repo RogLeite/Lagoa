@@ -6,7 +6,7 @@ var _main_state := "initial"
 onready var pond_match := $PondMatch
 
 func _init():
-	var script1 : Resource = preload("res://resources/LuaScripts/swim_up_launch_right.tres")
+	var script1 : Resource = preload("res://resources/LuaScripts/launch_cross.tres")
 	var script2 : Resource = preload("res://resources/LuaScripts/swim_up_launch_right.tres")
 	_player_joins = [
 		Presence.new("Player1","Player1"),

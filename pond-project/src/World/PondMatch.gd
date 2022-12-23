@@ -168,7 +168,7 @@ func run():
 			continue
 		
 		# [TODO] when implemented, grab the script from PlayerData/Datum
-		controllers[i].set_lua_code(script_editors[i].text)
+		controllers[i].set_lua_code(PlayerData.get_pond_script(i))
 		var error_message = ""
 		if controllers[i].compile() != OK :
 			successfully_compiled = false
