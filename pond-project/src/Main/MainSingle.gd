@@ -42,6 +42,7 @@ func elapse() -> void:
 
 func start() -> void:
 	_main_state = "start"
+	pond_match.save_pond_scripts()
 	pond_match.run()
 
 func result() -> void:

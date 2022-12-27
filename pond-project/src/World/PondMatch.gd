@@ -295,7 +295,16 @@ func enable_pond_script(p_index : int) -> void:
 
 # Hides a script editor tab
 func disable_pond_script(p_index : int) -> void:
+#	var edit : TextEdit = script_editors[p_index]
 	script_tabs.set_tab_hidden(p_index, true)
+
+# Saves pond scripts from `script_editors` in `PlayerData`
+func save_pond_scripts() -> void:
+	for i in script_editors.size():
+		var edit = script_editors[i]
+		if edit is TextEdit and "text" in edit:
+			PlayerData.set_pond_script(i, edit.text, true)
+		
 
 func _exit_tree():
 	force_join_controllers()
