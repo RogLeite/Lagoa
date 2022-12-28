@@ -36,7 +36,7 @@ onready var controller_scene := preload("res://src/World/Characters/DuckControll
 onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
 onready var send_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
-onready var script_tabs := $UI/ScriptTabs
+onready var scripts_tab_container := $UI/ScriptTabs
 
 func _init():
 
@@ -268,13 +268,13 @@ func disable_player(p_index : int):
 	
 	reset_pond_match()
 
-# Assures the order of tabs in script_tabs corresponds to player order
+# Assures the order of tabs in scripts_tab_container corresponds to player order
 func reorder_pond_scripts() -> void:
 	var curr := 0
 	for edit in script_editors:
 		if edit == null:
 			continue
-		script_tabs.move_child(edit, curr)
+		scripts_tab_container.move_child(edit, curr)
 		curr += 1
 
 # Updates name and text of the corresponding TextEdit
@@ -287,16 +287,16 @@ func update_pond_script_editor(p_index : int) -> void:
 func enable_pond_script(p_index : int) -> void:
 	if not script_editors[p_index]:
 		script_editors[p_index] = script_scene.instance()
-		script_tabs.add_child(script_editors[p_index])
+		scripts_tab_container.add_child(script_editors[p_index])
 		reorder_pond_scripts()
 	
-	script_tabs.set_tab_hidden(p_index, false)
+	scripts_tab_container.set_tab_hidden(p_index, false)
 	update_pond_script_editor(p_index)
 
 # Hides a script editor tab
 func disable_pond_script(p_index : int) -> void:
 #	var edit : TextEdit = script_editors[p_index]
-	script_tabs.set_tab_hidden(p_index, true)
+	scripts_tab_container.set_tab_hidden(p_index, true)
 
 # Saves pond scripts from `script_editors` in `PlayerData`
 func save_pond_scripts() -> void:
@@ -398,7 +398,8 @@ func _on_PlayerData_player_left(p_index : int):
 		disable_player(p_index)
 
 func _on_PlayerData_pond_script_changed(p_index : int, p_pond_script : String):
-	pass
+	if script_editors[p_index] is TextEdit :
+		script_editors[p_index].text = p_pond_script
 
 
 func _on_StepButton_pressed():
