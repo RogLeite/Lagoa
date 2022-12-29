@@ -12,11 +12,19 @@ onready var pond_match := $PondMatch
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 	PlayerCache.responsible = self
+	call_deferred("reset")
 
 func reset(p_status : String = ""):
 	_main_state = "reset"
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
+
+	# Default values to help debugging
+	# [TODO] Detect a run option of "debug" to run this code
+	login_and_register.login_form.email_field.text = "P1@test.com"
+	login_and_register.login_form.password_field.text = "asdfçlkj"
+	login_and_register.login_form.remember_email.pressed = false
+
 	login_and_register.show()
 	if not p_status.empty():
 		login_and_register.set_status(p_status)
@@ -76,7 +84,7 @@ func elapse() -> void:
 	# print("PlayerCache.print: %s"%PlayerCache)
 	PlayerCache.release()
 	
-func start(pond_state : PondMatch.State, scripts : Dictionary) -> void:
+func start(pond_state : PondMatch.State, _scripts : Dictionary) -> void:
 	_main_state = "start"
 	if pond_state.tick > pond_match.tick:
 		pond_match.pond_state = pond_state

@@ -21,6 +21,13 @@ func reset(p_status : String = ""):
 	_main_state = "reset"
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
+
+	# Default values to help debugging
+	# [TODO] Detect a run option of "debug" to run this code
+	login_and_register.login_form.email_field.text = "M1@test.com"
+	login_and_register.login_form.password_field.text = "asdfçlkj"
+	login_and_register.login_form.remember_email.pressed = false
+	
 	login_and_register.show()
 	if not p_status.empty():
 		login_and_register.set_status(p_status)
