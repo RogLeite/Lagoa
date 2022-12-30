@@ -281,6 +281,7 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
         end
 
         if op_code == OpCodes.send_pond_script then
+            -- nakama.logger_warn(string.format("received script: %s", decoded.pond_script))
             if state.master.user_id then
                 -- Sends the PlayerClient message (the actual message is in message.data) to the MasterClient
                 dispatcher.broadcast_message(op_code, message.data, {state.master.presence}, message.sender)

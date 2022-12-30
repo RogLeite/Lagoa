@@ -139,3 +139,7 @@ func _on_PlayerClient_leaves_received(p_leaves):
 			leave(player)
 		else:
 			PlayerCache.add_leave(player)
+
+func _on_PondMatch_send_pond_script_requested():
+	pond_match.save_pond_scripts()
+	_client.send_pond_script(PlayerData.get_user_pond_script())

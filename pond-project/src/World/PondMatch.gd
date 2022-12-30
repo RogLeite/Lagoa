@@ -6,11 +6,12 @@ signal match_run_requested
 signal match_reset_requested
 signal match_step_requested
 signal match_scripts_ended
+signal send_pond_script_requested
 
 export var is_visualizing : bool = true
 export var is_simulating : bool  = true
 export var is_step_by_step : bool = false
-export var can_send_script : bool = false
+export var can_send_pond_script : bool = false
 
 
 var is_running : bool = false
@@ -35,7 +36,7 @@ onready var controller_scene := preload("res://src/World/Characters/DuckControll
 # References to Nodes
 onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
-onready var send_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
+onready var send_pond_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/ScriptTabs
 
 func _init():
@@ -63,7 +64,7 @@ func _ready():
 	pond_visualization.visible = is_visualizing
 	pond_visualization.is_simulating = is_simulating
 	
-	send_script_btn.visible = can_send_script
+	send_pond_script_btn.visible = can_send_pond_script
 	
 	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	script_editors.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
@@ -412,6 +413,9 @@ func _on_RunResetButton_reset():
 
 func _on_RunResetButton_run():
 	emit_signal("match_run_requested")
+
+func _on_SendScriptButton_pressed():
+	emit_signal("send_pond_script_requested")
 
 #JSONable class for PondMath
 class State extends JSONable:

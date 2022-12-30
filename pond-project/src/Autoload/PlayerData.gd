@@ -66,6 +66,16 @@ func set_pond_script(p_index : int, p_script : String, p_supress_signal : bool =
 	if not p_supress_signal:
 		emit_signal("pond_script_changed", p_index, p_script)
 
+# Returns -1 if no player is the user. This should not happen, but is needed for syntatic correctness
+func get_user_index() -> int:
+	for i in players.size():
+		if players[i].is_user:
+			return i
+	return -1
+
+func get_user_pond_script() -> String:
+	return get_pond_script(get_user_index())
+
 func get_pond_script(p_index : int) -> String:
 	return players[p_index].pond_script
 
@@ -118,8 +128,6 @@ func add_player(p_join : Presence) -> void:
 	datum.user_id = p_join.user_id
 	datum.username = p_join.username
 	datum.is_user = p_join.is_user
-	if datum.is_user :
-		print("add_player: Added the user!!<%s>"%datum.username)
 	players.push_back(datum)
 	set_pond_script(players.size()-1, p_join.pond_script)
 	join_player(p_join)

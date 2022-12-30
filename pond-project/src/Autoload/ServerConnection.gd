@@ -293,7 +293,7 @@ func end_pond_match() -> void:
  # Sends a message to the server stating a change in the pond_script for the player.
 func send_pond_script(p_pond_script: String) -> void:
 	if _socket:
-		var payload := {username = get_username(), pond_script = p_pond_script}
+		var payload := {user_id = get_user_id(), pond_script = p_pond_script}
 		_socket.send_match_state_async(_world_id, OpCodes.SEND_POND_SCRIPT, JSON.print(payload))
 
 

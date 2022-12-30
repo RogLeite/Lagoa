@@ -122,8 +122,8 @@ func _exit_tree():
 func end_pond_match() -> void:
 	ServerConnection.end_pond_match()
 	
-func send_script(p_script : String) -> void:
-	ServerConnection.send_script(p_script)
+func send_pond_script(p_pond_script : String) -> void:
+	ServerConnection.send_pond_script(p_pond_script)
 
 func update_pond_state(pond_state : PondMatch.State, scripts : Dictionary) -> void:
 	ServerConnection.update_pond_state(pond_state, scripts)

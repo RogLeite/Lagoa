@@ -141,3 +141,4 @@ tab_align = 0
 [connection signal="pressed" from="UI/Gameplay/HBoxContainer/StepButton" to="." method="_on_StepButton_pressed"]
 [connection signal="reset" from="UI/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
 [connection signal="run" from="UI/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
+[connection signal="pressed" from="UI/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]

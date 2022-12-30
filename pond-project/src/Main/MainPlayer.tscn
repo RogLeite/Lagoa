@@ -56,7 +56,7 @@ uppercase = true
 [node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
 is_simulating = false
-can_send_script = true
+can_send_pond_script = true
 
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
 [connection signal="joins_received" from="PlayerClient" to="." method="_on_PlayerClient_joins_received"]
@@ -65,3 +65,4 @@ can_send_script = true
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
+[connection signal="send_pond_script_requested" from="PondMatch" to="." method="_on_PondMatch_send_pond_script_requested"]
