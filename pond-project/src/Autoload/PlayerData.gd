@@ -31,9 +31,13 @@ func get_duck_node(p_index : int) -> Node:
 # If a player does not have a duck_path defined, it's index in the array has `null`
 func get_duck_nodes() -> Array:
 	var ret := []
-	if players.size() > 0:
-		for i in players.size():
-			ret.append(get_duck_node(i))
+
+	if players.size() == 0:
+		return ret
+
+	for i in players.size():
+		ret.append(get_duck_node(i))
+
 	return ret
 
 # Checks if the player at p_index is present
@@ -55,10 +59,12 @@ func set_duck_path(p_index : int, p_path : NodePath) -> void:
 # Sets the player's script as p_script, if is different
 # then, is p_supress_signal is not true, emits "pond_script_changed"
 func set_pond_script(p_index : int, p_script : String, p_supress_signal : bool = false) -> void:
-	if players[p_index].pond_script != p_script:
-		players[p_index].pond_script = p_script
-		if not p_supress_signal:
-			emit_signal("pond_script_changed", p_index, p_script)
+	if players[p_index].pond_script == p_script:
+		return
+		
+	players[p_index].pond_script = p_script
+	if not p_supress_signal:
+		emit_signal("pond_script_changed", p_index, p_script)
 
 func get_pond_script(p_index : int) -> String:
 	return players[p_index].pond_script
@@ -81,23 +87,29 @@ func is_registered_player(p_user_id : String) -> bool:
 # and emits `player_joined`
 func join_player(p_join : Presence) -> void:
 	for i in players.size():
-		if players[i].user_id == p_join.user_id:
-			if not players[i].is_present :
-				_present_count += 1
-			players[i].is_present = true
-			set_pond_script(i, p_join.pond_script)
-			emit_signal("player_joined", i)
-			return
+
+		if players[i].user_id != p_join.user_id:
+			continue
+
+		if not players[i].is_present :
+			_present_count += 1
+		players[i].is_present = true
+		set_pond_script(i, p_join.pond_script)
+		emit_signal("player_joined", i)
+		return
 	
 # Marks a player as absent
 func leave_player(p_leave : Presence) -> void:
 	for i in players.size():
-		if players[i].user_id == p_leave.user_id:
-			if players[i].is_present :
-				_present_count -= 1
-			players[i].is_present = false
-			emit_signal("player_left", i)
-			return
+
+		if players[i].user_id != p_leave.user_id:
+			continue
+
+		if players[i].is_present :
+			_present_count -= 1
+		players[i].is_present = false
+		emit_signal("player_left", i)
+		return
 
 # Adds a new player and joins it
 # DOES NOT CHECK IF PLAYER IS ALREADY PRESENT
@@ -105,6 +117,9 @@ func add_player(p_join : Presence) -> void:
 	var datum = PlayerDatum.new()
 	datum.user_id = p_join.user_id
 	datum.username = p_join.username
+	datum.is_user = p_join.is_user
+	if datum.is_user :
+		print("add_player: Added the user!!<%s>"%datum.username)
 	players.push_back(datum)
 	set_pond_script(players.size()-1, p_join.pond_script)
 	join_player(p_join)
@@ -123,3 +138,4 @@ class PlayerDatum extends Reference:
 	var pond_script : String  = ""
 	var last_compileable_script : String  = ""
 	var is_present : bool = false
+	var is_user : bool = false

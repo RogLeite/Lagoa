@@ -4,15 +4,17 @@ class_name Presence
 
 var user_id : String
 var username : String
+var is_user : bool
 var pond_script : String
 
-func _init(p_user_id : String = "", p_username : String = "", p_pond_script : String = LuaScript.new().lua_script):
+func _init(p_user_id : String = "", p_username : String = "", p_is_user : bool = false, p_pond_script : String = LuaScript.new().lua_script):
 	user_id = p_user_id
 	username = p_username
 	pond_script = p_pond_script
+	is_user = p_is_user
 
 func _to_string() -> String:
-	return "Presence<username=%s, user_id=%s, pond_script=%s>"%[username, user_id, pond_script]
+	return "Presence<username=%s, user_id=%s, is_user=%s, pond_script=%s>"%[username, user_id, is_user, pond_script]
 
 func get_class() -> String:
 	return "Presence"

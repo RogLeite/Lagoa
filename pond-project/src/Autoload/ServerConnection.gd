@@ -243,9 +243,9 @@ func get_presences_async() -> int:
 		var leaves := []
 		# print("get_presences_async: receives array of size %s"%presences.size())
 		for player in presences:
-			joins.push_back(Presence.new(player.user_id, player.username))
+			joins.push_back(Presence.new(player.user_id, player.username, is_user(player)))
 			if player.presence is bool and not player.presence:
-				leaves.push_back(Presence.new(player.user_id, player.username))
+				leaves.push_back(Presence.new(player.user_id, player.username, is_user(player)))
 		
 		emit_signal("joins_received", joins)
 		emit_signal("leaves_received", leaves)
@@ -272,6 +272,8 @@ func get_last_email() -> String:
 func clear_last_email() -> void:
 	EmailConfigWorker.clear_last_email()
 
+func is_user(p_presence) -> bool:
+	return p_presence.user_id == get_user_id()
 
 func get_user_id() -> String:
 	if _authenticator.session:
