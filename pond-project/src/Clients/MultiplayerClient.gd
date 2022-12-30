@@ -6,7 +6,7 @@ signal connection_closed()
 
 signal pond_match_ended()
 signal pond_script_received(user_id, pond_script)
-signal pond_state_updated(pond_state, pond_scripts)
+signal pond_state_updated(pond_state)
 signal joins_received(p_joins)
 signal leaves_received(p_leaves)
 
@@ -125,8 +125,8 @@ func end_pond_match() -> void:
 func send_pond_script(p_pond_script : String) -> void:
 	ServerConnection.send_pond_script(p_pond_script)
 
-func update_pond_state(pond_state : PondMatch.State, scripts : Dictionary) -> void:
-	ServerConnection.update_pond_state(pond_state, scripts)
+func update_pond_state(pond_state : PondMatch.State) -> void:
+	ServerConnection.update_pond_state(pond_state)
 
 func _on_ServerConnection_connection_closed() -> void:
 	_is_connected = false
@@ -140,8 +140,8 @@ func _on_ServerConnection_pond_match_ended() -> void :
 func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script : String) -> void :
 	emit_signal("pond_script_received", p_user_id, p_pond_script)
 	
-func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State, p_pond_scripts : Dictionary) -> void:
-	emit_signal("pond_state_updated", p_pond_state, p_pond_scripts)
+func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State) -> void:
+	emit_signal("pond_state_updated", p_pond_state)
 
 func _on_ServerConnection_joins_received(p_joins : Array) -> void :
 	# print("_on_ServerConnection_joins_received:%s"%String(p_joins))

@@ -159,7 +159,7 @@ func _on_MasterClient_connection_closed() -> void:
 
 
 func _on_PondMatch_pond_state_updated(p_pond_state):
-	_client.update_pond_state(p_pond_state, _pond_scripts)
+	_client.update_pond_state(p_pond_state)
 
 
 func _on_PondMatch_match_step_requested():
