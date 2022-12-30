@@ -98,10 +98,6 @@ func _physics_process(_delta: float) -> void:
 			CurrentVisualization.get_current().stop()
 			emit_signal("match_scripts_ended")
 
-# [TODO] Allows adding a script to PondMatch
-func add_script(_username : String, _script : String) -> void:
-	pass
-
 # If it's is_running, busy waits for every thread to arrive
 func script_step():
 	if not is_running : 

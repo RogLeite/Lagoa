@@ -4,7 +4,6 @@ var is_pond_match_running := false
 var _email := "[no email]"
 var _main_state := "initial"
 
-onready var _pond_scripts := {}
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $MasterClient
@@ -115,9 +114,9 @@ func leave(p_leave : Presence):
 	if PlayerData.is_registered_player(p_leave.user_id):
 		PlayerData.leave_player(p_leave)
 
-func _on_MasterClient_pond_script_received(username, pond_script):
-	_pond_scripts[username] = pond_script
-	pond_match.add_pond_script(username, pond_script)
+func _on_MasterClient_pond_script_received(p_user_id, p_pond_script):
+	var index := PlayerData.get_index_by_user_id(p_user_id)
+	PlayerData.set_pond_script(index, p_pond_script)
 
 func _on_MasterClient_joins_received(p_joins):
 	# print("_on_MasterClient_joins_received:%s"%String(p_joins))

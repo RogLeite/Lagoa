@@ -332,9 +332,9 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 	match code:
 		OpCodes.SEND_POND_SCRIPT:
 			var decoded: Dictionary = JSON.parse(raw).result
-			var username: String = decoded.username
+			var user_id: String = decoded.user_id
 			var pond_script: String = decoded.pond_script
-			emit_signal("pond_script_received", username, pond_script)
+			emit_signal("pond_script_received", user_id, pond_script)
 		OpCodes.UPDATE_POND_STATE:
 			var decoded: Dictionary = JSON.parse(raw).result
 			# print("decoded.pond_state: %s"%decoded.pond_state)

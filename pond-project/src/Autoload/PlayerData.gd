@@ -73,6 +73,13 @@ func get_user_index() -> int:
 			return i
 	return -1
 
+# Returns -1 if not found. This should not happen, but is needed for syntatic correctness
+func get_index_by_user_id(p_user_id : String) -> int:
+	for i in players.size():
+		if players[i].user_id == p_user_id:
+			return i
+	return -1
+
 func get_user_pond_script() -> String:
 	return get_pond_script(get_user_index())
 
