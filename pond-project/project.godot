@@ -216,6 +216,10 @@ settings/fps/force_fps=30
 window/stretch/mode="viewport"
 window/stretch/aspect="keep"
 
+[editor]
+
+manual_testing=true
+
 [global]
 
 collision=false
