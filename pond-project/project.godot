@@ -206,6 +206,7 @@ CurrentVisualization="*res://src/Autoload/CurrentVisualization.gd"
 Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 ServerConnection="*res://src/Autoload/ServerConnection.gd"
 PlayerCache="*res://src/Autoload/PlayerCache.gd"
+RunArgs="*res://src/Autoload/CmdLineArgsParser.gd"
 
 [debug]
 
