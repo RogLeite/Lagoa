@@ -210,6 +210,11 @@ PlayerCache="*res://src/Autoload/PlayerCache.gd"
 [debug]
 
 settings/fps/force_fps=30
+multirun/number_of_windows=3
+multirun/window_distance=1270
+multirun/add_custom_args=false
+multirun/first_window_args="listen"
+multirun/other_window_args="join"
 
 [display]
 
@@ -219,6 +224,10 @@ window/stretch/aspect="keep"
 [editor]
 
 manual_testing=true
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/multirun/plugin.cfg" )
 
 [global]
 
