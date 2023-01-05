@@ -14,6 +14,14 @@ onready var modes_list := $ModesList
 onready var client_options := $ClientOptions
 
 func _ready():
+	if ProjectSettings.get_setting("editor/manual_testing"):
+		if RunArgs.has_arg(RunArgs.MASTER):
+			call_deferred("_on_ClientOptions_main_master_requested")
+			return
+		elif RunArgs.has_arg(RunArgs.PLAYER):
+			call_deferred("_on_ClientOptions_main_player_requested")
+			return
+
 	self.menu_current = modes_list
 
 
