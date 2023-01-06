@@ -127,13 +127,15 @@ func is_tired() -> bool :
 	return energy == 0
 
 func scan(duck_idx, angle):
+	if is_tired():
+		return INF
 	return CurrentVisualization.get_current().scan_field(duck_idx, angle, scan_resolution)
 
 # Passes Projectile parameters to CurrentVisualization.get_current().add_projectile()
 # Starts a cooldown timer for the launcher.
 # @ param angle is in degrees
 func launcher(angle, p_distance):
-	if can_launch:
+	if not is_tired() and can_launch:
 		can_launch = false
 		var distance : float
 		if p_distance is String:
