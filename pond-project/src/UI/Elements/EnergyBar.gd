@@ -11,6 +11,9 @@ func _ready():
 func set_energy(value : int):
 	$Bar.value = value
 
+func reset() -> void:
+	set_energy(100)
+
 func set_text(string : String) : 
 	text = string
 	if has_node("Label"):

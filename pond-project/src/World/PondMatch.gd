@@ -151,6 +151,7 @@ func _reset_pond_match() -> void:
 		#warning-ignore: return_value_discarded
 		var duck : Duck = PlayerData.get_duck_node(i)
 		var bar : EnergyBar = find_node("EnergyBar%d"%i)
+		bar.reset()
 		if not duck.is_connected("energy_changed", bar, "set_energy"):
 			duck.connect("energy_changed", bar, "set_energy")
 
