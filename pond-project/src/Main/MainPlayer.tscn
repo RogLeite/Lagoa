@@ -55,7 +55,9 @@ uppercase = true
 
 [node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
-is_simulating = false
+is_simulating_match = false
+can_see_scripts = false
+can_edit_scripts = false
 can_send_pond_script = true
 
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]

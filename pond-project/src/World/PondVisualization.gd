@@ -5,7 +5,7 @@ signal vfx_played (effect_name, p_pond_state)
 
 # Indicates if the pond is simulating or just showing it's state visually
 # Enables physics_process for Projectiles.
-var is_simulating := true
+var is_simulating_match := true
 
 # How many time bigger is the scale of this map versus the 100x100 map from blocly-games' pond
 const MAP_SCALE_FROM_BLOCKLY : float = 4.0
@@ -199,7 +199,7 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 
 func show_projectile(projectile : Projectile):
 	projectile.set_process(true)
-	projectile.set_physics_process(is_simulating)
+	projectile.set_physics_process(is_simulating_match)
 	projectile.show()
 func hide_projectile(projectile : Projectile):
 	projectile.hide()

@@ -89,6 +89,7 @@ func start() -> void:
 	if PlayerData.present_count() == 0:
 		return
 	_main_state = "start"
+	pond_match.save_pond_scripts()
 	pond_match.run()
 
 func result(p_result : String) -> void:

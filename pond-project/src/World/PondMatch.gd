@@ -8,9 +8,17 @@ signal match_step_requested
 signal match_scripts_ended
 signal send_pond_script_requested
 
-export var is_visualizing : bool = true
-export var is_simulating : bool  = true
+# Is the scene rendering the pond
+export var is_visualizing_pond : bool = true
+# Is the scene running the scripts
+export var is_simulating_match : bool  = true
+# Will the scripts wait for the signal to continue
 export var is_step_by_step : bool = false
+# Are the tabs of other player's scripts visible 
+export var can_see_scripts : bool  = true
+# Are other player's scripts editable
+export var can_edit_scripts : bool  = true
+# Enables the "send_script" button
 export var can_send_pond_script : bool = false
 
 
@@ -61,8 +69,8 @@ func _init():
 
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
-	pond_visualization.visible = is_visualizing
-	pond_visualization.is_simulating = is_simulating
+	pond_visualization.visible = is_visualizing_pond
+	pond_visualization.is_simulating_match = is_simulating_match
 	
 	send_pond_script_btn.visible = can_send_pond_script
 	
@@ -106,7 +114,7 @@ func script_step():
 	tick += 1
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
-	if is_simulating:
+	if is_simulating_match:
 		emit_signal("pond_state_updated", self.pond_state)
 	
 	clear_events()
@@ -229,8 +237,11 @@ func are_controllers_finished() -> bool :
 	return true
 
 func enable_player(p_index : int):
-	
-	enable_pond_script(p_index)
+	var is_user := p_index == PlayerData.get_user_index()
+	var can_edit := can_edit_scripts or is_user
+	var can_see := can_see_scripts or is_user
+	if can_see:
+		enable_pond_script(p_index, can_edit)
 
 	threads[p_index] = Thread.new()
 
@@ -275,20 +286,22 @@ func reorder_pond_scripts() -> void:
 		curr += 1
 
 # Updates name and text of the corresponding TextEdit
-func update_pond_script_editor(p_index : int) -> void:
+func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 	var edit : TextEdit = script_editors[p_index]
+	edit.set_readonly(true)
 	edit.name = PlayerData.players[p_index].username
 	edit.text = PlayerData.get_pond_script(p_index)
+	edit.set_readonly(not p_can_edit)
 
 # Creates (if necessary), shows and updates a script editor tab
-func enable_pond_script(p_index : int) -> void:
+func enable_pond_script(p_index : int, p_can_edit : bool) -> void:
 	if not script_editors[p_index]:
 		script_editors[p_index] = script_scene.instance()
 		scripts_tab_container.add_child(script_editors[p_index])
 		reorder_pond_scripts()
 	
 	scripts_tab_container.set_tab_hidden(p_index, false)
-	update_pond_script_editor(p_index)
+	update_pond_script_editor(p_index, p_can_edit)
 
 # Hides a script editor tab
 func disable_pond_script(p_index : int) -> void:
