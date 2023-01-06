@@ -75,7 +75,7 @@ func set_speed_target (value):
 	speed_target = clamp(value, 0, 100)
 	
 func set_energy(value : int) :
-	energy = int(clamp(value, 0, 100))
+	energy = int(clamp(value, 0, MAX_ENERGY))
 	emit_signal("energy_changed", energy)
 	check_energy()
 	
@@ -121,7 +121,7 @@ func check_energy():
 		emergency_stop()
 		$Collision.disabled = true
 		modulate = Color(0.75,0.75,0.75,0.75)
-		set_physics_process(false)
+		call_deferred("set_physics_process", false)
 
 func is_tired() -> bool :
 	return energy == 0
@@ -162,11 +162,12 @@ func get_class() -> String :
 func reset(pos : Vector2, angle : float):
 	speed = 0
 	speed_target = 0
-	self.energy = MAX_ENERGY
+	energy = MAX_ENERGY
 	modulate = _base_modulate
 	can_launch = true
 	position = pos
 	rotation = angle
+	call_deferred("set_physics_process", true)
 
 func get_pond_state() -> State:
 	pond_state.position = self.position
