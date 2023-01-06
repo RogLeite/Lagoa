@@ -95,16 +95,18 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 	scan_mutex.lock()
 
 	# [TODO] Consider if thread protection with mutexes is needed
-	var start : Vector2 = _every_duck[scanner].position
+	var scanner_duck : Duck = _every_duck[scanner]
+	var start : Vector2 = scanner_duck.position
 	var radians := deg2rad(degree)
 	var scanning_to := Vector2(1,0).rotated(radians).normalized()
 	var best_distance := INF
 	
 	for i in _participating_ducks.size():
-		if _participating_ducks[i] == _every_duck[scanner] :
+		var verifying_duck : Duck = _participating_ducks[i]
+		if verifying_duck == scanner_duck or verifying_duck.is_tired():
 			continue
 		# Position to other duck
-		var target_pos : Vector2 = _participating_ducks[i].position
+		var target_pos : Vector2 = verifying_duck.position
 		var direction_to = start.direction_to(target_pos)
 		var angular_dist := abs(scanning_to.angle_to(direction_to))
 		
