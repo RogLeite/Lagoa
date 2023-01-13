@@ -13,7 +13,6 @@ onready var pond_match := $PondMatch
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
 	PlayerCache.responsible = self
-	# [TODO] Change use of PondState, should get directly from PondMatch.pond_state
 	call_deferred("reset")
 
 func reset(p_status : String = ""):
