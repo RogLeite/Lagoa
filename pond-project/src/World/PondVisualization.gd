@@ -23,7 +23,8 @@ var starting_rotations := [0.0, PI, 0.0, PI]
 var _every_duck := []
 # Every duck that is participating in the match. MAY NOT BE IN THE REAL DUCK ORDER!
 var _participating_ducks := []
-var _vision_cones := []
+var _pool_vision_cones := []
+
 var scan_mutex := Mutex.new()
 var projectile_mutex := Mutex.new()
 
@@ -46,13 +47,16 @@ func _ready() -> void:
 		duck.set_participating(false)
 		_every_duck.append(duck)
 
-		var new_cone = vision_cone_scene.instance(i)
-		_vision_cones.append(new_cone)
-		new_cone.name = "VisionCone%d"%i
-		new_cone.set_visible(false)
-		add_child(new_cone)	
+		# Prepares every VisionCone ever needed: 8 per player
+		for j in 8:
+			var new_cone = vision_cone_scene.instance(i)
+			_pool_vision_cones.push_back(new_cone)
+			new_cone.name = "VisionCone%d"%j
+			add_child(new_cone)	
 
-		# Prepares every Projectile ever needed 3 per player
+
+
+		# Prepares every Projectile ever needed: 3 per player
 		for j in 3:
 			var proj := projectile_scene.instance()
 			projectiles.push_back(proj)
@@ -111,14 +115,14 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 		var angular_dist := abs(scanning_to.angle_to(direction_to))
 		
 		# Checks if the angle to the other duck is within tolerance
-		if angular_dist <= deg2rad(angular_resolution/2) :
-			var dist := start.distance_to(target_pos)
-			if dist < best_distance:
-				# Updates best distance
-				best_distance = dist
+		if angular_dist > deg2rad(angular_resolution/2) :
+			continue
 
-	_vision_cones[scanner].play_animation(start, radians)
-	emit_signal("vfx_played", "vision_cone", _vision_cones[scanner].pond_state)
+		var dist := start.distance_to(target_pos)
+		# Updates best distance
+		best_distance = min(dist, best_distance)
+
+	add_vision_cone(start, radians)
 	
 	scan_mutex.unlock()
 	
@@ -150,11 +154,11 @@ func play_sfx(p_effects : Dictionary):
 # 	"blast" : []
 # }
 func play_vfx(p_effects : Dictionary):
-	for cone_state in p_effects["vision_cone"]:
-		var scanner : int = cone_state.scanner
-		var cone : VisionCone = _vision_cones[scanner]
-		cone.pond_state = cone_state
-		cone.play_animation(cone.position, cone.rotation)
+	var received_states : Array = p_effects["vision_cone"]
+	for i in received_states.size():
+		var cone : VisionCone = _pool_vision_cones[i]
+		cone.pond_state = received_states[i]
+
 	for blast_state in p_effects["blast"]:
 		_play_blast(blast_state.position, false)
 		
@@ -184,6 +188,12 @@ func projectile_splash(landing_position : Vector2, has_hit : bool, _exhaustion :
 		
 		_play_blast(landing_position)
 	
+func add_vision_cone(p_position : Vector2, p_rotation : float):
+	for cone in _pool_vision_cones:
+		if cone.is_available:
+			cone.play_animation(p_position, p_rotation)
+			break
+
 func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location : Vector2, p_distance : float):
 	projectile_mutex.lock()
 
@@ -253,9 +263,8 @@ func reset():
 		if not PlayerData.is_present(i):
 			disable_duck(i)
 
-	for cone in _vision_cones:
+	for cone in _pool_vision_cones:
 		cone.reset()
-		cone.set_visible(false)
 	
 	# set_process(true)
 	set_physics_process(true)
