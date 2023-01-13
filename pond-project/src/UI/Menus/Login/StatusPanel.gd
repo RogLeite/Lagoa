@@ -1,4 +1,4 @@
-extends Panel
+extends PanelContainer
 
 var text := "" setget set_text
 
