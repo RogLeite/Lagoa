@@ -46,25 +46,24 @@ func _physics_process(delta):
 	if is_tired():
 		return
 	accelerate(delta)
-	# Needs delta in calculations because move_and_collide doesn't use it
-	# automatically like move_and_slide does
+	# Needs delta in calculations because move_and_collide doesn't use it automatically like move_and_slide does
 	var velocity : Vector2 = Vector2(speed, 0).rotated(rotation) * delta
 	var collision_result :=  move_and_collide(velocity, true, true, false)
 	
 	# [TODO] better check to see if should check the collision_result (even if stopped, the ducks keep colliding)
 	#   maybe a move on both parties so they get out of collision_result range?
-	if collision_result and collision_result.collider:
-		match collision_result.collider.get_meta("collider_type"):
-			"duck":
-				if (speed!=0 and collision_result.collider.speed != 0):
-					call_deferred("tire", COLLISION_DAMAGE_DUCK)
-					call_deferred("emergency_stop")
-					# print("Collided with duck")
-			"wall":
-				if speed!=0:
-					call_deferred("tire", COLLISION_DAMAGE_WALL)
-					call_deferred("emergency_stop")
-					# print("Collided with wall")
+	if not collision_result or not collision_result.collider:
+		return
+		
+	match collision_result.collider.get_meta("collider_type"):
+		"duck":
+			if (speed!=0 or collision_result.collider.speed != 0):
+				call_deferred("tire", COLLISION_DAMAGE_DUCK)
+				# print("Collided with duck")
+		"wall":
+			if speed!=0:
+				call_deferred("tire", COLLISION_DAMAGE_WALL)
+				# print("Collided with wall")
 
 func get_speed ():
 	return speed
@@ -110,11 +109,10 @@ func emergency_stop() -> void :
 	self.speed = 0
 
 func accelerate(delta) :
-	if speed != speed_target:
-		if speed < speed_target :
-			self.speed = min(speed + ACCELERATION * delta, speed_target)
-		elif speed > speed_target :
-			self.speed = max(speed - ACCELERATION * delta, speed_target)
+	if speed < speed_target :
+		self.speed = min(speed + ACCELERATION * delta, speed_target)
+	elif speed > speed_target :
+		self.speed = max(speed - ACCELERATION * delta, speed_target)
 
 func check_energy():
 	if energy == 0 :
@@ -167,6 +165,7 @@ func reset(pos : Vector2, angle : float):
 	can_launch = true
 	position = pos
 	rotation = angle
+	$Collision.disabled = false
 	call_deferred("set_physics_process", true)
 
 func get_pond_state() -> State:
