@@ -240,9 +240,9 @@ func are_controllers_finished() -> bool :
 func enable_player(p_index : int):
 	var is_user := p_index == PlayerData.get_user_index()
 	var can_edit := can_edit_scripts or is_user
+	add_pond_script_editor(p_index, can_edit)
 	var can_see := can_see_scripts or is_user
-	if can_see:
-		enable_pond_script(p_index, can_edit)
+	set_pond_script_editor_visible(p_index, can_see, can_edit)
 
 	threads[p_index] = Thread.new()
 
@@ -260,7 +260,7 @@ func enable_player(p_index : int):
 
 # Remover controllers e script_editors dos players que não participarão
 func disable_player(p_index : int):
-	disable_pond_script(p_index)
+	disable_pond_script_editor(p_index)
 	
 	threads[p_index] = null
 
@@ -278,7 +278,7 @@ func disable_player(p_index : int):
 	reset_pond_match()
 
 # Assures the order of tabs in scripts_tab_container corresponds to player order
-func reorder_pond_scripts() -> void:
+func reorder_pond_script_editors() -> void:
 	var curr := 0
 	for edit in script_editors:
 		if edit == null:
@@ -295,18 +295,18 @@ func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 	edit.set_readonly(not p_can_edit)
 
 # Creates (if necessary), shows and updates a script editor tab
-func enable_pond_script(p_index : int, p_can_edit : bool) -> void:
+func add_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 	if not script_editors[p_index]:
 		script_editors[p_index] = script_scene.instance()
 		scripts_tab_container.add_child(script_editors[p_index])
-		reorder_pond_scripts()
-	
-	scripts_tab_container.set_tab_hidden(p_index, false)
+		reorder_pond_script_editors()
+		
+func set_pond_script_editor_visible(p_index : int, p_can_see : bool, p_can_edit : bool) -> void:
+	scripts_tab_container.set_tab_hidden(p_index, !p_can_see)
 	update_pond_script_editor(p_index, p_can_edit)
 
 # Hides a script editor tab
-func disable_pond_script(p_index : int) -> void:
-#	var edit : TextEdit = script_editors[p_index]
+func disable_pond_script_editor(p_index : int) -> void:
 	scripts_tab_container.set_tab_hidden(p_index, true)
 
 # Saves pond scripts from `script_editors` in `PlayerData`
