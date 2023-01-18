@@ -15,6 +15,7 @@ const PROJECTILES_GROUP : String = "projectiles_effects"
 
 var projectiles : Array setget _no_set, _no_get
 var projectile_pond_states : Array setget _set_projectile_pond_states, _get_projectile_pond_states
+var vision_cones_pond_states : Array setget , _get_vision_cones_pond_states
 
 # [TODO] Make a tool to edit starting positions and rotations
 var starting_positions := [Vector2(92,100), Vector2(308,100), Vector2(92,300), Vector2(308,300)]
@@ -47,8 +48,8 @@ func _ready() -> void:
 		duck.set_participating(false)
 		_every_duck.append(duck)
 
-		# Prepares every VisionCone ever needed: 8 per player
-		for j in 8:
+		# Prepares every VisionCone ever needed: 7 per player
+		for j in 2:
 			var new_cone = vision_cone_scene.instance(i)
 			_pool_vision_cones.push_back(new_cone)
 			new_cone.name = "VisionCone%d"%j
@@ -227,13 +228,20 @@ func _set_projectile_pond_states(p_states : Array):
 			show_projectile(proj)
 		else:
 			hide_projectile(proj)
-		
 
 func _get_projectile_pond_states() -> Array:
 	var states := []
 	for proj in projectiles:
 		if proj.is_processing():
 			states.push_back(proj.pond_state)
+	return states
+
+func _get_vision_cones_pond_states() -> Array:
+	scan_mutex.lock()
+	var states := [] 
+	for cone in _pool_vision_cones:
+		states.push_back(cone.pond_state)
+	scan_mutex.unlock()
 	return states
 
 func _free_groups(effects : Array):

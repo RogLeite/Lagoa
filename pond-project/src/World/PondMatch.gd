@@ -341,6 +341,7 @@ func set_pond_events(p_events_state : Dictionary):
 func get_pond_events() -> Dictionary :
 	pond_events_mutex.lock()
 	var ret = pond_events
+	ret.vfx.vision_cone = CurrentVisualization.get_current().vision_cones_pond_states
 	pond_events_mutex.unlock()
 	return ret
 

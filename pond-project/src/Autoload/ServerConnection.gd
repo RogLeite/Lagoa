@@ -204,6 +204,7 @@ func disconnect_from_server_async() -> int:
 		"presence" : _presence.serialize()
 	}
 	var rpc_result = _client.rpc_async(_authenticator.session,"leave_player", JSON.print(parameters))
+	# For some "yield" reason, this print call is necessary
 	print("rpc_result = %s"%rpc_result)
 
 

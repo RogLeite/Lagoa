@@ -4,8 +4,8 @@
 
 [sub_resource type="Animation" id=1]
 resource_name = "fade"
-length = 0.2
-step = 0.02
+length = 0.06
+step = 0.005
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:color")
 tracks/0/interp = 1
@@ -13,27 +13,10 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.04, 0.2 ),
+"times": PoolRealArray( 0, 0.03, 0.06 ),
 "transitions": PoolRealArray( 1, 2.63901, 1 ),
 "update": 0,
-"values": [ Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0 ) ]
-}
-tracks/1/type = "method"
-tracks/1/path = NodePath(".")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"times": PoolRealArray( 0, 0.2 ),
-"transitions": PoolRealArray( 1, 1 ),
-"values": [ {
-"args": [ true ],
-"method": "set_visible"
-}, {
-"args": [ false ],
-"method": "set_visible"
-} ]
+"values": [ Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0.498039 ), Color( 1, 1, 1, 0.211765 ) ]
 }
 
 [node name="VisionCone" type="Polygon2D"]
