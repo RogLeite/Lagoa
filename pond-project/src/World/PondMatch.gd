@@ -124,10 +124,11 @@ func script_step():
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
 # No matter how many times its called, the reset occurs once in the next idle frame
 func reset_pond_match() -> void:
-	if not _reset_requested:
-		call_deferred("_reset_pond_match")
-		_reset_requested = true
-		set_deferred("_reset_requested", false)
+	if _reset_requested:
+		return
+	call_deferred("_reset_pond_match")
+	_reset_requested = true
+	set_deferred("_reset_requested", false)
 	
 func _reset_pond_match() -> void:
 	run_reset_btn.swap_role("run")
@@ -240,7 +241,7 @@ func are_controllers_finished() -> bool :
 func enable_player(p_index : int):
 	var is_user := p_index == PlayerData.get_user_index()
 	var can_edit := can_edit_scripts or is_user
-	add_pond_script_editor(p_index, can_edit)
+	add_pond_script_editor(p_index)
 	var can_see := can_see_scripts or is_user
 	set_pond_script_editor_visible(p_index, can_see, can_edit)
 
@@ -249,12 +250,13 @@ func enable_player(p_index : int):
 	if controllers[p_index]:
 		push_error("In PondMatch.enable_player:\n\tOverwriting a controller without removing it first. controller_ids will hold invalid ids and there will be more controllers than expected in the tree. Somehow a enable was called after a enable. If this is expected, I need to protect controllers and controller_ids.")
 
-	controllers[p_index] = controller_scene.instance()
-	controllers[p_index].name = "DuckController%d"%p_index
-	controllers[p_index].duck_idx = p_index
-	add_child(controllers[p_index])
+	var new_controller = controller_scene.instance()
+	controllers[p_index] = new_controller 
+	new_controller.name = "DuckController%d"%p_index
+	new_controller.duck_idx = p_index
+	add_child(new_controller)
 	
-	controller_ids.push_back(controllers[p_index].get_instance_id())
+	controller_ids.push_back(new_controller.get_instance_id())
 
 	reset_pond_match()
 
@@ -295,7 +297,7 @@ func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 	edit.set_readonly(not p_can_edit)
 
 # Creates (if necessary), shows and updates a script editor tab
-func add_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
+func add_pond_script_editor(p_index : int) -> void:
 	if not script_editors[p_index]:
 		script_editors[p_index] = script_scene.instance()
 		scripts_tab_container.add_child(script_editors[p_index])

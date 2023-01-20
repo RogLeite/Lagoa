@@ -172,22 +172,26 @@ func _play_blast(p_position : Vector2, p_emit : bool = true) -> void:
 	if p_emit:
 		emit_signal("vfx_played", "blast", blast.pond_state)
 
-func projectile_splash(landing_position : Vector2, has_hit : bool, _exhaustion : float):
+func projectile_splash(landing_position : Vector2, is_hit : bool, _exhaustion : float) -> void:
 	var player : AudioStreamPlayer = null
-	if has_hit:
+	
+	if is_hit:
 		player = boom_player_scene.instance()
 		# player.volume_db = -40 + 40 * (exhaustion / 10)
 		emit_signal("sfx_played", "boom")
 	elif Geometry.is_point_in_polygon(landing_position, $Water.polygon):
 		player = splash_player_scene.instance()
 		emit_signal("sfx_played", "splash")
-	if player != null:
-		player.add_to_group(SOUNDS_EFFECTS_GROUP)
-		add_child(player)
-		if visible:
-			player.play()
-		
-		_play_blast(landing_position)
+	
+	if !player :
+		return
+	
+	player.add_to_group(SOUNDS_EFFECTS_GROUP)
+	add_child(player)
+	if visible:
+		player.play()
+	
+	_play_blast(landing_position)
 	
 func add_vision_cone(p_position : Vector2, p_rotation : float):
 	for cone in _pool_vision_cones:
@@ -199,14 +203,15 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 	projectile_mutex.lock()
 
 	for proj in projectiles:
-		if not proj.is_processing():
-			proj.distance = p_distance
-			proj.color = p_color
-			proj.start_location = p_start_location
-			proj.end_location = p_end_location
-			proj.progress = 0.0
-			show_projectile(proj)
-			break
+		if proj.is_processing():
+			continue
+		proj.distance = p_distance
+		proj.color = p_color
+		proj.start_location = p_start_location
+		proj.end_location = p_end_location
+		proj.progress = 0.0
+		show_projectile(proj)
+		break
 
 	projectile_mutex.unlock()
 
@@ -214,6 +219,7 @@ func show_projectile(projectile : Projectile):
 	projectile.set_process(true)
 	projectile.set_physics_process(is_simulating_match)
 	projectile.show()
+
 func hide_projectile(projectile : Projectile):
 	projectile.hide()
 	projectile.set_physics_process(false)
@@ -254,27 +260,33 @@ func stop():
 	# set_process(false)
 	set_physics_process(false)
 
-func reset():
+func reset_effects() -> void:
 	var tree = get_tree()
 	_free_groups(tree.get_nodes_in_group(SOUNDS_EFFECTS_GROUP))
 	_free_groups(tree.get_nodes_in_group(VISUAL_EFFECTS_GROUP))
 #	_free_groups(tree.get_nodes_in_group(PROJECTILES_GROUP))
 
+func reset_projectiles() -> void:
 	for proj in projectiles:
 		hide_projectile(proj)
 
+func reset_ducks() -> void:
 	for i in _every_duck.size():
 		_every_duck[i].reset(starting_positions[i], starting_rotations[i])
-
 	# If there are already players, adds a duck to PlayerData
 	for i in PlayerData.count():
 		if not PlayerData.is_present(i):
 			disable_duck(i)
 
+func reset_vision_cones() -> void:
 	for cone in _pool_vision_cones:
 		cone.reset()
-	
-	# set_process(true)
+
+func reset():
+	reset_effects()
+	reset_projectiles()
+	reset_ducks()
+	reset_vision_cones()
 	set_physics_process(true)
 
 func add_duck(p_index):
@@ -316,7 +328,7 @@ func _on_PlayerData_player_left(p_index : int) -> void:
 	
 
 func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile) :
-	var has_hit := false
+	var is_hit := false
 	var max_exhaustion := 0.0
 	for duck in _participating_ducks:
 		if duck.is_tired() :
@@ -326,6 +338,6 @@ func _on_Projectile_arrived(landing_position : Vector2, projectile : Projectile)
 		if exhaustion > 0 :
 			max_exhaustion = max(exhaustion, max_exhaustion)
 			duck.tire(exhaustion)
-			has_hit = true
-	projectile_splash(landing_position, has_hit, max_exhaustion)
+			is_hit = true
+	projectile_splash(landing_position, is_hit, max_exhaustion)
 	hide_projectile(projectile)
