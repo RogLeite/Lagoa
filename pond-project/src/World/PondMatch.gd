@@ -298,10 +298,11 @@ func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 
 # Creates (if necessary), shows and updates a script editor tab
 func add_pond_script_editor(p_index : int) -> void:
-	if not script_editors[p_index]:
-		script_editors[p_index] = script_scene.instance()
-		scripts_tab_container.add_child(script_editors[p_index])
-		reorder_pond_script_editors()
+	if script_editors[p_index]:
+		return
+	script_editors[p_index] = script_scene.instance()
+	scripts_tab_container.add_child(script_editors[p_index])
+	reorder_pond_script_editors()
 		
 func set_pond_script_editor_visible(p_index : int, p_can_see : bool, p_can_edit : bool) -> void:
 	scripts_tab_container.set_tab_hidden(p_index, !p_can_see)
@@ -367,11 +368,10 @@ func get_duck_pond_states() -> Array:
 func set_duck_pond_states(p_states : Array) :
 	var ducks : Array = PlayerData.get_duck_nodes()
 	for i in ducks.size():
-		if i < p_states.size() and PlayerData.is_present(i):
+		var has_ith_player : bool = i < p_states.size() and PlayerData.is_present(i)
+		if has_ith_player:
 			ducks[i].pond_state = p_states[i]
-			ducks[i].set_participating(true)
-		else:
-			ducks[i].set_participating(false)
+		ducks[i].set_participating(has_ith_player)
 
 func get_projectile_pond_states() -> Array:
 	return CurrentVisualization.get_current().projectile_pond_states
