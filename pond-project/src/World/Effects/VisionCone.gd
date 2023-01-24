@@ -37,6 +37,7 @@ func reset():
 	rotation_degrees = 0
 	set_visible(false)
 	reset_animation()
+	update()
 
 func reset_animation() -> void:
 	if not has_node("AnimationPlayer"):

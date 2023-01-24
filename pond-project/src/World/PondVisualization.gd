@@ -224,6 +224,7 @@ func hide_projectile(projectile : Projectile):
 	projectile.hide()
 	projectile.set_physics_process(false)
 	projectile.set_process(false)
+	projectile.update()
 
 func _set_projectile_pond_states(p_states : Array):
 	var proj : Projectile
