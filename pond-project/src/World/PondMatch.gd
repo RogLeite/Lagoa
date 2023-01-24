@@ -35,8 +35,6 @@ var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
 var pond_events_mutex : Mutex
 
-var _reset_requested : bool
-
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -64,8 +62,6 @@ func _init():
 	projectile_pond_states = []
 
 	pond_events_mutex = Mutex.new()
-	
-	_reset_requested = false
 
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
@@ -124,13 +120,9 @@ func script_step():
 # Prepare the threads, ThreadSincronizer, and PondVisualization for a new match
 # No matter how many times its called, the reset occurs once in the next idle frame
 func reset_pond_match() -> void:
-	if _reset_requested:
-		return
-	call_deferred("_reset_pond_match")
-	_reset_requested = true
-	set_deferred("_reset_requested", false)
+	$ResetManager.reset_requested()
 	
-func _reset_pond_match() -> void:
+func _reset() -> void:
 	run_reset_btn.swap_role("run")
 	step_btn.hide()
 

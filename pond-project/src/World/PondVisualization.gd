@@ -283,7 +283,10 @@ func reset_vision_cones() -> void:
 	for cone in _pool_vision_cones:
 		cone.reset()
 
-func reset():
+func reset() -> void:
+	$ResetManager.reset_requested()
+
+func _reset() -> void:
 	reset_effects()
 	reset_projectiles()
 	reset_ducks()
