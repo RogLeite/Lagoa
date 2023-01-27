@@ -118,6 +118,9 @@ func _on_PlayerClient_pond_state_updated(pond_state):
 
 func _on_PlayerClient_connection_closed() -> void:
 	call_deferred("reset")
+	
+func _on_PlayerClient_master_left():
+	call_deferred("reset")
 
 func _on_PlayerClient_pond_match_ended():
 	call_deferred("result")
@@ -143,3 +146,5 @@ func _on_PlayerClient_leaves_received(p_leaves):
 func _on_PondMatch_send_pond_script_requested():
 	pond_match.save_pond_scripts()
 	_client.send_pond_script(PlayerData.get_user_pond_script())
+
+

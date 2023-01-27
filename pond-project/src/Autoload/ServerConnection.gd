@@ -36,6 +36,11 @@ signal joins_received(p_joins)
 # p_leaves is an array of Dictionaries : {username, user_id}
 signal leaves_received(p_leaves)
 
+# Emitted when the Master joins
+signal master_joined
+# Emitted when the Master leaves
+signal master_left
+
 ## Enums
 
 # Custom operational codes for state messages.
@@ -64,6 +69,7 @@ var _socket : NakamaSocket
 # The identifier of the match this client participates
 var _world_id:= ""
 var _presence : NakamaRTAPI.UserPresence
+var _current_master_id = false
 
 # Delegates
 var _exception_handler := ExceptionHandler.new()
@@ -258,6 +264,15 @@ func get_presences_async() -> int:
 	# 	print("\t{present = %s, username = %s, user_id : %s}"%["true" if v.presence is Dictionary else "false", v.username, v.user_id.substr(0,8)])
 	# print("]")
 	
+	var master_id = world_presences.master_id
+	if is_current_master_id(master_id): 
+		return OK
+
+	_current_master_id = master_id
+	if master_id is bool:
+		emit_signal("master_left")
+	elif master_id is String:
+		emit_signal("master_joined")
 	
 	return OK
 	
@@ -311,7 +326,17 @@ func update_pond_state(p_pond_state : PondMatch.State) -> void:
 		# print("sent pond_state.to(): %s"%p_pond_state.to())
 		_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
 
+func join_master(master_id : String) -> void:
+	_current_master_id = master_id
+	emit_signal("master_joined")
 
+func leave_master(_master_id : String) -> void:
+	_current_master_id = false
+	emit_signal("master_left")
+
+func is_current_master_id(p_master_id):
+	return typeof(_current_master_id) == typeof(p_master_id) \
+		and _current_master_id == p_master_id
 
 func _get_error_message() -> String:
 	return _exception_handler.error_message
@@ -366,6 +391,10 @@ func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPre
 	for presence in p_match_presence_event.joins:
 		if presence.user_id == get_user_id():
 			continue
+		if is_current_master_id(presence.user_id):
+			join_master(presence.user_id)
+			continue
+		
 		joins.push_back(Presence.new(presence.user_id, presence.username))
 	emit_signal("joins_received", joins)
 
@@ -373,6 +402,10 @@ func _on_NakamaSocket_received_match_presence(p_match_presence_event): #MatchPre
 	for presence in p_match_presence_event.leaves:
 		if presence.user_id == get_user_id():
 			continue
+		if is_current_master_id(presence.user_id):
+			leave_master(presence.user_id)
+			continue
+
 		leaves.push_back(Presence.new(presence.user_id, presence.username))
 	emit_signal("leaves_received", leaves)
 	

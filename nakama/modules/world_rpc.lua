@@ -87,7 +87,7 @@ local function get_presences(_context, payload)
     ret.player_presences = player_presences
     -- nakama.logger_warn(string.format("get_presences: returns array of size %d", #ret.player_presences))
     
-    ret.master_id = {world.master}
+    ret.master_id = world.master
 
     return nakama.json_encode(ret)
 end

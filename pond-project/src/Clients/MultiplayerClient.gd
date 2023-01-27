@@ -9,6 +9,7 @@ signal pond_script_received(user_id, pond_script)
 signal pond_state_updated(pond_state)
 signal joins_received(p_joins)
 signal leaves_received(p_leaves)
+signal master_left
 
 export var is_master : bool = false
 # Sets the log level of NakamaLogger
@@ -71,6 +72,8 @@ func join_async() -> int :
 		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
 		# warning-ignore:return_value_discarded
 		ServerConnection.connect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
+		# warning-ignore:return_value_discarded
+		ServerConnection.connect("master_left", self, "_on_ServerConnection_master_left")
 		
 	# [TODO] Trocar onde chamar isso
 	result = yield(ServerConnection.get_presences_async(), "completed")
@@ -106,6 +109,8 @@ func end() -> void:
 			ServerConnection.disconnect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
 		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
 			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
+		if ServerConnection.is_connected("master_left", self, "_on_ServerConnection_master_left"):
+			ServerConnection.disconnect("master_left", self, "_on_ServerConnection_master_left")
 	
 	if _is_connected:
 		var result : int = yield(ServerConnection.disconnect_from_server_async(), "completed")
@@ -144,6 +149,9 @@ func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script
 	
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State) -> void:
 	emit_signal("pond_state_updated", p_pond_state)
+
+func _on_ServerConnection_master_left() -> void:
+	emit_signal("master_left")
 
 func _on_ServerConnection_joins_received(p_joins : Array) -> void :
 	# print("_on_ServerConnection_joins_received:%s"%String(p_joins))

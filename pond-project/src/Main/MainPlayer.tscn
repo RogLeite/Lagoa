@@ -63,6 +63,7 @@ can_send_pond_script = true
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
 [connection signal="joins_received" from="PlayerClient" to="." method="_on_PlayerClient_joins_received"]
 [connection signal="leaves_received" from="PlayerClient" to="." method="_on_PlayerClient_leaves_received"]
+[connection signal="master_left" from="PlayerClient" to="." method="_on_PlayerClient_master_left"]
 [connection signal="pond_match_ended" from="PlayerClient" to="." method="_on_PlayerClient_pond_match_ended"]
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
