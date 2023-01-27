@@ -117,10 +117,10 @@ func _on_PlayerClient_pond_state_updated(pond_state):
 		call_deferred("start", pond_state)
 
 func _on_PlayerClient_connection_closed() -> void:
-	call_deferred("reset")
+	call_deferred("reset", "Connection with server closed")
 	
 func _on_PlayerClient_master_left():
-	call_deferred("reset")
+	call_deferred("reset", "MasterClient ended connection")
 
 func _on_PlayerClient_pond_match_ended():
 	call_deferred("result")

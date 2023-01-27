@@ -148,8 +148,8 @@ func _on_PondMatch_match_run_requested():
 	call_deferred("start")
 	
 func _on_MasterClient_connection_closed() -> void:
-	call_deferred("reset")
 	# [TODO] Possibly handle reconnection attempt
+	call_deferred("reset", "Connection with server closed")
 
 
 func _on_PondMatch_pond_state_updated(p_pond_state):
