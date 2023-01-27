@@ -36,7 +36,7 @@ func _draw():
 	# Projectile progress normalized between 0.0 and 1.0
 	var normal_progress := progress / distance
 	var dx = (end_location.x - start_location.x) * normal_progress
-	var dy = (end_location.y - start_location.y) * normal_progress # [TODO] May need to invert progress, this line may be overcompensating for the coordinates
+	var dy = (end_location.y - start_location.y) * normal_progress
 	#  Calculate parabolic arc.
 	var halfRange = distance / 2
 	var height = distance * 0.15  # Change to set height of arc (original was 0.15).

@@ -166,7 +166,6 @@ func run():
 		if not PlayerData.is_present(i):
 			continue
 		
-		# [TODO] when implemented, grab the script from PlayerData/Datum
 		controllers[i].set_lua_code(PlayerData.get_pond_script(i))
 		var error_message = ""
 		if controllers[i].compile() != OK :

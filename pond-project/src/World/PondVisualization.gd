@@ -99,7 +99,6 @@ func _exit_tree():
 func scan_field(scanner : int, degree, angular_resolution) -> float:
 	scan_mutex.lock()
 
-	# [TODO] Consider if thread protection with mutexes is needed
 	var scanner_duck : Duck = _every_duck[scanner]
 	var start : Vector2 = scanner_duck.position
 	var radians := deg2rad(degree)

@@ -25,8 +25,6 @@ var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
 
-# [TODO] Initialize and use "player"
-var player : int = -1
 # [TODO] Define and use "color" for the duck
 var color : Color = Color.white
 var pond_state : State setget set_pond_state, get_pond_state
@@ -40,7 +38,7 @@ func _ready():
 	collision.shape.radius = COLLISION_CIRCLE_RADIUS
 	# Sets metadata for collision
 	set_meta("collider_type", "duck")
-	pond_state = State.new(position, color, rotation, speed, player, energy)
+	pond_state = State.new(position, color, rotation, speed, energy)
 
 func _physics_process(delta):
 	if is_tired():
@@ -50,8 +48,6 @@ func _physics_process(delta):
 	var velocity : Vector2 = Vector2(speed, 0).rotated(rotation) * delta
 	var collision_result :=  move_and_collide(velocity, true, true, false)
 	
-	# [TODO] better check to see if should check the collision_result (even if stopped, the ducks keep colliding)
-	#   maybe a move on both parties so they get out of collision_result range?
 	if not collision_result or not collision_result.collider:
 		return
 		
@@ -173,7 +169,6 @@ func get_pond_state() -> State:
 	pond_state.color = self.color
 	pond_state.rotation = self.rotation
 	pond_state.speed = self.speed
-	pond_state.player = self.player
 	pond_state.energy = self.energy
 	return pond_state
 
@@ -182,7 +177,6 @@ func set_pond_state(p_state : State) -> void:
 	self.color = p_state.color
 	self.rotation = p_state.rotation
 	self.speed = p_state.speed
-	self.player = p_state.player
 	self.energy = p_state.energy
 	pond_state = p_state
 
@@ -192,7 +186,6 @@ class State extends JSONable:
 	var color 	 : Color
 	var rotation : float	# Radians
 	var speed 	 : float 	# Velocity is calculated with rotation
-	var player 	 : int
 	var energy 	 : int
 
 	func _init(
@@ -200,13 +193,11 @@ class State extends JSONable:
 			p_color := Color.white,
 			p_rotation := 0.0,
 			p_speed := 0.0,
-			p_player := -1,
 			p_energy := 100):
 		position = p_position
 		color = p_color
 		rotation = p_rotation
 		speed = p_speed
-		player = p_player
 		energy = p_energy
 	
 	func to(duck : Duck = null) -> Dictionary:
@@ -215,7 +206,6 @@ class State extends JSONable:
 			color = duck.color
 			rotation = duck.rotation
 			speed = duck.speed
-			player = duck.player
 			energy = duck.energy
 		
 		return {
@@ -223,7 +213,6 @@ class State extends JSONable:
 			"color" : .color_to(color),
 			"rotation" : rotation,
 			"speed" : speed,
-			"player" : player,
 			"energy" : energy
 		}
 		
@@ -232,6 +221,5 @@ class State extends JSONable:
 		color = .color_from(from.color)
 		rotation = from.rotation
 		speed = from.speed
-		player = from.player
 		energy = from.energy
 		return self
