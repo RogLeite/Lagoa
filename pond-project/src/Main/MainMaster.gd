@@ -91,17 +91,12 @@ func start() -> void:
 	pond_match.save_pond_scripts()
 	pond_match.run()
 
-func result(p_result : String) -> void:
+func result() -> void:
 	_main_state = "result"
-	match p_result :
-		"reset_requested":
-			pond_match.reset_pond_match()
-			_client.end_pond_match()
-			call_deferred("elapse")
-		"scripts_ended":
-			pond_match.reset_pond_match()
-			_client.end_pond_match()
-			call_deferred("elapse")
+	
+	pond_match.reset_pond_match()
+	_client.end_pond_match()
+	call_deferred("elapse")
 	
 
 func join(p_join : Presence):
@@ -142,11 +137,11 @@ func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, true)
 
 func _on_PondMatch_match_reset_requested():
-	call_deferred("result", "reset_requested")
+	call_deferred("result")
 	
 
 func _on_PondMatch_match_scripts_ended():
-	call_deferred("result", "scripts_ended")
+	call_deferred("result")
 
 
 func _on_PondMatch_match_run_requested():

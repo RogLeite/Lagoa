@@ -102,6 +102,8 @@ func end() -> void:
 		if ServerConnection.is_connected("pond_script_received", self, "_on_ServerConnection_pond_script_received"):
 			ServerConnection.disconnect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
 	else:
+		if ServerConnection.is_connected("pond_match_ended", self, "_on_ServerConnection_pond_match_ended"):
+			ServerConnection.disconnect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
 		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
 			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
 	

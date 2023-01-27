@@ -230,30 +230,34 @@ func get_presences_async() -> int:
 		_exception_handler.error_message = "Server not connected"
 		return ERR_UNAVAILABLE
 	
-	if _world_id and not _world_id.empty():
-		var rpc_result : NakamaAPI.ApiRpc = yield(_client.rpc_async(_authenticator.session,"get_presences", _world_id), "completed")
+	if not ( _world_id and not _world_id.empty() ):
+		return OK
+	
+	var rpc_result : NakamaAPI.ApiRpc = yield(_client.rpc_async(_authenticator.session, "get_presences", _world_id), "completed")
 
-		var parsed_result := _exception_handler.parse_exception(rpc_result)
+	var parsed_result := _exception_handler.parse_exception(rpc_result)
 
-		if parsed_result != OK:
-			return parsed_result
+	if parsed_result != OK:
+		return parsed_result
 
-		var presences = JSON.parse(rpc_result.payload).result.player_presences
-		var joins := []
-		var leaves := []
-		# print("get_presences_async: receives array of size %s"%presences.size())
-		for player in presences:
-			joins.push_back(Presence.new(player.user_id, player.username, is_user(player)))
-			if player.presence is bool and not player.presence:
-				leaves.push_back(Presence.new(player.user_id, player.username, is_user(player)))
-		
-		emit_signal("joins_received", joins)
-		emit_signal("leaves_received", leaves)
+	var world_presences = JSON.parse(rpc_result.payload).result
+	var presences = world_presences.player_presences
+	var joins := []
+	var leaves := []
+	# print("get_presences_async: receives array of size %s"%presences.size())
+	for player in presences:
+		joins.push_back(Presence.new(player.user_id, player.username, is_user(player)))
+		if player.presence is bool and not player.presence:
+			leaves.push_back(Presence.new(player.user_id, player.username, is_user(player)))
+	
+	emit_signal("joins_received", joins)
+	emit_signal("leaves_received", leaves)
 
-		# print("presences = [")
-		# for v in presences:		
-		# 	print("\t{present = %s, username = %s, user_id : %s}"%["true" if v.presence is Dictionary else "false", v.username, v.user_id.substr(0,8)])
-		# print("]")
+	# print("presences = [")
+	# for v in presences:		
+	# 	print("\t{present = %s, username = %s, user_id : %s}"%["true" if v.presence is Dictionary else "false", v.username, v.user_id.substr(0,8)])
+	# print("]")
+	
 	
 	return OK
 	
