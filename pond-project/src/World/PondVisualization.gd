@@ -273,10 +273,14 @@ func reset_projectiles() -> void:
 func reset_ducks() -> void:
 	for i in _every_duck.size():
 		_every_duck[i].reset(starting_positions[i], starting_rotations[i])
-	# If there are already players, adds a duck to PlayerData
-	for i in PlayerData.count():
-		if not PlayerData.is_present(i):
+		if PlayerData.is_present(i):
+			enable_duck(i)
+		else:
 			disable_duck(i)
+	# # If there are already players, adds a duck to PlayerData
+	# for i in PlayerData.count():
+	# 	if not PlayerData.is_present(i):
+	# 		disable_duck(i)
 
 func reset_vision_cones() -> void:
 	for cone in _pool_vision_cones:
