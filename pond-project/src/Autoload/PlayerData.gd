@@ -42,7 +42,7 @@ func get_duck_nodes() -> Array:
 
 # Checks if the player at p_index is present
 func is_present(p_index : int) -> bool:
-	return players[p_index] and players[p_index].is_present
+	return players.size() > p_index and players[p_index] and players[p_index].is_present
 
 # Checks if the player at p_index has it's duck_path defined
 func has_duck(p_index : int) -> bool:
