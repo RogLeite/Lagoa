@@ -113,7 +113,7 @@ func accelerate(delta) :
 func check_energy():
 	if energy == 0 :
 		emergency_stop()
-		$Collision.disabled = true
+		collision.disabled = true
 		modulate = Color(0.75,0.75,0.75,0.75)
 		call_deferred("set_physics_process", false)
 
@@ -161,7 +161,7 @@ func reset(pos : Vector2, angle : float):
 	can_launch = true
 	position = pos
 	rotation = angle
-	$Collision.disabled = false
+	collision.disabled = false
 	call_deferred("set_physics_process", true)
 
 func get_pond_state() -> State:
