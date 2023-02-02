@@ -11,38 +11,37 @@ const _popup_msg_master_client := "Não foi possível iniciar a cena do Master C
 
 
 onready var modes_list := $ModesList
-onready var client_options := $ClientOptions
 
 func _ready():
 	if ProjectSettings.get_setting("editor/manual_testing"):
 		if RunArgs.has_arg(RunArgs.MASTER):
-			call_deferred("_on_ClientOptions_main_master_requested")
+			call_deferred("change_to_master")
 			return
 		elif RunArgs.has_arg(RunArgs.PLAYER):
-			call_deferred("_on_ClientOptions_main_player_requested")
+			call_deferred("change_to_player")
 			return
 
 	self.menu_current = modes_list
 
-
-func _on_ModesList_singleplayer_requested():
+func change_to_single() -> void:
 	#warning-ignore: return_value_discarded
 	get_tree().change_scene_to(load(_main_single))
-
-
-func _on_ModesList_multiplayer_requested():
-	self.menu_current = client_options
-
-
-func _on_ClientOptions_main_player_requested():
+	
+func change_to_master() -> void:
+	#warning-ignore: return_value_discarded
+	get_tree().change_scene_to(load(_main_master_client))
+	
+func change_to_player() -> void:
 	#warning-ignore: return_value_discarded
 	get_tree().change_scene_to(load(_main_player_client))
 
+func _unhandled_input(event : InputEvent):
+	if event.is_action_pressed("ui_master_shortcut"):
+		change_to_master()
 
-func _on_ClientOptions_main_master_requested():
-	#warning-ignore: return_value_discarded
-	get_tree().change_scene_to(load(_main_master_client))
 
+func _on_ModesList_singleplayer_requested():
+	change_to_single()
 
-func _on_ClientOptions_go_back_requested():
-	self.menu_current = modes_list
+func _on_ModesList_multiplayer_requested():	
+	change_to_player()

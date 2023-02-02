@@ -241,6 +241,14 @@ enabled=PoolStringArray( "res://addons/multirun/plugin.cfg" )
 collision=false
 icon=false
 
+[input]
+
+ui_master_shortcut={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":true,"shift":false,"control":true,"meta":false,"command":true,"pressed":false,"scancode":77,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
+
 [layer_names]
 
 2d_physics/layer_1="duck-body"

@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://src/Main/MainMenu.gd" type="Script" id=1]
 [ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=2]
 [ext_resource path="res://src/UI/Menus/ModesList.gd" type="Script" id=3]
-[ext_resource path="res://src/UI/Menus/ClientOptions.gd" type="Script" id=4]
 
 [node name="MainMenu" type="Control"]
 anchor_right = 1.0
@@ -39,49 +38,7 @@ rect_min_size = Vector2( 200, 50 )
 size_flags_vertical = 3
 text = "Multiplayer"
 
-[node name="ClientOptions" type="VBoxContainer" parent="."]
-visible = false
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -100.0
-margin_top = -81.5
-margin_right = 100.0
-margin_bottom = 81.5
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource( 4 )
-
-[node name="PlayerClientButton" type="Button" parent="ClientOptions"]
-margin_right = 200.0
-margin_bottom = 50.0
-rect_min_size = Vector2( 200, 50 )
-size_flags_vertical = 3
-text = "Player Client"
-
-[node name="MasterClientButton" type="Button" parent="ClientOptions"]
-margin_top = 66.0
-margin_right = 200.0
-margin_bottom = 116.0
-rect_min_size = Vector2( 200, 50 )
-size_flags_vertical = 3
-text = "Master Client"
-
-[node name="BackButton" type="Button" parent="ClientOptions"]
-margin_top = 132.0
-margin_right = 200.0
-margin_bottom = 163.0
-text = "Back"
-flat = true
-
 [connection signal="multiplayer_requested" from="ModesList" to="." method="_on_ModesList_multiplayer_requested"]
 [connection signal="singleplayer_requested" from="ModesList" to="." method="_on_ModesList_singleplayer_requested"]
 [connection signal="pressed" from="ModesList/SingleplayerButton" to="ModesList" method="_on_SingleplayerButton_pressed"]
 [connection signal="pressed" from="ModesList/MultiplayerButton" to="ModesList" method="_on_MultiplayerButton_pressed"]
-[connection signal="go_back_requested" from="ClientOptions" to="." method="_on_ClientOptions_go_back_requested"]
-[connection signal="main_master_requested" from="ClientOptions" to="." method="_on_ClientOptions_main_master_requested"]
-[connection signal="main_player_requested" from="ClientOptions" to="." method="_on_ClientOptions_main_player_requested"]
-[connection signal="pressed" from="ClientOptions/PlayerClientButton" to="ClientOptions" method="_on_PlayerClientButton_pressed"]
-[connection signal="pressed" from="ClientOptions/MasterClientButton" to="ClientOptions" method="_on_MasterClientButton_pressed"]
-[connection signal="pressed" from="ClientOptions/BackButton" to="ClientOptions" method="_on_BackButton_pressed"]
