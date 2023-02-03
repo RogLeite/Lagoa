@@ -18,16 +18,27 @@ script = ExtResource( 6 )
 [node name="UI" type="HBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_top = 5.0
+margin_bottom = -5.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = ExtResource( 5 )
 alignment = 1
 
-[node name="Gameplay" type="VBoxContainer" parent="UI"]
-margin_right = 400.0
-margin_bottom = 600.0
+[node name="MarginContainer" type="MarginContainer" parent="UI"]
+margin_right = 405.0
+margin_bottom = 590.0
+custom_constants/margin_right = 0
+custom_constants/margin_top = 0
+custom_constants/margin_left = 5
+custom_constants/margin_bottom = 0
 
-[node name="PondContainer" type="ViewportContainer" parent="UI/Gameplay"]
+[node name="Gameplay" type="VBoxContainer" parent="UI/MarginContainer"]
+margin_left = 5.0
+margin_right = 405.0
+margin_bottom = 590.0
+
+[node name="PondContainer" type="ViewportContainer" parent="UI/MarginContainer/Gameplay"]
 margin_right = 400.0
 margin_bottom = 400.0
 rect_min_size = Vector2( 400, 400 )
@@ -36,95 +47,103 @@ size_flags_vertical = 0
 size_flags_stretch_ratio = 3.0
 stretch = true
 
-[node name="PondViewport" type="Viewport" parent="UI/Gameplay/PondContainer"]
+[node name="PondViewport" type="Viewport" parent="UI/MarginContainer/Gameplay/PondContainer"]
 size = Vector2( 400, 400 )
 handle_input_locally = false
 render_target_v_flip = true
 render_target_update_mode = 3
 
-[node name="PondVisualization" parent="UI/Gameplay/PondContainer/PondViewport" instance=ExtResource( 1 )]
+[node name="PondVisualization" parent="UI/MarginContainer/Gameplay/PondContainer/PondViewport" instance=ExtResource( 1 )]
 
-[node name="EnergyBars" type="VBoxContainer" parent="UI/Gameplay"]
+[node name="EnergyBars" type="VBoxContainer" parent="UI/MarginContainer/Gameplay"]
 margin_top = 416.0
 margin_right = 400.0
-margin_bottom = 500.0
+margin_bottom = 495.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Gameplay/EnergyBars"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/MarginContainer/Gameplay/EnergyBars"]
 margin_right = 400.0
-margin_bottom = 34.0
+margin_bottom = 31.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="EnergyBar0" parent="UI/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
+[node name="EnergyBar0" parent="UI/MarginContainer/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_right = 192.0
-margin_bottom = 34.0
+margin_bottom = 31.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Duck0"
 
-[node name="EnergyBar1" parent="UI/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
+[node name="EnergyBar1" parent="UI/MarginContainer/Gameplay/EnergyBars/HBoxContainer" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_left = 208.0
 margin_right = 400.0
-margin_bottom = 34.0
+margin_bottom = 31.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Duck1"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Gameplay/EnergyBars"]
-margin_top = 50.0
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/MarginContainer/Gameplay/EnergyBars"]
+margin_top = 47.0
 margin_right = 400.0
-margin_bottom = 84.0
+margin_bottom = 79.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="EnergyBar2" parent="UI/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
+[node name="EnergyBar2" parent="UI/MarginContainer/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_right = 192.0
-margin_bottom = 34.0
+margin_bottom = 32.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Duck2"
 
-[node name="EnergyBar3" parent="UI/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
+[node name="EnergyBar3" parent="UI/MarginContainer/Gameplay/EnergyBars/HBoxContainer2" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_left = 208.0
 margin_right = 400.0
-margin_bottom = 34.0
+margin_bottom = 32.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Duck3"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/Gameplay"]
-margin_top = 516.0
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/MarginContainer/Gameplay"]
+margin_top = 511.0
 margin_right = 400.0
-margin_bottom = 600.0
+margin_bottom = 590.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="StepButton" type="Button" parent="UI/Gameplay/HBoxContainer"]
-margin_right = 192.0
-margin_bottom = 84.0
+[node name="QuitButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
+margin_right = 32.0
+margin_bottom = 79.0
+rect_min_size = Vector2( 32, 0 )
+theme = ExtResource( 5 )
+text = "<"
+
+[node name="StepButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
+margin_left = 48.0
+margin_right = 216.0
+margin_bottom = 79.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Step"
 
-[node name="RunResetButton" type="Button" parent="UI/Gameplay/HBoxContainer"]
-margin_left = 208.0
+[node name="RunResetButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
+margin_left = 232.0
 margin_right = 400.0
-margin_bottom = 84.0
+margin_bottom = 79.0
 size_flags_horizontal = 3
 text = "Run"
 script = ExtResource( 4 )
 
-[node name="SendScriptButton" type="Button" parent="UI/Gameplay/HBoxContainer"]
+[node name="SendScriptButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
 visible = false
 margin_left = 260.0
 margin_right = 400.0
@@ -133,16 +152,17 @@ size_flags_horizontal = 3
 text = "Send Script"
 
 [node name="ScriptTabs" type="TabContainer" parent="UI"]
-margin_left = 416.0
+margin_left = 421.0
 margin_right = 1024.0
-margin_bottom = 600.0
+margin_bottom = 590.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 tab_align = 0
 
-[connection signal="sfx_played" from="UI/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_sfx_played"]
-[connection signal="vfx_played" from="UI/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_vfx_played"]
-[connection signal="pressed" from="UI/Gameplay/HBoxContainer/StepButton" to="." method="_on_StepButton_pressed"]
-[connection signal="reset" from="UI/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
-[connection signal="run" from="UI/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
-[connection signal="pressed" from="UI/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]
+[connection signal="sfx_played" from="UI/MarginContainer/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_sfx_played"]
+[connection signal="vfx_played" from="UI/MarginContainer/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_vfx_played"]
+[connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/QuitButton" to="." method="_on_QuitButton_pressed"]
+[connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/StepButton" to="." method="_on_StepButton_pressed"]
+[connection signal="reset" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
+[connection signal="run" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
+[connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]

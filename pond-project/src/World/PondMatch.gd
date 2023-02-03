@@ -6,6 +6,7 @@ signal match_run_requested
 signal match_reset_requested
 signal match_step_requested
 signal match_scripts_ended
+signal match_quit_requested
 signal send_pond_script_requested
 
 # Is the scene rendering the pond
@@ -40,9 +41,9 @@ onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn"
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 
 # References to Nodes
-onready var run_reset_btn := $UI/Gameplay/HBoxContainer/RunResetButton
-onready var step_btn := $UI/Gameplay/HBoxContainer/StepButton
-onready var send_pond_script_btn := $UI/Gameplay/HBoxContainer/SendScriptButton
+onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton
+onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
+onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/ScriptTabs
 
 func _init():
@@ -420,6 +421,9 @@ func _on_RunResetButton_run():
 
 func _on_SendScriptButton_pressed():
 	emit_signal("send_pond_script_requested")
+
+func _on_QuitButton_pressed():
+	emit_signal("match_quit_requested")
 
 #JSONable class for PondMath
 class State extends JSONable:
