@@ -42,6 +42,7 @@ texture = ExtResource( 5 )
 anims/spin = SubResource( 1 )
 
 [node name="Label" type="Label" parent="CanvasLayer"]
+visible = false
 anchor_left = 0.5
 anchor_right = 0.5
 margin_left = -49.0
@@ -60,6 +61,14 @@ can_see_scripts = false
 can_edit_scripts = false
 can_send_pond_script = true
 
+[node name="BackButton" type="Button" parent="."]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 64.0
+margin_bottom = 64.0
+theme = ExtResource( 6 )
+text = "<"
+
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
 [connection signal="joins_received" from="PlayerClient" to="." method="_on_PlayerClient_joins_received"]
 [connection signal="leaves_received" from="PlayerClient" to="." method="_on_PlayerClient_leaves_received"]
@@ -69,3 +78,4 @@ can_send_pond_script = true
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
 [connection signal="send_pond_script_requested" from="PondMatch" to="." method="_on_PondMatch_send_pond_script_requested"]
+[connection signal="pressed" from="BackButton" to="." method="_on_BackButton_pressed"]

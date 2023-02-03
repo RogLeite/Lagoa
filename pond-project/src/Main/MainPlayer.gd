@@ -1,8 +1,11 @@
 extends Node
 
+const _main_menu := "res://src/Main/MainMenu.tscn"
+
 var _email := ""
 var _main_state := "initial"
 
+onready var back_button := $BackButton
 onready var _spinner := $CanvasLayer/Spinner
 onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $PlayerClient
@@ -33,6 +36,8 @@ func reset(p_status : String = ""):
 	_spinner.hide()
 
 	_client.reset()
+
+	back_button.show()
 
 	pond_match.hide()
 	pond_match.reset_pond_match()
@@ -73,6 +78,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 	_spinner_animator.stop(true)
 	_spinner.hide()
 	
+	back_button.hide()
 	
 	# Call to next state "elapse"
 	call_deferred("elapse")
@@ -147,4 +153,8 @@ func _on_PondMatch_send_pond_script_requested():
 	pond_match.save_pond_scripts()
 	_client.send_pond_script(PlayerData.get_user_pond_script())
 
-
+func _on_BackButton_pressed():
+	if _main_state == "reset":
+		print("_on_BackButton_pressed")
+		#warning-ignore: return_value_discarded
+		get_tree().change_scene_to(load(_main_menu))
