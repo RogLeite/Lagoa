@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=1]
+[ext_resource path="res://src/UI/QuitMatchPopup.gd" type="Script" id=2]
+
+[node name="QuitMatchPopup" type="Popup"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -177.0
+margin_top = -109.393
+margin_right = 177.0
+margin_bottom = 109.393
+rect_min_size = Vector2( 354, 218.785 )
+theme = ExtResource( 1 )
+popup_exclusive = true
+script = ExtResource( 2 )
+
+[node name="Panel" type="Panel" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -177.0
+margin_top = -109.393
+margin_right = 177.0
+margin_bottom = 109.393
+rect_min_size = Vector2( 354, 218.785 )
+
+[node name="Label" type="Label" parent="Panel"]
+anchor_right = 1.0
+margin_left = 25.0
+margin_top = 41.0
+margin_right = -25.0
+margin_bottom = 72.0
+text = "Deseja sair da partida?"
+align = 1
+autowrap = true
+
+[node name="Yes" type="Button" parent="Panel"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 42.0
+margin_top = -99.0
+margin_right = 145.554
+margin_bottom = -25.0
+rect_min_size = Vector2( 103.554, 64 )
+text = "Sim"
+
+[node name="No" type="Button" parent="Panel"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -145.0
+margin_top = -99.0
+margin_right = -41.446
+margin_bottom = -25.0
+rect_min_size = Vector2( 103.554, 64 )
+text = "Não"
+
+[connection signal="pressed" from="Panel/Yes" to="." method="_on_Yes_pressed"]
+[connection signal="pressed" from="Panel/No" to="." method="_on_No_pressed"]
