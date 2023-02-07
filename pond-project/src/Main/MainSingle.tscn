@@ -9,6 +9,7 @@ script = ExtResource( 2 )
 [node name="PondMatch" parent="." instance=ExtResource( 1 )]
 can_edit_scripts = false
 
+[connection signal="match_quit_requested" from="PondMatch" to="." method="_on_PondMatch_match_quit_requested"]
 [connection signal="match_reset_requested" from="PondMatch" to="." method="_on_PondMatch_match_reset_requested"]
 [connection signal="match_run_requested" from="PondMatch" to="." method="_on_PondMatch_match_run_requested"]
 [connection signal="match_step_requested" from="PondMatch" to="." method="_on_PondMatch_match_step_requested"]

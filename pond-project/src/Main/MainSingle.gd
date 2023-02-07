@@ -49,11 +49,25 @@ func result() -> void:
 	_main_state = "result"
 	pond_match.reset_pond_match()
 
-func _on_PondMatch_match_reset_requested():
+# Quits to MainMenu
+func quit() -> void:
+	_main_state = "quit"
+
+	pond_match.reset_pond_match()
+	yield(pond_match, "reset_finished")
+	
+	PlayerData.reset()
+	# warning-ignore: return_value_discarded
+	get_tree().change_scene_to(load("res://src/Main/MainMenu.tscn"))
+
+func _on_PondMatch_match_reset_requested() -> void:
 	call_deferred("result")
 
-func _on_PondMatch_match_run_requested():
+func _on_PondMatch_match_run_requested() -> void:
 	call_deferred("start")
 
-func _on_PondMatch_match_step_requested():
+func _on_PondMatch_match_step_requested() -> void:
 	pond_match.pond_script_step()
+
+func _on_PondMatch_match_quit_requested() -> void:
+	call_deferred("quit")
