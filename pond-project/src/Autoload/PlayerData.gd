@@ -143,6 +143,12 @@ func add_player(p_join : Presence) -> void:
 func remove_player():
 	pass	
 
+# Resets PlayerData's state without emitting any signal
+func reset() -> void:
+	_present_count = 0
+	players = []	
+
+
 func _no_set(_val):
 	pass
 
