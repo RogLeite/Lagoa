@@ -8,6 +8,7 @@ signal match_step_requested
 signal match_scripts_ended
 signal match_quit_requested
 signal send_pond_script_requested
+signal reset_finished
 
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
@@ -134,7 +135,10 @@ func _reset() -> void:
 
 	var player_count : int = PlayerData.count()	
 
-	CurrentVisualization.get_current().reset()
+	var curr_vis := CurrentVisualization.get_current()
+	curr_vis.reset()
+	yield(curr_vis, "reset_finished")
+
 
 	for i in player_count:
 		if not PlayerData.is_present(i):
@@ -154,6 +158,8 @@ func _reset() -> void:
 
 	# Initializes pond_state
 	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
+	emit_signal("reset_finished")
+
 
 func run():
 	run_reset_btn.swap_role("reset")

@@ -1,5 +1,6 @@
 extends Node2D
 
+signal reset_finished
 signal sfx_played (effect_name)
 signal vfx_played (effect_name, p_pond_state)
 
@@ -295,6 +296,8 @@ func _reset() -> void:
 	reset_ducks()
 	reset_vision_cones()
 	set_physics_process(true)
+	
+	emit_signal("reset_finished")
 
 func add_duck(p_index):
 	var duck = _every_duck[p_index]
