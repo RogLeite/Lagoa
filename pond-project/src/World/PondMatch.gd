@@ -154,7 +154,6 @@ func _reset() -> void:
 
 	# Initializes pond_state
 	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
-	
 
 func run():
 	run_reset_btn.swap_role("reset")
@@ -422,8 +421,12 @@ func _on_RunResetButton_run():
 func _on_SendScriptButton_pressed():
 	emit_signal("send_pond_script_requested")
 
+func _on_QuitMatchPopup_confirmed(p_affirmative):
+	if p_affirmative:
+		emit_signal("match_quit_requested")
+	
 func _on_QuitButton_pressed():
-	emit_signal("match_quit_requested")
+	$QuitMatchPopup.popup_centered_minsize()
 
 #JSONable class for PondMath
 class State extends JSONable:
