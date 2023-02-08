@@ -101,38 +101,51 @@ func result() -> void:
 	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
 	call_deferred("elapse")
+
+
+# Quits to MainMenu
+func quit() -> void:
+	_main_state = "quit"
+
+	pond_match.reset_pond_match()
+	yield(pond_match, "reset_finished")
 	
-func join(p_join : Presence):
+	PlayerData.reset()
+	# warning-ignore: return_value_discarded
+	get_tree().change_scene_to(load("res://src/Main/MainMenu.tscn"))
+
+
+func join(p_join : Presence) -> void:
 	if PlayerData.is_registered_player(p_join.user_id):
 		PlayerData.join_player(p_join)
 	else:
 		PlayerData.add_player(p_join)
 
-func leave(p_leave : Presence):
+func leave(p_leave : Presence) -> void:
 	if PlayerData.is_registered_player(p_leave.user_id):
 		PlayerData.leave_player(p_leave)
 
-func _on_LoginAndRegister_login_pressed(email, password, do_remember_email):
+func _on_LoginAndRegister_login_pressed(email, password, do_remember_email) -> void:
 	call_deferred("prepare",email, password, do_remember_email, false)
 
-func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
+func _on_LoginAndRegister_register_pressed(email, password, do_remember_email) -> void:
 	call_deferred("prepare",email, password, do_remember_email, true)
 
-func _on_PlayerClient_pond_state_updated(pond_state):
+func _on_PlayerClient_pond_state_updated(pond_state) -> void:
 	if _main_state == "elapse" or _main_state == "start":
 		call_deferred("start", pond_state)
 
 func _on_PlayerClient_connection_closed() -> void:
 	call_deferred("reset", "Connection with server closed")
 	
-func _on_PlayerClient_master_left():
+func _on_PlayerClient_master_left() -> void:
 	call_deferred("reset", "MasterClient ended connection")
 
-func _on_PlayerClient_pond_match_ended():
+func _on_PlayerClient_pond_match_ended() -> void:
 	call_deferred("result")
 
 
-func _on_PlayerClient_joins_received(p_joins):
+func _on_PlayerClient_joins_received(p_joins) -> void:
 	# print("_on_PlayerClient_joins_received:%s"%String(p_joins))
 	for player in p_joins:
 		if _main_state == "elapse":
@@ -141,7 +154,7 @@ func _on_PlayerClient_joins_received(p_joins):
 			PlayerCache.add_join(player)
 
 
-func _on_PlayerClient_leaves_received(p_leaves):
+func _on_PlayerClient_leaves_received(p_leaves) -> void:
 	# print("_on_PlayerClient_leaves_received: %s"%String(p_leaves))
 	for player in p_leaves:
 		if _main_state == "elapse":
@@ -149,12 +162,16 @@ func _on_PlayerClient_leaves_received(p_leaves):
 		else:
 			PlayerCache.add_leave(player)
 
-func _on_PondMatch_send_pond_script_requested():
+func _on_PondMatch_send_pond_script_requested() -> void:
 	pond_match.save_pond_scripts()
 	_client.send_pond_script(PlayerData.get_user_pond_script())
 
-func _on_BackButton_pressed():
+func _on_BackButton_pressed() -> void:
 	if _main_state == "reset":
 		print("_on_BackButton_pressed")
 		#warning-ignore: return_value_discarded
 		get_tree().change_scene_to(load(_main_menu))
+
+
+func _on_PondMatch_match_quit_requested() -> void:
+	call_deferred("quit")
