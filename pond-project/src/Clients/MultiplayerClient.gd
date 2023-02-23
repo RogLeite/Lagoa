@@ -58,22 +58,8 @@ func join_async() -> int :
 	var result: int = yield(ServerConnection.join_world_async(is_master), "completed")
 	if result != OK:
 		return result
-
-	# warning-ignore:return_value_discarded
-	ServerConnection.connect("joins_received", self, "_on_ServerConnection_joins_received")
-	# warning-ignore:return_value_discarded
-	ServerConnection.connect("leaves_received", self, "_on_ServerConnection_leaves_received")	
 	
-	if is_master:
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
-	else:
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
-		# warning-ignore:return_value_discarded
-		ServerConnection.connect("master_left", self, "_on_ServerConnection_master_left")
+	connect_signals()
 		
 	# [TODO] Trocar onde chamar isso
 	result = yield(ServerConnection.get_presences_async(), "completed")
@@ -93,25 +79,9 @@ func reset() -> void:
 	start()
 
 func end() -> void:
-	# `disconnect` is called because ServerConnection won't be destroyed
-	ServerConnection.disconnect("connection_closed", self, "_on_ServerConnection_connection_closed")
 
-	if ServerConnection.is_connected("joins_received", self, "_on_ServerConnection_joins_received"):
-		ServerConnection.disconnect("joins_received", self, "_on_ServerConnection_joins_received")
-	if ServerConnection.is_connected("leaves_received", self, "_on_ServerConnection_leaves_received"):
-		ServerConnection.disconnect("leaves_received", self, "_on_ServerConnection_leaves_received")
+	disconnect_signals()
 
-	if is_master:
-		if ServerConnection.is_connected("pond_script_received", self, "_on_ServerConnection_pond_script_received"):
-			ServerConnection.disconnect("pond_script_received", self, "_on_ServerConnection_pond_script_received")
-	else:
-		if ServerConnection.is_connected("pond_match_ended", self, "_on_ServerConnection_pond_match_ended"):
-			ServerConnection.disconnect("pond_match_ended", self, "_on_ServerConnection_pond_match_ended")
-		if ServerConnection.is_connected("pond_state_updated", self, "_on_ServerConnection_pond_state_updated"):
-			ServerConnection.disconnect("pond_state_updated", self, "_on_ServerConnection_pond_state_updated")
-		if ServerConnection.is_connected("master_left", self, "_on_ServerConnection_master_left"):
-			ServerConnection.disconnect("master_left", self, "_on_ServerConnection_master_left")
-	
 	if _is_connected:
 		var result : int = yield(ServerConnection.disconnect_from_server_async(), "completed")
 		if result != OK:
@@ -122,6 +92,40 @@ func end() -> void:
 		yield(Engine.get_main_loop(), "idle_frame")
 	
 	ServerConnection.end_client()
+
+func connect_signal(signal_name):
+	# warning-ignore:return_value_discarded
+	ServerConnection.connect(signal_name, self, "_on_ServerConnection_"+signal_name)
+
+func disconnect_signal(signal_name):
+	if ServerConnection.is_connected(signal_name, self, "_on_ServerConnection_"+signal_name):
+		ServerConnection.disconnect(signal_name, self, "_on_ServerConnection_"+signal_name)
+	
+func connect_signals() -> void:
+
+	connect_signal("joins_received")
+	connect_signal("leaves_received")
+	
+	if is_master:
+		connect_signal("pond_script_received")
+	else:
+		connect_signal("pond_match_ended")
+		connect_signal("pond_state_updated")
+		connect_signal("master_left")
+
+func disconnect_signals() -> void:
+	# `disconnect` is called because ServerConnection won't be destroyed
+	ServerConnection.disconnect("connection_closed", self, "_on_ServerConnection_connection_closed")
+
+	disconnect_signal("joins_received")
+	disconnect_signal("leaves_received")
+
+	if is_master:
+		disconnect_signal("pond_script_received")
+	else:
+		disconnect_signal("pond_match_ended")
+		disconnect_signal("pond_state_updated")
+		disconnect_signal("master_left")
 
 func _exit_tree():
 	yield(end(), "completed")
