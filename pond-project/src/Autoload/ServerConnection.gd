@@ -199,6 +199,34 @@ func join_world_async( is_master : bool) -> int:
 
 	return parsed_result
 
+# Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
+func quit_world_async( is_master : bool) -> int: 
+	# Debug assertions
+	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
+	assert(_socket, "_socket was not initialized, remember to call ServerConnection.connect_to_server_async()")
+	
+	# Non-debug assertions
+	if not _socket:
+		_exception_handler.error_message = "Server not connected"
+		return ERR_UNAVAILABLE
+	
+	if not _world_id:
+		_exception_handler.error_message = "Has not joined a match"
+		return ERR_DOES_NOT_EXIST
+
+	var metadata =  {"is_master" : String(is_master)}
+	# print("type of _presence is '%s'"%JSONable.TYPE_NAMES[typeof(_presence)])
+	# print("presence is {%s}"%_presence)
+	var parameters := {
+		"world_id" : _world_id,
+		"presence" : _presence.serialize(),
+		"metadata" : metadata
+	}
+	
+	yield(_client.rpc_async(_authenticator.session, "remove_player", JSON.print(parameters)), "completed")
+
+	return OK
+
 # Disconnects from live server
 # Assumes the caller has verified the connection is live
 # Returns OK or a nakama error number and puts the error message in `ServerConnection.error_message`

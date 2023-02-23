@@ -38,16 +38,42 @@ end
 function M.remove_master(worlds, world_id)
     M.get_world(worlds, world_id).master = false
 end
+
+local function find_nil(array)
+    local index = 1
+    while array[index] ~= nil do index = index + 1 end
+    return index
+end
+
+local function find_reservation(array, user_id)
+    for index, value in ipairs(array) do
+        if value.user_id == user_id then
+            return index
+        end
+    end
+    return false
+end
+
 function M.add_reservation(worlds, world_id, user_id, username)
     if not M.is_reserved(worlds, world_id, user_id) then
         -- nakama.logger_warn(string.format("add_reservation: username = '%s'", username))
-        local res = M.get_world(worlds, world_id).player_reservations
-        res[#res+1] = {user_id = user_id, username = username}
+        local reservations = M.get_world(worlds, world_id).player_reservations
+        local index = find_nil(reservations)
+        reservations[index] = {user_id = user_id, username = username}
     end
 end
--- function M.remove_reservation(world_id, user_id)
---     local reservation = is_reserved(world_id, user_id)
--- end
+
+function M.remove_reservation(worlds, world_id, user_id)
+    if not M.is_reserved(worlds, world_id, user_id) then
+        return
+    end
+    local reservations = M.get_world(worlds, world_id).player_reservations
+    local index = find_reservation(reservations, user_id)
+    if not index then
+        return
+    end
+    reservations[index] = nil
+end
 
 function M.add_presence(worlds, world_id, user_presence)
     local user_id = user_presence.user_id

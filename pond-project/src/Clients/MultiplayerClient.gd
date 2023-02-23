@@ -68,6 +68,16 @@ func join_async() -> int :
 
 	return OK
 
+func quit_async() -> int :
+	var result: int = yield(ServerConnection.quit_world_async(is_master), "completed")
+	
+	if result != OK:
+		return result
+
+	disconnect_signals()
+
+	return OK
+
 func start() -> void:
 	ServerConnection.start_client(log_level)
 	# warning-ignore:return_value_discarded
