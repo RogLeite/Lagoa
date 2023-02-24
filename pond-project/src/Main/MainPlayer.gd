@@ -107,6 +107,8 @@ func result() -> void:
 func quit() -> void:
 	_main_state = "quit"
 
+	yield(_client.quit_async(), "completed")
+
 	pond_match.reset_pond_match()
 	yield(pond_match, "reset_finished")
 	
@@ -124,6 +126,10 @@ func join(p_join : Presence) -> void:
 func leave(p_leave : Presence) -> void:
 	if PlayerData.is_registered_player(p_leave.user_id):
 		PlayerData.leave_player(p_leave)
+
+func drop_reservation(user_id : String):
+	if PlayerData.is_registered_player(user_id):
+		PlayerData.drop_reservation(user_id)
 
 func _on_LoginAndRegister_login_pressed(email, password, do_remember_email) -> void:
 	call_deferred("prepare",email, password, do_remember_email, false)
@@ -143,6 +149,14 @@ func _on_PlayerClient_master_left() -> void:
 
 func _on_PlayerClient_pond_match_ended() -> void:
 	call_deferred("result")
+
+
+func _on_PlayerClient_reservation_dropped(user_id):
+	if _main_state == "elapse":
+		drop_reservation(user_id)
+	else:
+		PlayerCache.add_drop_reservation(user_id)
+
 
 
 func _on_PlayerClient_joins_received(p_joins) -> void:

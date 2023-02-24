@@ -12,6 +12,7 @@ local OpCodes = {
     send_pond_script = 1,
     update_pond_state = 2,
     end_pond_match = 3,
+    drop_reservation = 4,
     manual_debug = 99         -- Used when running a non-production debug test
 }
 
@@ -34,6 +35,15 @@ local pond_match_counter = 0
 local function new_match_label()
     pond_match_counter = pond_match_counter + 1
     return string.format("Pond Match %d", pond_match_counter)
+end
+
+-- Used to format the table state.presences to be used in a message broadcast
+local function state_presences2array(t)
+    local arr = {}
+    for _, v in pairs(t) do
+        arr[#arr+1] = v
+    end
+    return arr
 end
 
 local function metadata2string(metadata)
@@ -296,6 +306,10 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
             -- Broadcasts the message to all PlayerClients
             -- my_logger_debug(string.format("Attempting a broadcast of OpCode %d", op_code))
             dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)
+        elseif op_code == OpCodes.drop_reservation then
+            -- nakama.logger_warn(string.format("drop_reservation: %s", decoded.user_id))
+            -- Sends the PlayerClient message (the actual message is in message.data) to every client
+            dispatcher.broadcast_message(op_code, message.data, state_presences2array(state.presences), message.sender)
         end
 
     end

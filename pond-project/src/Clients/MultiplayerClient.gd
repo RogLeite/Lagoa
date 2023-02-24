@@ -7,6 +7,7 @@ signal connection_closed()
 signal pond_match_ended()
 signal pond_script_received(user_id, pond_script)
 signal pond_state_updated(pond_state)
+signal reservation_dropped(user_id)
 signal joins_received(p_joins)
 signal leaves_received(p_leaves)
 signal master_left
@@ -68,6 +69,16 @@ func join_async() -> int :
 
 	return OK
 
+func quit_async() -> int :
+	var result: int = yield(ServerConnection.quit_world_async(is_master), "completed")
+	
+	if result != OK:
+		return result
+
+	disconnect_signals()
+
+	return OK
+
 func start() -> void:
 	ServerConnection.start_client(log_level)
 	# warning-ignore:return_value_discarded
@@ -105,6 +116,7 @@ func connect_signals() -> void:
 
 	connect_signal("joins_received")
 	connect_signal("leaves_received")
+	connect_signal("reservation_dropped")
 	
 	if is_master:
 		connect_signal("pond_script_received")
@@ -119,6 +131,7 @@ func disconnect_signals() -> void:
 
 	disconnect_signal("joins_received")
 	disconnect_signal("leaves_received")
+	disconnect_signal("reservation_dropped")
 
 	if is_master:
 		disconnect_signal("pond_script_received")
@@ -153,6 +166,9 @@ func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script
 	
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State) -> void:
 	emit_signal("pond_state_updated", p_pond_state)
+
+func _on_ServerConnection_reservation_dropped(p_user_id : String) -> void :
+	emit_signal("reservation_dropped", p_user_id)
 
 func _on_ServerConnection_master_left() -> void:
 	emit_signal("master_left")

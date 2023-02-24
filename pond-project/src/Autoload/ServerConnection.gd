@@ -3,14 +3,20 @@ extends Node
 # Message formats by OpCode:
 # SEND_POND_SCRIPT = 1:
 # {
-# 	“user_id” : String,
-# 	“pond_script” : String
+# 	"user_id" : String,
+# 	"pond_script" : String
 # }
 # UPDATE_POND_STATE = 2:
 # {
-# 	“pond_state” : {}   , Dictionary storing the state of the match
+# 	"pond_state" : {}   , Dictionary storing the state of the match
 # }
 # END_POND_MATCH = 3:
+# {}
+# DROP_RESERVATION = 4:
+# {
+# 	"user_id" : String
+# }
+
 
 ## Signals
 
@@ -27,6 +33,10 @@ signal pond_script_received(user_id, pond_script)
 # Emited when a message with OpCode.UPDATE_POND_STATE is received
 # message is a Dictionary in the specified message format
 signal pond_state_updated(pond_state) 
+
+# Emited when a message with OpCode.DROP_RESERVATION is received
+# parameter are the contents of the specified message format
+signal reservation_dropped(user_id)
 
 # Emited when _socket signals `received_match_presence` and there are users joining
 # p_joins is an array of Dictionaries : {username, user_id}
@@ -48,6 +58,7 @@ enum OpCodes {
 	SEND_POND_SCRIPT = 1, 		# Emits signal `pond_script_received`
 	UPDATE_POND_STATE = 2,	# Emits signal `pond_state_received`
 	END_POND_MATCH = 3,		# Emits signal `pond_match_ended`
+	DROP_RESERVATION = 4, # Emits signal `reservation_removed`
 	MANUAL_DEBUG = 99
 }
 
@@ -198,6 +209,38 @@ func join_world_async( is_master : bool) -> int:
 		yield(_client.rpc_async(_authenticator.session,"join_player", JSON.print(parameters)), "completed")
 
 	return parsed_result
+
+# Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
+func quit_world_async( is_master : bool ) -> int: 
+	# Debug assertions
+	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
+	assert(_socket, "_socket was not initialized, remember to call ServerConnection.connect_to_server_async()")
+	
+	# Non-debug assertions
+	if not _socket:
+		_exception_handler.error_message = "Server not connected"
+		return ERR_UNAVAILABLE
+	
+	if not _world_id:
+		_exception_handler.error_message = "Has not joined a match"
+		return ERR_DOES_NOT_EXIST
+
+	
+	var payload := {user_id = get_user_id()}
+	_socket.send_match_state_async(_world_id, OpCodes.DROP_RESERVATION, JSON.print(payload))
+	
+	var metadata =  {"is_master" : String(is_master)}
+	# print("type of _presence is '%s'"%JSONable.TYPE_NAMES[typeof(_presence)])
+	# print("presence is {%s}"%_presence)
+	var parameters := {
+		"world_id" : _world_id,
+		"presence" : _presence.serialize(),
+		"metadata" : metadata
+	}
+	
+	yield(_client.rpc_async(_authenticator.session, "remove_player", JSON.print(parameters)), "completed")
+
+	return OK
 
 # Disconnects from live server
 # Assumes the caller has verified the connection is live
@@ -374,6 +417,10 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 		OpCodes.END_POND_MATCH:
 #			var decoded: Dictionary = JSON.parse(raw).result
 			emit_signal("pond_match_ended")
+		OpCodes.DROP_RESERVATION:
+			var decoded: Dictionary = JSON.parse(raw).result
+			var user_id: String = decoded.user_id
+			emit_signal("reservation_dropped", user_id)
 		OpCodes.MANUAL_DEBUG:
 			pass
 

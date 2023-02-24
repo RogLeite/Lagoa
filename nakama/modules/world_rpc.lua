@@ -50,7 +50,7 @@ local function match_join_maintenance(world_id, presence, metadata)
     end
 end
 
-local function match_leave_maintenance(world_id, presence)
+local function match_leave_maintenance(world_id, presence, keep_reservation)
     -- nakama.logger_warn(string.format("match_leave_maintenance: presence.user_id = '%s'", presence.user_id))
     -- nakama.logger_warn(string.format("match_leave_maintenance: presence.user_id = '%s', keys(presence) = {%s}", presence.user_id, worlds.table_keys(presence)))
     -- nakama.logger_warn(string.format("match_leave_maintenance: username = '%s'", presence.username))
@@ -59,8 +59,10 @@ local function match_leave_maintenance(world_id, presence)
     if user_id == worlds.get_world(world_table, world_id).master then
         worlds.remove_master(world_table, world_id)
     else
-        -- Does not remove the reservation
         worlds.remove_presence(world_table, world_id, presence)
+        if not keep_reservation then
+            worlds.drop_reservation(world_table, world_id, user_id)
+        end
     end
 end
 
@@ -72,7 +74,13 @@ end
 local function leave_player(context, payload)
     local decoded = nakama.json_decode(payload)
     -- nakama.logger_warn(string.format("leave_player: username = '%s'", decoded.presence.username))
-    match_leave_maintenance(decoded.world_id, decoded.presence)
+    match_leave_maintenance(decoded.world_id, decoded.presence, true)
+end
+
+local function remove_player(context, payload)
+    local decoded = nakama.json_decode(payload)
+    -- nakama.logger_warn(string.format("leave_player: username = '%s'", decoded.presence.username))
+    match_leave_maintenance(decoded.world_id, decoded.presence, false)
 end
 
 -- payload should be the world_id
@@ -95,4 +103,5 @@ end
 nakama.register_rpc(get_world_id, "get_world_id")
 nakama.register_rpc(join_player, "join_player")
 nakama.register_rpc(leave_player, "leave_player")
+nakama.register_rpc(remove_player, "remove_player")
 nakama.register_rpc(get_presences, "get_presences")
