@@ -75,6 +75,7 @@ text = "<"
 [connection signal="master_left" from="PlayerClient" to="." method="_on_PlayerClient_master_left"]
 [connection signal="pond_match_ended" from="PlayerClient" to="." method="_on_PlayerClient_pond_match_ended"]
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
+[connection signal="reservation_dropped" from="PlayerClient" to="." method="_on_PlayerClient_reservation_dropped"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
 [connection signal="match_quit_requested" from="PondMatch" to="." method="_on_PondMatch_match_quit_requested"]

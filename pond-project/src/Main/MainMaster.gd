@@ -109,9 +109,19 @@ func leave(p_leave : Presence):
 	if PlayerData.is_registered_player(p_leave.user_id):
 		PlayerData.leave_player(p_leave)
 
+func drop_reservation(user_id : String):
+	if PlayerData.is_registered_player(user_id):
+		PlayerData.drop_reservation(user_id)
+
 func _on_MasterClient_pond_script_received(p_user_id, p_pond_script):
 	var index := PlayerData.get_index_by_user_id(p_user_id)
 	PlayerData.set_pond_script(index, p_pond_script)
+
+func _on_MasterClient_reservation_dropped(user_id):
+	if _main_state == "elapse":
+		drop_reservation(user_id)
+	else:
+		PlayerCache.add_drop_reservation(user_id)
 
 func _on_MasterClient_joins_received(p_joins):
 	# print("_on_MasterClient_joins_received:%s"%String(p_joins))

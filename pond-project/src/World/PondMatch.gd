@@ -264,7 +264,7 @@ func disable_player(p_index : int):
 	threads[p_index] = null
 
 	if not controllers[p_index]:
-		push_error("In PondMatch.disable_player:\n\tTrying to twice remove a controller. Somehow a disable was called after a disable. If this is expected, I need to protect controllers.")
+		return
 
 	var node = get_node(controllers[p_index].name)
 	controllers[p_index] = null

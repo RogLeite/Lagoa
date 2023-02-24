@@ -63,7 +63,7 @@ function M.add_reservation(worlds, world_id, user_id, username)
     end
 end
 
-function M.remove_reservation(worlds, world_id, user_id)
+function M.drop_reservation(worlds, world_id, user_id)
     if not M.is_reserved(worlds, world_id, user_id) then
         return
     end

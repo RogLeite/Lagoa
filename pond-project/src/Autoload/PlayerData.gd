@@ -73,6 +73,13 @@ func get_user_index() -> int:
 			return i
 	return -1
 
+# Returns first index available for reservation. Returns the size of the array if there are no spaces available
+func get_unreserved_index() -> int:
+	for i in players.size():
+		if not players[i] or not players[i].keep_reservation:
+			return i
+	return players.size()
+
 # Returns -1 if not found. This should not happen, but is needed for syntatic correctness
 func get_index_by_user_id(p_user_id : String) -> int:
 	for i in players.size():
@@ -118,13 +125,13 @@ func join_player(p_join : Presence) -> void:
 # Marks a player as absent
 func leave_player(p_leave : Presence) -> void:
 	for i in players.size():
-
-		if players[i].user_id != p_leave.user_id:
+		var datum : PlayerDatum = players[i]
+		if datum.user_id != p_leave.user_id:
 			continue
 
-		if players[i].is_present :
+		if datum.is_present :
 			_present_count -= 1
-		players[i].is_present = false
+		datum.is_present = false
 		emit_signal("player_left", i)
 		return
 
@@ -135,13 +142,25 @@ func add_player(p_join : Presence) -> void:
 	datum.user_id = p_join.user_id
 	datum.username = p_join.username
 	datum.is_user = p_join.is_user
-	players.push_back(datum)
-	set_pond_script(players.size()-1, p_join.pond_script)
+	
+	var index : int = get_unreserved_index()
+	if index < players.size():
+		leave_player(players[index])
+		players[index] = datum
+	else:
+		players.push_back(datum)
+		
+	
+	set_pond_script(index, p_join.pond_script)
 	join_player(p_join)
 
-# [TODO] Force the removal of the player.
-func remove_player():
-	pass	
+# Drops a Player's reservation, so when they leave they are forgotten
+func drop_reservation(p_user_id) -> void:
+	print("PlayerData.drop_reservation: <p_user_id=%s>"%p_user_id)
+	var index: int = get_index_by_user_id(p_user_id)
+	if index == -1:
+		return
+	players[index].keep_reservation = false
 
 # Resets PlayerData's state without emitting any signal
 func reset() -> void:
@@ -152,11 +171,12 @@ func reset() -> void:
 func _no_set(_val):
 	pass
 
-class PlayerDatum extends Reference:
+class PlayerDatum extends Presence:
+	# var user_id : String  = ""
+	# var username : String  = ""
+	# var pond_script : String  = ""
+	# var is_user : bool = false
 	var duck_path : NodePath = ""
-	var user_id : String  = ""
-	var username : String  = ""
-	var pond_script : String  = ""
 	var last_compileable_script : String  = ""
 	var is_present : bool = false
-	var is_user : bool = false
+	var keep_reservation : bool = true

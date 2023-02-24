@@ -61,7 +61,7 @@ local function match_leave_maintenance(world_id, presence, keep_reservation)
     else
         worlds.remove_presence(world_table, world_id, presence)
         if not keep_reservation then
-            worlds.remove_reservation(world_table, world_id, user_id)
+            worlds.drop_reservation(world_table, world_id, user_id)
         end
     end
 end

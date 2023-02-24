@@ -1,6 +1,6 @@
 extends Node
 
-enum {JOIN, LEAVE}
+enum {JOIN, LEAVE, DROP_RESERVATION}
 
 var responsible : Node
 
@@ -11,6 +11,9 @@ func add_join(p_join) -> void:
 
 func add_leave(p_leave) -> void:
 	_cache.push_back({"type":LEAVE, "player":p_leave})
+	
+func add_drop_reservation(p_user_id : String) -> void:
+	_cache.push_back({"type":DROP_RESERVATION, "player":p_user_id})
 
 func release() -> void:
 	for v in _cache:
@@ -19,6 +22,8 @@ func release() -> void:
 				responsible.join(v.player)
 			LEAVE:
 				responsible.leave(v.player)
+			DROP_RESERVATION:
+				responsible.drop_reservation(v.player)
 	_cache.clear()
 
 func _to_string() -> String:
