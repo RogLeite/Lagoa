@@ -156,7 +156,6 @@ func add_player(p_join : Presence) -> void:
 
 # Drops a Player's reservation, so when they leave they are forgotten
 func drop_reservation(p_user_id) -> void:
-	print("PlayerData.drop_reservation: <p_user_id=%s>"%p_user_id)
 	var index: int = get_index_by_user_id(p_user_id)
 	if index == -1:
 		return
