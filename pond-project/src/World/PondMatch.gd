@@ -141,6 +141,9 @@ func _reset() -> void:
 
 
 	for i in player_count:
+		var bar : EnergyBar = find_node("EnergyBar%d"%i)
+		bar.reset()
+		
 		if not PlayerData.is_present(i):
 			continue
 		
@@ -148,8 +151,6 @@ func _reset() -> void:
 		# [TODO] Make the duck's signals and connections not a problem for PondMatch (maybe delegate to a "set_energy_visualization" method) 
 		#warning-ignore: return_value_discarded
 		var duck : Duck = PlayerData.get_duck_node(i)
-		var bar : EnergyBar = find_node("EnergyBar%d"%i)
-		bar.reset()
 		if not duck.is_connected("energy_changed", bar, "set_energy"):
 			duck.connect("energy_changed", bar, "set_energy")
 
