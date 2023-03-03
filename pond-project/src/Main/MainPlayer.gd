@@ -107,7 +107,7 @@ func result() -> void:
 func quit() -> void:
 	_main_state = "quit"
 
-	yield(_client.quit_async(), "completed")
+	yield(_client.drop_reservation_async(), "completed")
 
 	pond_match.reset_pond_match()
 	yield(pond_match, "reset_finished")

@@ -211,7 +211,7 @@ func join_world_async( is_master : bool) -> int:
 	return parsed_result
 
 # Returns OK or a nakama error code. Stores error messages in `ServerConnection.error_message`
-func quit_world_async( is_master : bool ) -> int: 
+func drop_world_reservation_async( is_master : bool ) -> int: 
 	# Debug assertions
 	assert(_client, "_client was not initialized, remember to call ServerConnection.start_client()")
 	assert(_socket, "_socket was not initialized, remember to call ServerConnection.connect_to_server_async()")

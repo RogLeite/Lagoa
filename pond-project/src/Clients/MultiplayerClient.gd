@@ -69,8 +69,8 @@ func join_async() -> int :
 
 	return OK
 
-func quit_async() -> int :
-	var result: int = yield(ServerConnection.quit_world_async(is_master), "completed")
+func drop_reservation_async() -> int :
+	var result: int = yield(ServerConnection.drop_world_reservation_async(is_master), "completed")
 	
 	if result != OK:
 		return result
