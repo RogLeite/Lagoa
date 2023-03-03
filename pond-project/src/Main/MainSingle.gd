@@ -18,8 +18,17 @@ func _init():
 func _ready():
 	call_deferred("reset")
 
+
+func _notification(what):
+	match _main_state:
+		"elapse", "start", "result":
+			if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST:
+				pond_match.show_quit_popup()
+
+
 func reset():
 	_main_state = "reset"
+	get_tree().set_auto_accept_quit(true)
 	pond_match.reset_pond_match()
 	
 	for join in _player_joins:
@@ -33,25 +42,30 @@ func reset():
 	
 func prepare() -> void:
 	_main_state = "prepare"
+	get_tree().set_auto_accept_quit(true)
 	# [TODO] Add scripts in PondMatch for the AI
 	pass
 	
 func elapse() -> void:
 	_main_state = "elapse"
+	get_tree().set_auto_accept_quit(false)
 	pond_match.show()
 
 func start() -> void:
 	_main_state = "start"
+	get_tree().set_auto_accept_quit(false)
 	pond_match.save_pond_scripts()
 	pond_match.run()
 
 func result() -> void:
 	_main_state = "result"
+	get_tree().set_auto_accept_quit(false)
 	pond_match.reset_pond_match()
 
 # Quits to MainMenu
 func quit() -> void:
 	_main_state = "quit"
+	get_tree().set_auto_accept_quit(true)
 
 	pond_match.reset_pond_match()
 	yield(pond_match, "reset_finished")

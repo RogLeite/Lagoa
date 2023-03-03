@@ -17,8 +17,16 @@ func _ready():
 	PlayerCache.responsible = self
 	call_deferred("reset")
 
+
+func _notification(what):
+	match _main_state:
+		"elapse", "start", "result":
+			if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST:
+				pond_match.show_quit_popup()
+
 func reset(p_status : String = ""):
 	_main_state = "reset"
+	get_tree().set_auto_accept_quit(true)
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
 
@@ -44,6 +52,7 @@ func reset(p_status : String = ""):
 
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_main_state = "prepare"
+	get_tree().set_auto_accept_quit(true)
 	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
@@ -85,6 +94,8 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 
 func elapse() -> void:
 	_main_state = "elapse"
+	get_tree().set_auto_accept_quit(false)
+	
 	pond_match.show()
 	
 	# print("PlayerCache.print: %s"%PlayerCache)
@@ -92,12 +103,14 @@ func elapse() -> void:
 	
 func start(pond_state : PondMatch.State) -> void:
 	_main_state = "start"
+	get_tree().set_auto_accept_quit(false)
 	if pond_state.tick > pond_match.tick:
 		pond_match.pond_state = pond_state
 		
 	
 func result() -> void:
 	_main_state = "result"
+	get_tree().set_auto_accept_quit(false)
 	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
 	call_deferred("elapse")
@@ -106,6 +119,7 @@ func result() -> void:
 # Quits to MainMenu
 func quit() -> void:
 	_main_state = "quit"
+	get_tree().set_auto_accept_quit(true)
 
 	yield(_client.drop_reservation_async(), "completed")
 

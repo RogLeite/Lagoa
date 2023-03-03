@@ -317,6 +317,8 @@ func save_pond_scripts() -> void:
 		if edit is TextEdit and "text" in edit:
 			PlayerData.set_pond_script(i, edit.text, true)
 		
+func show_quit_popup() -> void:
+	$QuitMatchPopup.popup_centered_minsize()
 
 func _exit_tree():
 	force_join_controllers()
@@ -433,7 +435,7 @@ func _on_QuitMatchPopup_confirmed(p_affirmative):
 		emit_signal("match_quit_requested")
 	
 func _on_QuitButton_pressed():
-	$QuitMatchPopup.popup_centered_minsize()
+	show_quit_popup()
 
 #JSONable class for PondMath
 class State extends JSONable:
