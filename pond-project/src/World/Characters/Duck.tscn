@@ -17,9 +17,9 @@ region_rect = Rect2( 0, 0, 35, 35 )
 light_mask = 0
 shape = SubResource( 1 )
 
-[node name="FacePlaceholder" type="ColorRect" parent="."]
-margin_top = -5.0
-margin_right = 20.0
-margin_bottom = 5.0
-rect_pivot_offset = Vector2( 0, 5 )
-color = Color( 1, 0.486275, 0.0705882, 1 )
+[node name="Head" type="Sprite" parent="."]
+rotation = -1.5708
+texture = ExtResource( 1 )
+offset = Vector2( 0, 16 )
+region_enabled = true
+region_rect = Rect2( 211, 3, 30, 30 )
