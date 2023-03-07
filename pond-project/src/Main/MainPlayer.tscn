@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
 [ext_resource path="res://src/Main/MainPlayer.gd" type="Script" id=2]
@@ -6,6 +6,8 @@
 [ext_resource path="res://src/UI/LoginAndRegister.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/spinner.png" type="Texture" id=5]
 [ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=6]
+[ext_resource path="res://src/World/Effects/Water.tscn" type="PackedScene" id=7]
+[ext_resource path="res://assets/theme/main_menu_theme.tres" type="Theme" id=8]
 
 [sub_resource type="Animation" id=1]
 resource_name = "spin"
@@ -26,6 +28,8 @@ tracks/0/keys = {
 
 [node name="MainPlayer" type="Node"]
 script = ExtResource( 2 )
+
+[node name="Water" parent="." instance=ExtResource( 7 )]
 
 [node name="PlayerClient" type="Node" parent="."]
 script = ExtResource( 1 )
@@ -66,7 +70,7 @@ margin_left = 10.0
 margin_top = 10.0
 margin_right = 64.0
 margin_bottom = 64.0
-theme = ExtResource( 6 )
+theme = ExtResource( 8 )
 text = "<"
 
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]

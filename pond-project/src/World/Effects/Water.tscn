@@ -37,13 +37,15 @@ shader = SubResource( 1 )
 shader_param/slowdown = 4.214
 shader_param/amplitude = 1.651
 shader_param/water_scroll = Vector2( 0.03, 0 )
-shader_param/big_offset_scale = 0.2
+shader_param/big_offset_scale = 0.4
 shader_param/big_offset_scroll = Vector2( 0.068, 0.05 )
-shader_param/small_offset_scale = 1.0
+shader_param/small_offset_scale = 1.555
 shader_param/small_offset_scroll = Vector2( 0.013, 0.05 )
 shader_param/water_texture = ExtResource( 3 )
 shader_param/offset = ExtResource( 1 )
 
 [node name="Water" type="Sprite"]
 material = SubResource( 2 )
+position = Vector2( 512, 300 )
+scale = Vector2( 10.24, 6 )
 texture = ExtResource( 2 )
