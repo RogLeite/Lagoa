@@ -10,7 +10,7 @@ const _popup_msg_player_client := "Não foi possível iniciar a cena do Player C
 const _popup_msg_master_client := "Não foi possível iniciar a cena do Master Client"
 
 
-onready var modes_list := $ModesList
+onready var modes_list := find_node("ModesList")
 
 func _ready():
 	if ProjectSettings.get_setting("editor/manual_testing"):
