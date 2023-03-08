@@ -47,6 +47,7 @@ func reset(p_status : String = ""):
 
 	back_button.show()
 
+	$Water.show()
 	pond_match.hide()
 	pond_match.reset_pond_match()
 
@@ -96,6 +97,7 @@ func elapse() -> void:
 	_main_state = "elapse"
 	get_tree().set_auto_accept_quit(false)
 	
+	$Water.hide()
 	pond_match.show()
 	
 	# print("PlayerCache.print: %s"%PlayerCache)
