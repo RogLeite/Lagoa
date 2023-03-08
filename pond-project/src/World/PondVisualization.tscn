@@ -61,17 +61,3 @@ position = Vector2( 92, 300 )
 modulate = Color( 0.603922, 0.0392157, 0.835294, 1 )
 position = Vector2( 308, 300 )
 rotation = -3.14159
-
-[node name="Debugger" type="VBoxContainer" parent="."]
-anchor_top = 1.0
-anchor_bottom = 1.0
-margin_top = 400.0
-margin_right = 128.0
-margin_bottom = 456.0
-rect_scale = Vector2( 1, -1 )
-
-[node name="Label" type="Label" parent="Debugger"]
-margin_top = 21.0
-margin_right = 128.0
-margin_bottom = 35.0
-size_flags_vertical = 6

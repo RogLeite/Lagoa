@@ -85,11 +85,6 @@ func _ready() -> void:
 	# warning-ignore:return_value_discarded
 	PlayerData.connect("player_left", self, "_on_PlayerData_player_left")
 
-
-func _physics_process(_delta):
-	$Debugger/Label.text = "Duck0 speed = %f\nDuck1 speed = %f\nDuck0 pos = %s\nDuck1 pos = %s\n"% \
-						[$Duck0.speed,$Duck1.speed,String($Duck0.position),String($Duck1.position)]
-
 func _exit_tree():
 	if PlayerData.is_connected("player_joined", self, "_on_PlayerData_player_joined"):
 		PlayerData.disconnect("player_joined", self, "_on_PlayerData_player_joined")
