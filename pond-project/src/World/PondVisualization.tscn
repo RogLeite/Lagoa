@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://src/World/Characters/Duck.tscn" type="PackedScene" id=1]
 [ext_resource path="res://src/World/PondVisualization.gd" type="Script" id=2]
@@ -15,6 +15,65 @@ extents = Vector2( 32, 264 )
 
 [sub_resource type="RectangleShape2D" id=4]
 extents = Vector2( 32, 264 )
+
+[sub_resource type="Shader" id=5]
+code = "shader_type canvas_item;
+ 
+uniform bool enable;
+uniform float width : hint_range(0.0, 16.0);
+uniform vec4 outline_color : hint_color;
+ 
+void fragment()
+{
+    vec4 sprite_color = texture(TEXTURE, UV);
+    vec2 size = vec2(width) / vec2(textureSize(TEXTURE, 0));
+   
+   
+    float alpha = sprite_color.a;
+    alpha += texture(TEXTURE, UV + vec2(0.0, -size.y)).a;
+    alpha += texture(TEXTURE, UV + vec2(size.x, -size.y)).a;
+    alpha += texture(TEXTURE, UV + vec2(size.x, 0.0)).a;
+    alpha += texture(TEXTURE, UV + vec2(size.x, size.y)).a;
+    alpha += texture(TEXTURE, UV + vec2(0.0, size.y)).a;
+    alpha += texture(TEXTURE, UV + vec2(-size.x, size.y)).a;
+    alpha += texture(TEXTURE, UV + vec2(-size.x, 0.0)).a;
+    alpha += texture(TEXTURE, UV + vec2(-size.x, -size.y)).a;
+   
+    vec3 final_color = mix(outline_color.rgb, sprite_color.rgb, sprite_color.a);
+    
+	if (enable)
+		COLOR = vec4(final_color, clamp(alpha, 0.0, 1.0));
+	else
+		COLOR = sprite_color;
+}"
+
+[sub_resource type="ShaderMaterial" id=6]
+resource_local_to_scene = true
+shader = SubResource( 5 )
+shader_param/enable = true
+shader_param/width = 2.0
+shader_param/outline_color = Color( 0.66, 0.4917, 0.099, 1 )
+
+[sub_resource type="ShaderMaterial" id=7]
+resource_local_to_scene = true
+shader = SubResource( 5 )
+shader_param/enable = true
+shader_param/width = 2.0
+shader_param/outline_color = Color( 0.67451, 0.67451, 0.67451, 1 )
+
+[sub_resource type="ShaderMaterial" id=8]
+resource_local_to_scene = true
+shader = SubResource( 5 )
+shader_param/enable = true
+shader_param/width = 2.0
+shader_param/outline_color = Color( 0.0252, 0.42, 0.0252, 1 )
+
+[sub_resource type="ShaderMaterial" id=9]
+resource_local_to_scene = true
+shader = SubResource( 5 )
+shader_param/enable = false
+shader_param/width = 2.0
+shader_param/outline_color = Color( 1, 1, 1, 1 )
 
 [node name="PondVisualization" type="Node2D"]
 script = ExtResource( 2 )
@@ -46,18 +105,22 @@ color = Color( 0.321569, 0.494118, 0.74902, 1 )
 polygon = PoolVector2Array( 0, 0, 400, 0, 400, 400, 0, 400 )
 
 [node name="Duck0" parent="." instance=ExtResource( 1 )]
+material = SubResource( 6 )
 position = Vector2( 92, 100 )
 
 [node name="Duck1" parent="." instance=ExtResource( 1 )]
 modulate = Color( 0.835294, 0.0392157, 0.0392157, 1 )
+material = SubResource( 7 )
 position = Vector2( 308, 100 )
 rotation = -3.14159
 
 [node name="Duck2" parent="." instance=ExtResource( 1 )]
 modulate = Color( 0.0392157, 0.835294, 0.239216, 1 )
+material = SubResource( 8 )
 position = Vector2( 92, 300 )
 
 [node name="Duck3" parent="." instance=ExtResource( 1 )]
 modulate = Color( 0.603922, 0.0392157, 0.835294, 1 )
+material = SubResource( 9 )
 position = Vector2( 308, 300 )
 rotation = -3.14159

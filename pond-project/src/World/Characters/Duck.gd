@@ -25,6 +25,8 @@ var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
 
+var show_outline : bool setget set_show_outline, get_show_outline
+
 # [TODO] Define and use "color" for the duck
 var color : Color = Color.white
 var pond_state : State setget set_pond_state, get_pond_state
@@ -76,7 +78,13 @@ func set_energy(value : int) :
 	
 func set_can_launch(value : bool):
 	can_launch = value
-
+	
+func set_show_outline(p_show_outline : bool) -> void:
+	material.set_shader_param("enable", p_show_outline)
+	
+func get_show_outline() -> bool:
+	return material.get_shader_param("enable")
+	
 func set_participating(p_participating : bool) -> void:
 	self.visible = p_participating
 	collision.disabled = not p_participating

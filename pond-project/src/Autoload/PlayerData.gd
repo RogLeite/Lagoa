@@ -73,6 +73,10 @@ func get_user_index() -> int:
 			return i
 	return -1
 
+# Checks if index corresponds to the user
+func is_user(p_index : int) -> bool:
+	return players[p_index] and players[p_index].is_user
+
 # Returns first index available for reservation. Returns the size of the array if there are no spaces available
 func get_unreserved_index() -> int:
 	for i in players.size():

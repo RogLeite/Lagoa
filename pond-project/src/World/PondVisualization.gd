@@ -268,7 +268,9 @@ func reset_projectiles() -> void:
 
 func reset_ducks() -> void:
 	for i in _every_duck.size():
-		_every_duck[i].reset(starting_positions[i], starting_rotations[i])
+		var duck : Duck = _every_duck[i]
+		duck.reset(starting_positions[i], starting_rotations[i])
+		duck.show_outline = PlayerData.is_user(i)
 		if PlayerData.is_present(i):
 			enable_duck(i)
 		else:
