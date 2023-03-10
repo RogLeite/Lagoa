@@ -22,6 +22,8 @@ var vision_cones_pond_states : Array setget , _get_vision_cones_pond_states
 var starting_positions := [Vector2(92,100), Vector2(308,100), Vector2(92,300), Vector2(308,300)]
 var starting_rotations := [0.0, PI, 0.0, PI]
 
+var water_bounds : PoolVector2Array = [Vector2(0,0), Vector2(0,400), Vector2(400,400), Vector2(400,0)] 
+
 var _every_duck := []
 # Every duck that is participating in the match. MAY NOT BE IN THE REAL DUCK ORDER!
 var _participating_ducks := []
@@ -174,7 +176,7 @@ func projectile_splash(landing_position : Vector2, is_hit : bool, _exhaustion : 
 		player = boom_player_scene.instance()
 		# player.volume_db = -40 + 40 * (exhaustion / 10)
 		emit_signal("sfx_played", "boom")
-	elif Geometry.is_point_in_polygon(landing_position, $Water.polygon):
+	elif Geometry.is_point_in_polygon(landing_position, water_bounds):
 		player = splash_player_scene.instance()
 		emit_signal("sfx_played", "splash")
 	
@@ -270,7 +272,6 @@ func reset_ducks() -> void:
 	for i in _every_duck.size():
 		var duck : Duck = _every_duck[i]
 		duck.reset(starting_positions[i], starting_rotations[i])
-		duck.show_outline = PlayerData.is_user(i)
 		if PlayerData.is_present(i):
 			enable_duck(i)
 		else:

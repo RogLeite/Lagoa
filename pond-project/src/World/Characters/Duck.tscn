@@ -1,50 +1,13 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
+[ext_resource path="res://src/World/Characters/Duck_material.tres" type="Material" id=1]
 [ext_resource path="res://src/World/Characters/Duck.gd" type="Script" id=2]
 [ext_resource path="res://assets/sprite.png" type="Texture" id=3]
-
-[sub_resource type="Shader" id=5]
-code = "shader_type canvas_item;
- 
-uniform bool enable;
-uniform float width : hint_range(0.0, 16.0);
-uniform vec4 outline_color : hint_color;
- 
-void fragment()
-{
-    vec4 sprite_color = texture(TEXTURE, UV);
-    vec2 size = vec2(width) / vec2(textureSize(TEXTURE, 0));
-   
-   
-    float alpha = sprite_color.a;
-    alpha += texture(TEXTURE, UV + vec2(0.0, -size.y)).a;
-    alpha += texture(TEXTURE, UV + vec2(size.x, -size.y)).a;
-    alpha += texture(TEXTURE, UV + vec2(size.x, 0.0)).a;
-    alpha += texture(TEXTURE, UV + vec2(size.x, size.y)).a;
-    alpha += texture(TEXTURE, UV + vec2(0.0, size.y)).a;
-    alpha += texture(TEXTURE, UV + vec2(-size.x, size.y)).a;
-    alpha += texture(TEXTURE, UV + vec2(-size.x, 0.0)).a;
-    alpha += texture(TEXTURE, UV + vec2(-size.x, -size.y)).a;
-   
-    vec3 final_color = mix(outline_color.rgb, sprite_color.rgb, sprite_color.a);
-    
-	if (enable)
-		COLOR = vec4(final_color, clamp(alpha, 0.0, 1.0));
-	else
-		COLOR = sprite_color;
-}"
-
-[sub_resource type="ShaderMaterial" id=3]
-resource_local_to_scene = true
-shader = SubResource( 5 )
-shader_param/enable = false
-shader_param/width = 2.0
-shader_param/outline_color = Color( 1, 1, 1, 1 )
 
 [sub_resource type="CircleShape2D" id=1]
 
 [node name="Duck" type="KinematicBody2D"]
-material = SubResource( 3 )
+material = ExtResource( 1 )
 script = ExtResource( 2 )
 
 [node name="Torso" type="Sprite" parent="."]
@@ -52,7 +15,7 @@ use_parent_material = true
 position = Vector2( 7, 0 )
 texture = ExtResource( 3 )
 region_enabled = true
-region_rect = Rect2( 15, 16, 50, 35 )
+region_rect = Rect2( 10, 11, 60, 45 )
 
 [node name="Collision" type="CollisionShape2D" parent="."]
 light_mask = 0

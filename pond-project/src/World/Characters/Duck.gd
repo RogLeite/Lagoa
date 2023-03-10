@@ -7,6 +7,8 @@ export var max_speed : int = 100
 # Scan resolution in degrees
 export var scan_resolution := 5.0
 
+export var show_outline : bool setget set_show_outline, get_show_outline
+
 const ACCELERATION : float = 300.0
 const MAX_ENERGY : int = 100
 const COLLISION_CIRCLE_RADIUS : float = 10.0
@@ -24,8 +26,6 @@ var speed_target : float = 0 setget set_speed_target
 var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
-
-var show_outline : bool setget set_show_outline, get_show_outline
 
 # [TODO] Define and use "color" for the duck
 var color : Color = Color.white
