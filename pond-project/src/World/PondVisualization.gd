@@ -32,6 +32,7 @@ var _pool_vision_cones := []
 var scan_mutex := Mutex.new()
 var projectile_mutex := Mutex.new()
 
+onready var marker := $MarkerLayer/Marker
 onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
 onready var vision_cone_scene := preload("res://src/World/Effects/VisionCone.tscn")
 onready var boom_player_scene := preload("res://src/World/Effects/BoomPlayer.tscn")
@@ -272,14 +273,11 @@ func reset_ducks() -> void:
 	for i in _every_duck.size():
 		var duck : Duck = _every_duck[i]
 		duck.reset(starting_positions[i], starting_rotations[i])
+			
 		if PlayerData.is_present(i):
 			enable_duck(i)
 		else:
 			disable_duck(i)
-	# # If there are already players, adds a duck to PlayerData
-	# for i in PlayerData.count():
-	# 	if not PlayerData.is_present(i):
-	# 		disable_duck(i)
 
 func reset_vision_cones() -> void:
 	for cone in _pool_vision_cones:
@@ -308,6 +306,9 @@ func enable_duck(p_index):
 	duck.set_participating(true)
 	if _participating_ducks.find(duck) == -1:
 		_participating_ducks.push_back(duck)
+	
+	if PlayerData.is_user(p_index):
+		duck.following_node = marker
 
 # [TODO] Force the removal of the player
 func remove_duck(_p_index):

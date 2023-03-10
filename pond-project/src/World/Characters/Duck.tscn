@@ -20,3 +20,6 @@ region_rect = Rect2( 10, 11, 60, 45 )
 [node name="Collision" type="CollisionShape2D" parent="."]
 light_mask = 0
 shape = SubResource( 1 )
+
+[node name="Follower" type="RemoteTransform2D" parent="."]
+update_rotation = false

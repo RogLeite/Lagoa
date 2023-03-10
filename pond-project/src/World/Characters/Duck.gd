@@ -27,6 +27,8 @@ var energy : int = MAX_ENERGY setget set_energy
 
 var can_launch : bool = true setget set_can_launch
 
+var following_node : Node setget set_following_node
+
 # [TODO] Define and use "color" for the duck
 var color : Color = Color.white
 var pond_state : State setget set_pond_state, get_pond_state
@@ -35,6 +37,7 @@ onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCK
 onready var tire_mutex := Mutex.new()
 onready var _base_modulate := modulate
 onready var collision := $Collision
+onready var follower := $Follower
 
 func _ready():
 	collision.shape.radius = COLLISION_CIRCLE_RADIUS
@@ -78,12 +81,22 @@ func set_energy(value : int) :
 	
 func set_can_launch(value : bool):
 	can_launch = value
-	
+
 func set_show_outline(p_show_outline : bool) -> void:
 	material.set_shader_param("enable", p_show_outline)
 	
 func get_show_outline() -> bool:
 	return material.get_shader_param("enable")
+
+func set_following_node( p_node : Node ) -> void:
+	following_node = p_node
+	
+	if p_node == null:
+		follower.remote_path = NodePath("")
+		return
+		
+	var path = follower.get_path_to(p_node)
+	follower.remote_path = path
 	
 func set_participating(p_participating : bool) -> void:
 	self.visible = p_participating
