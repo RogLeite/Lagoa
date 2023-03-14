@@ -54,6 +54,7 @@ func reset(p_status : String = ""):
 func prepare(email : String, password : String, do_remember_email : bool, is_register : bool) -> void:
 	_main_state = "prepare"
 	get_tree().set_auto_accept_quit(true)
+	pond_match.set_back_disabled(false)
 	login_and_register.set_is_enabled(false)
 	_spinner.show()
 	_spinner_animator.play("spin")
@@ -106,6 +107,7 @@ func elapse() -> void:
 func start(pond_state : PondMatch.State) -> void:
 	_main_state = "start"
 	get_tree().set_auto_accept_quit(false)
+	pond_match.set_back_disabled(true)
 	if pond_state.tick > pond_match.tick:
 		pond_match.pond_state = pond_state
 		
@@ -113,6 +115,7 @@ func start(pond_state : PondMatch.State) -> void:
 func result() -> void:
 	_main_state = "result"
 	get_tree().set_auto_accept_quit(false)
+	pond_match.set_back_disabled(false)
 	pond_match.reset_pond_match()
 	# [TODO] Possibly handle reconnection attempt
 	call_deferred("elapse")
@@ -122,6 +125,7 @@ func result() -> void:
 func quit() -> void:
 	_main_state = "quit"
 	get_tree().set_auto_accept_quit(true)
+	pond_match.set_back_disabled(false)
 
 	yield(_client.drop_reservation_async(), "completed")
 
@@ -198,7 +202,6 @@ func _on_PondMatch_send_pond_script_requested() -> void:
 
 func _on_BackButton_pressed() -> void:
 	if _main_state == "reset":
-		print("_on_BackButton_pressed")
 		#warning-ignore: return_value_discarded
 		get_tree().change_scene_to(load(_main_menu))
 
