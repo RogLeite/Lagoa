@@ -29,6 +29,7 @@ var threads : Array
 var script_editors : Array # Array of TextEdit
 var controllers : Array
 var controller_ids : Array
+var back_disabled : bool = false setget set_back_disabled
 
 var pond_state : State setget set_pond_state, get_pond_state
 var tick : int
@@ -42,6 +43,7 @@ onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn"
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 
 # References to Nodes
+onready var quit_btn := $UI/MarginContainer/Gameplay/HBoxContainer/QuitButton
 onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
@@ -126,6 +128,7 @@ func reset_pond_match() -> void:
 	
 func _reset() -> void:
 	run_reset_btn.swap_role("run")
+	set_back_disabled(false)
 	step_btn.hide()
 
 	tick = 0
@@ -165,6 +168,7 @@ func _reset() -> void:
 func run():
 	run_reset_btn.swap_role("reset")
 	step_btn.visible = is_step_by_step
+	set_back_disabled(true)
 
 	var player_count : int = PlayerData.count()
 	var successfully_compiled := true
@@ -319,6 +323,10 @@ func save_pond_scripts() -> void:
 		
 func show_quit_popup() -> void:
 	$QuitMatchPopup.popup_centered_minsize()
+
+func set_back_disabled(p_disable : bool) -> void:
+	back_disabled = p_disable
+	quit_btn.disabled = p_disable
 
 func _exit_tree():
 	force_join_controllers()
