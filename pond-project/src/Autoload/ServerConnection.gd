@@ -247,7 +247,11 @@ func drop_world_reservation_async( is_master : bool ) -> int:
 # Returns OK or a nakama error number and puts the error message in `ServerConnection.error_message`
 func disconnect_from_server_async() -> int:
 	var parsed_result := OK
-		
+	
+	if not _presence:
+		yield(Engine.get_main_loop(), "idle_frame")
+		return OK
+	
 	var parameters := {
 		"world_id" : _world_id,
 		"presence" : _presence.serialize()

@@ -109,9 +109,11 @@ local my_logger_debug = nakama.logger_debug
 
 
 -- [TODO] Implement a whitelist system to determine which user_id can be MasterClient
-local Whitelist = {}
-function Whitelist.is_whitelisted (user_id)
-    return true
+local Whitelist ={
+    ["M1@test.com"] = true
+}
+local function is_whitelisted (username)
+    return Whitelist[username]
 end
 
 -- Initializes a match: The `state` table, the match `label`, and `tick_rate`
@@ -156,6 +158,7 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
     -- my_logger_debug(string.format("match_join_attempt: presence = %s, metadata = %s", presence2string(presence), metadata2string(metadata)))
 
     local user_id = presence.user_id
+    local username = presence.username
 
     -- Presence is already in the match
     if state.presences and state.presences[user_id] then
@@ -170,8 +173,8 @@ function world_control.match_join_attempt( context, dispatcher, tick, state, pre
         end
 
         -- Check the whitelist if the user_id can be a MasterClient
-        if not Whitelist.is_whitelisted(user_id) then
-            return state, false, "user_id is not whitelisted to the role of MasterClient"
+        if not is_whitelisted(username) then
+            return state, false, "username is not whitelisted to the role of MasterClient"
         end
 
         -- Since match_join does not have a "metadata" linked to the presence,
