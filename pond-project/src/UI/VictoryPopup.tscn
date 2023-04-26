@@ -1,0 +1,49 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://assets/theme/gdquest.theme" type="Theme" id=1]
+[ext_resource path="res://src/UI/VictoryPopup.gd" type="Script" id=2]
+
+[node name="VictoryPopup" type="Popup"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -177.0
+margin_top = -109.393
+margin_right = 177.0
+margin_bottom = 109.393
+rect_min_size = Vector2( 354, 218.785 )
+theme = ExtResource( 1 )
+popup_exclusive = true
+script = ExtResource( 2 )
+
+[node name="Panel" type="Panel" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -177.0
+margin_top = -109.393
+margin_right = 177.0
+margin_bottom = 109.393
+rect_min_size = Vector2( 354, 218.785 )
+
+[node name="Winner" type="Label" parent="Panel"]
+anchor_left = 0.057
+anchor_top = 0.12
+anchor_right = 0.943
+anchor_bottom = 0.409
+text = "<Jogador>
+VENCEU!!!"
+align = 1
+autowrap = true
+
+[node name="Continue" type="Button" parent="Panel"]
+anchor_left = 0.15
+anchor_top = 0.52
+anchor_right = 0.85
+anchor_bottom = 0.88
+rect_min_size = Vector2( 103.554, 64 )
+text = "OK"
+
+[connection signal="pressed" from="Panel/Continue" to="." method="_on_Continue_pressed"]
