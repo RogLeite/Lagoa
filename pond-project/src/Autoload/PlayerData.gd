@@ -73,6 +73,9 @@ func get_user_index() -> int:
 			return i
 	return -1
 
+func get_player(p_index : int):
+	return players[p_index]
+
 # Checks if index corresponds to the user
 func is_user(p_index : int) -> bool:
 	return players[p_index] and players[p_index].is_user

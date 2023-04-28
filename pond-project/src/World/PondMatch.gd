@@ -7,6 +7,7 @@ signal match_reset_requested
 signal match_step_requested
 signal match_scripts_ended
 signal match_quit_requested
+signal match_ended
 signal send_pond_script_requested
 signal reset_finished
 
@@ -38,6 +39,7 @@ var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
 var pond_events_mutex : Mutex
 
+var winner : String = "<username>"
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -100,11 +102,14 @@ func _physics_process(_delta: float) -> void:
 	if is_running:
 		if not is_step_by_step:
 			script_step()
-		if are_controllers_finished() :
+		if check_victory():
+			emit_signal("match_ended")	
+		elif are_controllers_finished() :
 			is_running = false
 			join_controllers()
 			CurrentVisualization.get_current().stop()
 			emit_signal("match_scripts_ended")
+		
 
 # If it's is_running, busy waits for every thread to arrive
 func script_step():
@@ -164,6 +169,38 @@ func _reset() -> void:
 	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
 	emit_signal("reset_finished")
 
+
+# If a victor is found, stores it's username in member winner
+func check_victory():
+	if PlayerData.present_count() == 1:
+		return false
+	
+	var non_tired := 0
+	var non_tired_idx := -1
+	
+	for idx in PlayerData.count():
+		if not PlayerData.is_present(idx):
+			continue
+		
+		if non_tired > 1:
+			break
+		
+		var duck = PlayerData.get_duck_node(idx)
+		if duck and not duck.is_tired():
+			non_tired += 1
+			non_tired_idx = idx
+	
+	match non_tired:
+		0:
+			push_warning("No duck is awake, did nobody lose?!")
+			winner = "Empate!"
+			return false
+		1:
+			winner = PlayerData.get_player(non_tired_idx).username
+			return true
+		_:
+			winner = "<username>"
+			return false
 
 func run():
 	run_reset_btn.swap_role("reset")

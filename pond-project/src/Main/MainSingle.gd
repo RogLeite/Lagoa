@@ -4,6 +4,7 @@ var _player_joins : Array
 var _main_state := "initial"
 
 onready var pond_match := $PondMatch
+onready var victory_popup := $VictoryPopup
 
 func _init():
 	var script1 : LuaScript = preload("res://resources/LuaScripts/launch_cross.tres")
@@ -57,10 +58,28 @@ func start() -> void:
 	pond_match.save_pond_scripts()
 	pond_match.run()
 
-func result() -> void:
+func result(winner_declared : bool = false) -> void:
 	_main_state = "result"
 	get_tree().set_auto_accept_quit(false)
+	
+	
 	pond_match.reset_pond_match()
+
+	if not winner_declared:
+		return 
+	
+	get_tree().paused = true
+	
+	var original_modulate = pond_match.modulate
+	pond_match.modulate = Color.gray
+	victory_popup.set_winner(pond_match.winner)
+	victory_popup.popup_centered()
+	yield(victory_popup, "confirmed")
+	pond_match.modulate = original_modulate
+	
+	get_tree().paused = false
+	
+	
 
 # Quits to MainMenu
 func quit() -> void:
@@ -75,7 +94,10 @@ func quit() -> void:
 	get_tree().change_scene_to(load("res://src/Main/MainMenu.tscn"))
 
 func _on_PondMatch_match_reset_requested() -> void:
-	call_deferred("result")
+	call_deferred("result", false)
+
+func _on_PondMatch_match_ended() -> void:
+	call_deferred("result", true)
 
 func _on_PondMatch_match_run_requested() -> void:
 	call_deferred("start")

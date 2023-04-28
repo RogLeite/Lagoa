@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://src/World/PondMatch.tscn" type="PackedScene" id=1]
 [ext_resource path="res://src/Main/MainSingle.gd" type="Script" id=2]
+[ext_resource path="res://src/UI/VictoryPopup.tscn" type="PackedScene" id=3]
 
 [node name="MainSingle" type="Node"]
 script = ExtResource( 2 )
@@ -9,6 +10,10 @@ script = ExtResource( 2 )
 [node name="PondMatch" parent="." instance=ExtResource( 1 )]
 can_edit_scripts = false
 
+[node name="VictoryPopup" parent="." instance=ExtResource( 3 )]
+pause_mode = 2
+
+[connection signal="match_ended" from="PondMatch" to="." method="_on_PondMatch_match_ended"]
 [connection signal="match_quit_requested" from="PondMatch" to="." method="_on_PondMatch_match_quit_requested"]
 [connection signal="match_reset_requested" from="PondMatch" to="." method="_on_PondMatch_match_reset_requested"]
 [connection signal="match_run_requested" from="PondMatch" to="." method="_on_PondMatch_match_run_requested"]
