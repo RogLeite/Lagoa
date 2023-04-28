@@ -11,6 +11,8 @@ signal match_ended
 signal send_pond_script_requested
 signal reset_finished
 
+const WINNER_TEMPLATE : String = "<username>"
+
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
 # Is the scene running the scripts
@@ -39,7 +41,7 @@ var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
 var pond_events_mutex : Mutex
 
-var winner : String = "<username>"
+var winner : String = WINNER_TEMPLATE
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -134,6 +136,7 @@ func _reset() -> void:
 	set_back_disabled(false)
 	step_btn.hide()
 
+	winner = WINNER_TEMPLATE
 	tick = 0
 	clear_events()
 
@@ -201,7 +204,7 @@ func check_victory():
 			winner = PlayerData.get_player(non_tired_idx).username
 			return true
 		_:
-			winner = "<username>"
+			winner = WINNER_TEMPLATE
 			return false
 
 func run():
