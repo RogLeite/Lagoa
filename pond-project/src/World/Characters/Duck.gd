@@ -2,6 +2,7 @@ extends KinematicBody2D
 class_name Duck
 
 signal energy_changed(new_value)
+signal tired
 
 export var max_speed : int = 100
 # Scan resolution in degrees
@@ -136,6 +137,7 @@ func check_energy():
 		emergency_stop()
 		collision.disabled = true
 		modulate = Color(0.75,0.75,0.75,0.75)
+		emit_signal("tired")
 		call_deferred("set_physics_process", false)
 
 func is_tired() -> bool :

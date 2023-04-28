@@ -102,9 +102,7 @@ func _physics_process(_delta: float) -> void:
 	if is_running:
 		if not is_step_by_step:
 			script_step()
-		if check_victory():
-			emit_signal("match_ended")	
-		elif are_controllers_finished() :
+		if are_controllers_finished() :
 			is_running = false
 			join_controllers()
 			CurrentVisualization.get_current().stop()
@@ -161,6 +159,10 @@ func _reset() -> void:
 		var duck : Duck = PlayerData.get_duck_node(i)
 		if not duck.is_connected("energy_changed", bar, "set_energy"):
 			duck.connect("energy_changed", bar, "set_energy")
+		#warning-ignore: return_value_discarded
+		if not duck.is_connected("tired", self, "_on_Duck_tired"):
+			duck.connect("tired", self, "_on_Duck_tired")
+			
 
 	# The script execution threads use the instance_id of the LuaController node
 	ThreadSincronizer.prepare_participants(controller_ids)
@@ -437,6 +439,9 @@ func set_pond_state(p_state : State) -> void:
 	self.projectile_pond_states = p_state.projectile_pond_states
 	pond_state = p_state
 
+func _on_Duck_tired():
+	if is_running and check_victory():
+		emit_signal("match_ended")	
 
 func _on_PondVisualization_sfx_played(p_effect_name : String):
 	pond_events_mutex.lock()
