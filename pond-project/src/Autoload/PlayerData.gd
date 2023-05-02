@@ -31,14 +31,20 @@ func get_duck_node(p_index : int) -> Node:
 # If a player does not have a duck_path defined, it's index in the array has `null`
 func get_duck_nodes() -> Array:
 	var ret := []
-
-	if players.size() == 0:
-		return ret
-
+	
 	for i in players.size():
 		ret.append(get_duck_node(i))
 
 	return ret
+
+func duck_node_to_index(p_duck : Node) -> int:
+	var ducks = get_duck_nodes()
+	for i in ducks.size():
+		if ducks[i] == p_duck:
+			return i
+	
+	return -1
+
 
 # Checks if the player at p_index is present
 func is_present(p_index : int) -> bool:
