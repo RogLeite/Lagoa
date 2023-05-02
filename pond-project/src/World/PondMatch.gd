@@ -43,6 +43,8 @@ var pond_events_mutex : Mutex
 
 var winner : String = WINNER_TEMPLATE
 
+var _ducks_tired : Array = []
+
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 
@@ -137,6 +139,7 @@ func _reset() -> void:
 	step_btn.hide()
 
 	winner = WINNER_TEMPLATE
+	_ducks_tired = []
 	tick = 0
 	clear_events()
 
@@ -197,9 +200,10 @@ func check_victory():
 	
 	match non_tired:
 		0:
-			push_warning("No duck is awake, did nobody lose?!")
-			winner = "Empate!"
-			return false
+			push_warning("It was a tie!")
+			var last_tired_idx = PlayerData.duck_node_to_index(_ducks_tired.back())
+			winner = PlayerData.get_player(last_tired_idx).username
+			return true
 		1:
 			winner = PlayerData.get_player(non_tired_idx).username
 			return true
@@ -442,7 +446,8 @@ func set_pond_state(p_state : State) -> void:
 	self.projectile_pond_states = p_state.projectile_pond_states
 	pond_state = p_state
 
-func _on_Duck_tired():
+func _on_Duck_tired( p_duck : Duck ):
+	_ducks_tired.push_back(p_duck)
 	if is_running and check_victory():
 		emit_signal("match_ended")	
 
