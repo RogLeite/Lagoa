@@ -70,12 +70,11 @@ func result(winner_declared : bool = false) -> void:
 	
 	get_tree().paused = true
 	
-	var original_modulate = pond_match.modulate
 	pond_match.modulate = Color.gray
 	victory_popup.set_winner(pond_match.winner)
 	victory_popup.popup_centered()
 	yield(victory_popup, "confirmed")
-	pond_match.modulate = original_modulate
+	pond_match.modulate = Color.white
 	
 	get_tree().paused = false
 	
