@@ -16,6 +16,10 @@ extends Node
 # {
 # 	"user_id" : String
 # }
+# SHOW_VICTORY = 5:
+# {
+# 	"username" : String
+# }
 
 
 ## Signals
@@ -38,6 +42,10 @@ signal pond_state_updated(pond_state)
 # parameter are the contents of the specified message format
 signal reservation_dropped(user_id)
 
+# Emited when a message with OpCode.SHOW_VICTORY is received
+# parameter are the contents of the specified message format
+signal victory_shown(username)
+
 # Emited when _socket signals `received_match_presence` and there are users joining
 # p_joins is an array of Dictionaries : {username, user_id}
 signal joins_received(p_joins)
@@ -59,6 +67,7 @@ enum OpCodes {
 	UPDATE_POND_STATE = 2,	# Emits signal `pond_state_received`
 	END_POND_MATCH = 3,		# Emits signal `pond_match_ended`
 	DROP_RESERVATION = 4, # Emits signal `reservation_removed`
+	SHOW_VICTORY = 5, # Emits signal `victory_shown`
 	MANUAL_DEBUG = 99
 }
 
@@ -352,26 +361,44 @@ func get_username() -> String:
 	return ""
 
 func end_pond_match() -> void:
-	if _socket:
-		var payload := {}
-		_socket.send_match_state_async(_world_id, OpCodes.END_POND_MATCH, JSON.print(payload))
+	if not _socket:
+		return
+
+	var payload := {}
+	_socket.send_match_state_async(_world_id, OpCodes.END_POND_MATCH, JSON.print(payload))
 
  # Sends a message to the server stating a change in the pond_script for the player.
 func send_pond_script(p_pond_script: String) -> void:
-	if _socket:
-		var payload := {user_id = get_user_id(), pond_script = p_pond_script}
-		_socket.send_match_state_async(_world_id, OpCodes.SEND_POND_SCRIPT, JSON.print(payload))
+	if not _socket:
+		return
+	
+	var payload := {user_id = get_user_id(), pond_script = p_pond_script}
+	_socket.send_match_state_async(_world_id, OpCodes.SEND_POND_SCRIPT, JSON.print(payload))
 
 
  # Sends a message to the server stating a change in the pond_script for the player.
 func update_pond_state(p_pond_state : PondMatch.State) -> void:
-	if _socket:
-		var payload := {
-			pond_state = p_pond_state.to()
-		}
-		# print("sent pond_state: %s"%p_pond_state)
-		# print("sent pond_state.to(): %s"%p_pond_state.to())
-		_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
+	if not _socket:
+		return
+
+	var payload := {
+		pond_state = p_pond_state.to()
+	}
+	# print("sent pond_state: %s"%p_pond_state)
+	# print("sent pond_state.to(): %s"%p_pond_state.to())
+	_socket.send_match_state_async(_world_id, OpCodes.UPDATE_POND_STATE, JSON.print(payload))
+
+
+
+func show_victory( p_winner : String) -> void:
+	if not _socket:
+		return
+
+	var payload := {
+		username = p_winner
+	}
+	# print("sent winner: %s"%p_winner)
+	_socket.send_match_state_async(_world_id, OpCodes.SHOW_VICTORY, JSON.print(payload))
 
 func join_master(master_id : String) -> void:
 	_current_master_id = master_id
@@ -425,6 +452,10 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			var decoded: Dictionary = JSON.parse(raw).result
 			var user_id: String = decoded.user_id
 			emit_signal("reservation_dropped", user_id)
+		OpCodes.SHOW_VICTORY:
+			var decoded: Dictionary = JSON.parse(raw).result
+			var username: String = decoded.username
+			emit_signal("victory_shown", username)
 		OpCodes.MANUAL_DEBUG:
 			pass
 

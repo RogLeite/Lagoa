@@ -13,6 +13,7 @@ local OpCodes = {
     update_pond_state = 2,
     end_pond_match = 3,
     drop_reservation = 4,
+    show_victory = 5,
     manual_debug = 99         -- Used when running a non-production debug test
 }
 
@@ -313,6 +314,10 @@ function world_control.match_loop(context, dispatcher, tick, state, messages)
             -- nakama.logger_warn(string.format("drop_reservation: %s", decoded.user_id))
             -- Sends the PlayerClient message (the actual message is in message.data) to every client
             dispatcher.broadcast_message(op_code, message.data, state_presences2array(state.presences), message.sender)
+        elseif op_code == OpCodes.show_victory then
+            -- nakama.logger_warn(string.format("show_victory: %s", decoded.username))
+            -- Sends the PlayerClient message (the actual message is in message.data) to every client
+            dispatcher.broadcast_message(op_code, message.data, state.player_presences, message.sender)
         end
 
     end

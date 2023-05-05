@@ -7,6 +7,7 @@ signal connection_closed()
 signal pond_match_ended()
 signal pond_script_received(user_id, pond_script)
 signal pond_state_updated(pond_state)
+signal victory_shown(username)
 signal reservation_dropped(user_id)
 signal joins_received(p_joins)
 signal leaves_received(p_leaves)
@@ -123,6 +124,7 @@ func connect_signals() -> void:
 	else:
 		connect_signal("pond_match_ended")
 		connect_signal("pond_state_updated")
+		connect_signal("victory_shown")
 		connect_signal("master_left")
 
 func disconnect_signals() -> void:
@@ -138,6 +140,7 @@ func disconnect_signals() -> void:
 	else:
 		disconnect_signal("pond_match_ended")
 		disconnect_signal("pond_state_updated")
+		disconnect_signal("victory_shown")
 		disconnect_signal("master_left")
 
 func _exit_tree():
@@ -151,6 +154,9 @@ func send_pond_script(p_pond_script : String) -> void:
 
 func update_pond_state(pond_state : PondMatch.State) -> void:
 	ServerConnection.update_pond_state(pond_state)
+
+func show_victory( p_winner : String) -> void:
+	ServerConnection.show_victory(p_winner)
 
 func _on_ServerConnection_connection_closed() -> void:
 	_is_connected = false
@@ -166,6 +172,9 @@ func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script
 	
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State) -> void:
 	emit_signal("pond_state_updated", p_pond_state)
+
+func _on_ServerConnection_victory_shown(p_winner : String) -> void:
+	emit_signal("victory_shown", p_winner)
 
 func _on_ServerConnection_reservation_dropped(p_user_id : String) -> void :
 	emit_signal("reservation_dropped", p_user_id)

@@ -91,13 +91,23 @@ func start() -> void:
 	pond_match.save_pond_scripts()
 	pond_match.run()
 
-func result() -> void:
+func result(winner_declared : bool = false) -> void:
 	_main_state = "result"
 	
 	pond_match.reset_pond_match()
 	_client.end_pond_match()
+
+	if not winner_declared:
+		return 
+	
+	show_victory()
+
 	call_deferred("elapse")
 	
+
+func show_victory() -> void:
+	_client.show_victory(pond_match.winner)
+
 
 func join(p_join : Presence):
 	if PlayerData.is_registered_player(p_join.user_id):
@@ -147,11 +157,11 @@ func _on_LoginAndRegister_register_pressed(email, password, do_remember_email):
 	call_deferred("prepare", email, password, do_remember_email, true)
 
 func _on_PondMatch_match_reset_requested():
-	call_deferred("result")
+	call_deferred("result", false)
 	
 
 func _on_PondMatch_match_scripts_ended():
-	call_deferred("result")
+	call_deferred("result", false)
 
 
 func _on_PondMatch_match_run_requested():
@@ -168,3 +178,7 @@ func _on_PondMatch_pond_state_updated(p_pond_state):
 
 func _on_PondMatch_match_step_requested():
 	pond_match.pond_script_step()
+
+
+func _on_PondMatch_match_ended():
+	call_deferred("result", true)
