@@ -7,6 +7,7 @@ onready var pond_match := $PondMatch
 onready var victory_popup := $VictoryPopup
 
 func _init():
+	# TEST GENERAL
 	var script1 : LuaScript = preload("res://resources/LuaScripts/launch_cross.tres")
 	var script2 : LuaScript = preload("res://resources/LuaScripts/swim_up_launch_right.tres")
 	_player_joins = [
@@ -15,6 +16,14 @@ func _init():
 		Presence.new("Player3","Player3", false, script2.lua_script),
 		Presence.new("Player4","Player4", false, script2.lua_script)
 	]
+
+	# TEST TIE
+	# var script1 : LuaScript = preload("res://resources/LuaScripts/swim_left.tres")
+	# var script2 : LuaScript = preload("res://resources/LuaScripts/swim_right.tres")
+	# _player_joins = [
+	# 	Presence.new("Player1","Player1", true , script1.lua_script),
+	# 	Presence.new("Player2","Player2", false, script2.lua_script)
+	# ]
 
 func _ready():
 	call_deferred("reset")
