@@ -155,8 +155,8 @@ func send_pond_script(p_pond_script : String) -> void:
 func update_pond_state(pond_state : PondMatch.State) -> void:
 	ServerConnection.update_pond_state(pond_state)
 
-func show_victory( p_winner : String) -> void:
-	ServerConnection.show_victory(p_winner)
+func show_victory( p_message : String) -> void:
+	ServerConnection.show_victory(p_message)
 
 func _on_ServerConnection_connection_closed() -> void:
 	_is_connected = false
@@ -173,8 +173,8 @@ func _on_ServerConnection_pond_script_received(p_user_id : String, p_pond_script
 func _on_ServerConnection_pond_state_updated(p_pond_state : PondMatch.State) -> void:
 	emit_signal("pond_state_updated", p_pond_state)
 
-func _on_ServerConnection_victory_shown(p_winner : String) -> void:
-	emit_signal("victory_shown", p_winner)
+func _on_ServerConnection_victory_shown(p_message : String) -> void:
+	emit_signal("victory_shown", p_message)
 
 func _on_ServerConnection_reservation_dropped(p_user_id : String) -> void :
 	emit_signal("reservation_dropped", p_user_id)

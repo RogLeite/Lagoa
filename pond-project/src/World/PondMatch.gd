@@ -11,7 +11,7 @@ signal match_ended
 signal send_pond_script_requested
 signal reset_finished
 
-const WINNER_TEMPLATE : String = "<username>"
+const WINNER_TEMPLATE : String = "<NO WINNER DECLARED>"
 
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
@@ -43,7 +43,7 @@ var pond_events_mutex : Mutex
 
 var winner : String = WINNER_TEMPLATE
 
-var _ducks_tired : Array = []
+var _ducks_tired : TiredRegistry
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
@@ -72,6 +72,8 @@ func _init():
 	projectile_pond_states = []
 
 	pond_events_mutex = Mutex.new()
+
+	_ducks_tired = TiredRegistry.new()
 
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
@@ -119,6 +121,7 @@ func script_step():
 		return
 	# Clears the events to register
 	tick += 1
+	_ducks_tired.add_frame()
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
 	if is_simulating_match:
@@ -139,7 +142,7 @@ func _reset() -> void:
 	step_btn.hide()
 
 	winner = WINNER_TEMPLATE
-	_ducks_tired = []
+	_ducks_tired.reset()
 	tick = 0
 	clear_events()
 
@@ -175,6 +178,8 @@ func _reset() -> void:
 
 	# Initializes pond_state
 	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
+
+
 	emit_signal("reset_finished")
 
 
@@ -201,11 +206,16 @@ func check_victory():
 	match non_tired:
 		0:
 			push_warning("It was a tie!")
-			var last_tired_idx = PlayerData.duck_node_to_index(_ducks_tired.back())
-			winner = PlayerData.get_player(last_tired_idx).username
+			var last_tired_ducks = _ducks_tired.last_tired()
+			var winners = []
+			var msg = "%s" + " e %s".repeat(last_tired_ducks.size()-1) + " VENCERAM!"
+			for duck in last_tired_ducks:
+				var idx = PlayerData.duck_node_to_index(duck)
+				winners.push_back( PlayerData.get_player(idx).username )
+			winner = msg%winners
 			return true
 		1:
-			winner = PlayerData.get_player(non_tired_idx).username
+			winner = "%s VENCEU!"%PlayerData.get_player(non_tired_idx).username
 			return true
 		_:
 			winner = WINNER_TEMPLATE
@@ -447,7 +457,7 @@ func set_pond_state(p_state : State) -> void:
 	pond_state = p_state
 
 func _on_Duck_tired( p_duck : Duck ):
-	_ducks_tired.push_back(p_duck)
+	_ducks_tired.add_duck(p_duck)
 	if is_running and check_victory():
 		emit_signal("match_ended")	
 

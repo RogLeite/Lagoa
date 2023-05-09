@@ -10,7 +10,7 @@ var winner : String = "<Jogador>" setget set_winner
 
 func set_winner( p_winner : String ):
 	winner = p_winner
-	$Panel/Winner.text = base_text%winner
+	$Panel/Winner.text = winner
 
 func _on_Continue_pressed():
 	emit_signal("confirmed", true)

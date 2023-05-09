@@ -44,7 +44,7 @@ signal reservation_dropped(user_id)
 
 # Emited when a message with OpCode.SHOW_VICTORY is received
 # parameter are the contents of the specified message format
-signal victory_shown(username)
+signal victory_shown(message)
 
 # Emited when _socket signals `received_match_presence` and there are users joining
 # p_joins is an array of Dictionaries : {username, user_id}
@@ -390,14 +390,14 @@ func update_pond_state(p_pond_state : PondMatch.State) -> void:
 
 
 
-func show_victory( p_winner : String) -> void:
+func show_victory( p_message : String) -> void:
 	if not _socket:
 		return
 
 	var payload := {
-		username = p_winner
+		message = p_message
 	}
-	# print("sent winner: %s"%p_winner)
+	# print("sent winner: %s"%p_message)
 	_socket.send_match_state_async(_world_id, OpCodes.SHOW_VICTORY, JSON.print(payload))
 
 func join_master(master_id : String) -> void:
@@ -454,8 +454,8 @@ func _on_NakamaSocket_received_match_state(match_state : NakamaRTAPI.MatchData) 
 			emit_signal("reservation_dropped", user_id)
 		OpCodes.SHOW_VICTORY:
 			var decoded: Dictionary = JSON.parse(raw).result
-			var username: String = decoded.username
-			emit_signal("victory_shown", username)
+			var message: String = decoded.message
+			emit_signal("victory_shown", message)
 		OpCodes.MANUAL_DEBUG:
 			pass
 
