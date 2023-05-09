@@ -159,6 +159,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/UI/Elements/RunResetButton.gd"
 }, {
+"base": "Reference",
+"class": "TiredRegistry",
+"language": "GDScript",
+"path": "res://src/Delegates/TiredRegistry.gd"
+}, {
 "base": "Polygon2D",
 "class": "VisionCone",
 "language": "GDScript",
@@ -195,6 +200,7 @@ _global_script_class_icons={
 "Projectile": "",
 "ResetManager": "",
 "RunResetButton": "",
+"TiredRegistry": "",
 "VisionCone": ""
 }
 
