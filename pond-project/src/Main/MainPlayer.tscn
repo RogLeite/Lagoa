@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://src/Clients/MultiplayerClient.gd" type="Script" id=1]
 [ext_resource path="res://src/Main/MainPlayer.gd" type="Script" id=2]
 [ext_resource path="res://src/World/PondMatch.tscn" type="PackedScene" id=3]
 [ext_resource path="res://src/UI/LoginAndRegister.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/spinner.png" type="Texture" id=5]
+[ext_resource path="res://src/UI/VictoryPopup.tscn" type="PackedScene" id=6]
 [ext_resource path="res://src/World/Effects/Water.tscn" type="PackedScene" id=7]
 [ext_resource path="res://assets/theme/main_menu_theme.tres" type="Theme" id=8]
 
@@ -61,6 +62,8 @@ margin_bottom = 64.0
 theme = ExtResource( 8 )
 text = "<"
 
+[node name="VictoryPopup" parent="." instance=ExtResource( 6 )]
+
 [connection signal="connection_closed" from="PlayerClient" to="." method="_on_PlayerClient_connection_closed"]
 [connection signal="joins_received" from="PlayerClient" to="." method="_on_PlayerClient_joins_received"]
 [connection signal="leaves_received" from="PlayerClient" to="." method="_on_PlayerClient_leaves_received"]
@@ -68,8 +71,10 @@ text = "<"
 [connection signal="pond_match_ended" from="PlayerClient" to="." method="_on_PlayerClient_pond_match_ended"]
 [connection signal="pond_state_updated" from="PlayerClient" to="." method="_on_PlayerClient_pond_state_updated"]
 [connection signal="reservation_dropped" from="PlayerClient" to="." method="_on_PlayerClient_reservation_dropped"]
+[connection signal="victory_shown" from="PlayerClient" to="." method="_on_PlayerClient_victory_shown"]
 [connection signal="login_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_login_pressed"]
 [connection signal="register_pressed" from="LoginAndRegister" to="." method="_on_LoginAndRegister_register_pressed"]
 [connection signal="match_quit_requested" from="PondMatch" to="." method="_on_PondMatch_match_quit_requested"]
 [connection signal="send_pond_script_requested" from="PondMatch" to="." method="_on_PondMatch_send_pond_script_requested"]
 [connection signal="pressed" from="BackButton" to="." method="_on_BackButton_pressed"]
+[connection signal="confirmed" from="VictoryPopup" to="." method="_on_VictoryPopup_confirmed"]

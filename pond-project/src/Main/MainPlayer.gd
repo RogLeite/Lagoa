@@ -11,6 +11,7 @@ onready var _spinner_animator := $CanvasLayer/Spinner/AnimationPlayer
 onready var _client := $PlayerClient
 onready var login_and_register := $LoginAndRegister
 onready var pond_match := $PondMatch
+onready var victory_popup := $VictoryPopup
 
 func _ready():
 	_spinner.set_position(get_viewport().size / 2)
@@ -27,6 +28,8 @@ func _notification(what):
 func reset(p_status : String = ""):
 	_main_state = "reset"
 	get_tree().set_auto_accept_quit(true)
+	pond_match.modulate = Color.white
+
 	login_and_register.set_is_enabled(true)
 	login_and_register.reset()
 
@@ -97,6 +100,7 @@ func prepare(email : String, password : String, do_remember_email : bool, is_reg
 func elapse() -> void:
 	_main_state = "elapse"
 	get_tree().set_auto_accept_quit(false)
+	pond_match.modulate = Color.white
 	
 	$Water.hide()
 	pond_match.show()
@@ -107,17 +111,26 @@ func elapse() -> void:
 func start(pond_state : PondMatch.State) -> void:
 	_main_state = "start"
 	get_tree().set_auto_accept_quit(false)
+	pond_match.modulate = Color.white
+
 	pond_match.set_back_disabled(true)
 	if pond_state.tick > pond_match.tick:
 		pond_match.pond_state = pond_state
 		
 	
-func result() -> void:
+func result(p_message : String = "") -> void:
 	_main_state = "result"
 	get_tree().set_auto_accept_quit(false)
 	pond_match.set_back_disabled(false)
 	pond_match.reset_pond_match()
+	pond_match.modulate = Color.white
 	# [TODO] Possibly handle reconnection attempt
+
+	if p_message.empty():
+		return 
+	
+	show_victory(p_message)
+
 	call_deferred("elapse")
 
 
@@ -136,6 +149,14 @@ func quit() -> void:
 	# warning-ignore: return_value_discarded
 	get_tree().change_scene_to(load("res://src/Main/MainMenu.tscn"))
 
+func show_victory(p_message : String) -> void:
+	get_tree().paused = true
+	
+	pond_match.modulate = Color.gray
+	victory_popup.set_winner(p_message)
+	victory_popup.popup_centered()
+	
+	get_tree().paused = false
 
 func join(p_join : Presence) -> void:
 	if PlayerData.is_registered_player(p_join.user_id):
@@ -168,7 +189,7 @@ func _on_PlayerClient_master_left() -> void:
 	call_deferred("reset", "MasterClient ended connection")
 
 func _on_PlayerClient_pond_match_ended() -> void:
-	call_deferred("result")
+	call_deferred("result", false)
 
 
 func _on_PlayerClient_reservation_dropped(user_id):
@@ -208,3 +229,11 @@ func _on_BackButton_pressed() -> void:
 
 func _on_PondMatch_match_quit_requested() -> void:
 	call_deferred("quit")
+
+
+func _on_PlayerClient_victory_shown(p_message):
+	call_deferred("result", p_message)
+
+
+func _on_VictoryPopup_confirmed(_p_affirmative):
+	pond_match.modulate = Color.white
