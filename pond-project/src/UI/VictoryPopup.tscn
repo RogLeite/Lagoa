@@ -8,24 +8,18 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -177.0
-margin_top = -109.393
-margin_right = 177.0
-margin_bottom = 109.393
+margin_left = -238.0
+margin_top = -109.0
+margin_right = 238.0
+margin_bottom = 110.0
 rect_min_size = Vector2( 354, 218.785 )
 theme = ExtResource( 1 )
 popup_exclusive = true
 script = ExtResource( 2 )
 
 [node name="Panel" type="Panel" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -177.0
-margin_top = -109.393
-margin_right = 177.0
-margin_bottom = 109.393
+anchor_right = 1.0
+anchor_bottom = 1.0
 rect_min_size = Vector2( 354, 218.785 )
 
 [node name="Winner" type="Label" parent="Panel"]
