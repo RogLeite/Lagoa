@@ -205,7 +205,6 @@ func check_victory():
 	
 	match non_tired:
 		0:
-			push_warning("It was a tie!")
 			var last_tired_ducks = _ducks_tired.last_tired()
 			var winners = []
 			var msg = "%s" + " e %s".repeat(last_tired_ducks.size()-1) + " VENCERAM!"
