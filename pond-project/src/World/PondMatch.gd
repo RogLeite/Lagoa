@@ -220,6 +220,22 @@ func check_victory():
 			winner = WINNER_TEMPLATE
 			return false
 
+
+# Compiles the script for the player represented by the given index
+# Returns true if successfully compiled; false if not
+func compile_script(p_index : int) -> bool:
+	controllers[p_index].set_lua_code(PlayerData.get_pond_script(p_index))
+	var error_message = ""
+	if controllers[p_index].compile() == OK:
+		return true 
+	error_message = controllers[p_index].get_error_message()
+	if error_message.empty() :
+		print("Script failed to compile, no error message provided")
+	else:
+		print("Script failed to compile. Error message\"%s\""%error_message)
+	return false
+
+
 func run():
 	run_reset_btn.swap_role("reset")
 	step_btn.visible = is_step_by_step
@@ -231,16 +247,7 @@ func run():
 		# Skips absent Players
 		if not PlayerData.is_present(i):
 			continue
-		
-		controllers[i].set_lua_code(PlayerData.get_pond_script(i))
-		var error_message = ""
-		if controllers[i].compile() != OK :
-			successfully_compiled = false
-			error_message = controllers[i].get_error_message()
-			if error_message != "" :
-				# [TODO] Better compilation error treatment; Maybe a signal warning the error
-				# I could also parse the error message to get the line with error and highlight it 
-				print("Compilation error in controller %d " % i + error_message)
+		successfully_compiled = compile_script(i) and successfully_compiled
 
 	if successfully_compiled:
 		var any_thread_failed := false
