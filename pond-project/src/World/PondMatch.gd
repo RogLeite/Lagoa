@@ -53,7 +53,7 @@ onready var quit_btn := $UI/MarginContainer/Gameplay/HBoxContainer/QuitButton
 onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton
 onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
-onready var scripts_tab_container := $UI/ScriptTabs
+onready var scripts_tab_container := $UI/Editor/ScriptTabs
 
 func _init():
 
@@ -376,12 +376,14 @@ func set_pond_script_editor_visible(p_index : int, p_can_see : bool, p_can_edit 
 func disable_pond_script_editor(p_index : int) -> void:
 	scripts_tab_container.set_tab_hidden(p_index, true)
 
+func save_pond_script(p_index : int) -> void:
+	var edit = script_editors[p_index]
+	if edit is TextEdit and "text" in edit:
+		PlayerData.set_pond_script(p_index, edit.text, true)
 # Saves pond scripts from `script_editors` in `PlayerData`
 func save_pond_scripts() -> void:
 	for i in script_editors.size():
-		var edit = script_editors[i]
-		if edit is TextEdit and "text" in edit:
-			PlayerData.set_pond_script(i, edit.text, true)
+		save_pond_script(i)
 		
 func show_quit_popup() -> void:
 	$QuitMatchPopup.popup_centered_minsize()
@@ -510,6 +512,11 @@ func _on_QuitMatchPopup_confirmed(p_affirmative):
 	
 func _on_QuitButton_pressed():
 	show_quit_popup()
+
+func _on_CompilationStatus_verify_requested():
+	var user_index = PlayerData.get_user_index()
+	save_pond_script( user_index )
+	compile_script( user_index )
 
 #JSONable class for PondMath
 class State extends JSONable:
