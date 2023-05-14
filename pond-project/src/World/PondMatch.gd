@@ -54,6 +54,7 @@ onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunReset
 onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/Editor/ScriptTabs
+onready var compilation_status := $UI/Editor/CompilationStatus
 
 func _init():
 
@@ -210,7 +211,7 @@ func check_victory():
 			var msg = "%s" + " e %s".repeat(last_tired_ducks.size()-1) + " VENCERAM!"
 			for duck in last_tired_ducks:
 				var idx = PlayerData.duck_node_to_index(duck)
-				winners.push_back( PlayerData.get_player(idx).username )
+				winners.push_back(PlayerData.get_player(idx).username)
 			winner = msg%winners
 			return true
 		1:
@@ -223,16 +224,26 @@ func check_victory():
 
 # Compiles the script for the player represented by the given index
 # Returns true if successfully compiled; false if not
-func compile_script(p_index : int) -> bool:
+func compile_script(p_index : int, show_result : bool = false) -> bool:
 	controllers[p_index].set_lua_code(PlayerData.get_pond_script(p_index))
 	var error_message = ""
 	if controllers[p_index].compile() == OK:
+		if show_result:
+			compilation_status.set_ok()
 		return true 
+		
 	error_message = controllers[p_index].get_error_message()
+
+	if not show_result:
+		return false
+
+	var message : String 
 	if error_message.empty() :
-		print("Script failed to compile, no error message provided")
+		message = "Compilação falhou sem descrição do erro"
 	else:
-		print("Script failed to compile. Error message\"%s\""%error_message)
+		message = error_message
+	compilation_status.set_error(message)
+
 	return false
 
 
@@ -243,11 +254,12 @@ func run():
 
 	var player_count : int = PlayerData.count()
 	var successfully_compiled := true
+	var user_index : int = PlayerData.get_user_index()
 	for i in player_count:
 		# Skips absent Players
 		if not PlayerData.is_present(i):
 			continue
-		successfully_compiled = compile_script(i) and successfully_compiled
+		successfully_compiled = compile_script(i, user_index == i) and successfully_compiled
 
 	if successfully_compiled:
 		var any_thread_failed := false
@@ -464,7 +476,7 @@ func set_pond_state(p_state : State) -> void:
 	self.projectile_pond_states = p_state.projectile_pond_states
 	pond_state = p_state
 
-func _on_Duck_tired( p_duck : Duck ):
+func _on_Duck_tired(p_duck : Duck):
 	_ducks_tired.add_duck(p_duck)
 	if is_running and check_victory():
 		emit_signal("match_ended")	
@@ -515,8 +527,8 @@ func _on_QuitButton_pressed():
 
 func _on_CompilationStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
-	save_pond_script( user_index )
-	compile_script( user_index )
+	save_pond_script(user_index)
+	compile_script(user_index, true)
 
 #JSONable class for PondMath
 class State extends JSONable:
