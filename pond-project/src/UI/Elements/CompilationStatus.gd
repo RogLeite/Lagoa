@@ -20,5 +20,4 @@ func set_ok() -> void:
 	label.text = TEXT_OK
 
 func _on_VerifyButton_pressed():
-	print("_on_VerifyButton_pressed")
 	emit_signal("verify_requested")

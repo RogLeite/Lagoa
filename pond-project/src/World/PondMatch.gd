@@ -221,6 +221,21 @@ func check_victory():
 			winner = WINNER_TEMPLATE
 			return false
 
+# Parses compilation error message then formats it to readable portuguese
+func format_error(p_message : String) -> String:
+	var message : String
+	var known_index : int = p_message.find(": syntax error near ")
+	
+	if known_index == -1:
+		known_index = p_message.find(" expected near ")
+		var start_index : int = p_message.rfind(":", known_index)
+		start_index = p_message.rfind(":", start_index-1)
+		message = "Erro na linha" + p_message.substr(start_index).replace(" expected near ", " esperado perto de ")
+	else: 
+		var start_index : int = p_message.rfind(":", known_index-1)
+		message = "Erro na linha" + p_message.substr(start_index).replace(": syntax error near ", ": perto de ")
+
+	return message
 
 # Compiles the script for the player represented by the given index
 # Returns true if successfully compiled; false if not
@@ -241,7 +256,7 @@ func compile_script(p_index : int, show_result : bool = false) -> bool:
 	if error_message.empty() :
 		message = "Compilação falhou sem descrição do erro"
 	else:
-		message = error_message
+		message = format_error(error_message)
 	compilation_status.set_error(message)
 
 	return false
