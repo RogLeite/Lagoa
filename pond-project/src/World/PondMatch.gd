@@ -11,6 +11,9 @@ signal match_ended
 signal send_pond_script_requested
 signal reset_finished
 
+signal match_run_started
+signal match_run_stopped
+
 const WINNER_TEMPLATE : String = "<NO WINNER DECLARED>"
 
 # Is the scene rendering the pond
@@ -27,7 +30,7 @@ export var can_edit_scripts : bool  = true
 export var can_send_pond_script : bool = false
 
 
-var is_running : bool = false
+var is_running : bool = false setget set_is_running
 var threads : Array
 var script_editors : Array # Array of TextEdit
 var controllers : Array
@@ -81,6 +84,7 @@ func _ready():
 	pond_visualization.visible = is_visualizing_pond
 	pond_visualization.is_simulating_match = is_simulating_match
 	
+	step_btn.visible = is_step_by_step
 	send_pond_script_btn.visible = can_send_pond_script
 	
 	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
@@ -95,7 +99,6 @@ func _ready():
 	# pond_match initialization occurs in reset_pond_match()
 
 	reset_pond_match()
-
 	
 	# Connects signals
 	# warning-ignore:return_value_discarded
@@ -106,14 +109,16 @@ func _ready():
 	PlayerData.connect("pond_script_changed", self, "_on_PlayerData_pond_script_changed")
 
 func _physics_process(_delta: float) -> void:
-	if is_running:
-		if not is_step_by_step:
-			script_step()
-		if are_controllers_finished() :
-			is_running = false
-			join_controllers()
-			CurrentVisualization.get_current().stop()
-			emit_signal("match_scripts_ended")
+	if not is_running:
+		return
+
+	if not is_step_by_step:
+		script_step()
+	if are_controllers_finished() :
+		self.is_running = false
+		join_controllers()
+		CurrentVisualization.get_current().stop()
+		emit_signal("match_scripts_ended")
 		
 
 # If it's is_running, busy waits for every thread to arrive
@@ -138,10 +143,6 @@ func reset_pond_match() -> void:
 	$ResetManager.reset_requested()
 	
 func _reset() -> void:
-	run_reset_btn.swap_role("run")
-	set_back_disabled(false)
-	step_btn.hide()
-
 	winner = WINNER_TEMPLATE
 	_ducks_tired.reset()
 	tick = 0
@@ -180,6 +181,7 @@ func _reset() -> void:
 	# Initializes pond_state
 	pond_state = State.new(self.tick, self.pond_events, self.duck_pond_states, self.projectile_pond_states)
 
+	self.is_running = false
 
 	emit_signal("reset_finished")
 
@@ -296,20 +298,16 @@ func controller_run_wrapper(index : int) -> int :
 	return return_code
 
 func run():
-	run_reset_btn.swap_role("reset")
-	step_btn.visible = is_step_by_step
-	set_back_disabled(true)
-
 	if not compile_scripts():
 		reset_pond_match()
-		is_running = false
+		self.is_running = false
 		return
 		
 	if not launch_threads():
 		reset_pond_match()
-		is_running = false
+		self.is_running = false
 	else:
-		is_running = true
+		self.is_running = true
 
 # Force threads to stop and then joins them
 func force_join_controllers() :
@@ -330,7 +328,7 @@ func join_controllers():
 		if thread :
 			# warning-ignore:return_value_discarded
 			thread.wait_to_finish()
-	is_running = false
+	self.is_running = false
 
 func are_controllers_finished() -> bool :
 	for thread in threads : 
@@ -427,6 +425,18 @@ func show_quit_popup() -> void:
 func set_back_disabled(p_disable : bool) -> void:
 	back_disabled = p_disable
 	quit_btn.disabled = p_disable
+	
+func set_is_running(p_value : bool) -> void:
+	if is_running == p_value:
+		return
+		
+	is_running = p_value
+	
+	if is_running:
+		emit_signal("match_run_started")
+	else:
+		emit_signal("match_run_stopped")
+
 
 func _exit_tree():
 	force_join_controllers()
@@ -527,6 +537,18 @@ func _on_PlayerData_pond_script_changed(p_index : int, p_pond_script : String):
 	if script_editors[p_index] is TextEdit :
 		script_editors[p_index].text = p_pond_script
 
+func _on_PondMatch_match_run_started():
+	run_reset_btn.swap_role("reset")
+	set_back_disabled(true)
+	step_btn.visible = is_step_by_step
+	compilation_status.set_disabled(true)
+
+
+func _on_PondMatch_match_run_stopped():
+	run_reset_btn.swap_role("run")
+	set_back_disabled(false)
+	step_btn.hide()
+	compilation_status.set_disabled(false)
 
 func _on_StepButton_pressed():
 	emit_signal("match_step_requested")

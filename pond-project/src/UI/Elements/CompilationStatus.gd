@@ -6,6 +6,7 @@ const TEXT_STANDBY : String = "Aperte \"VERIFY\" para conferir se há erros de s
 const TEXT_OK : String = "Compilação bem sucedida."
 
 onready var label := $PanelContainer/ScrollContainer/Label
+onready var verify_button := $VerifyButton
 
 func _ready():
 	set_standby()
@@ -18,6 +19,9 @@ func set_error(p_message : String) -> void:
 	
 func set_ok() -> void:
 	label.text = TEXT_OK
+	
+func set_disabled(p_value : bool) -> void:
+	verify_button.set_disabled(p_value)
 
 func _on_VerifyButton_pressed():
 	emit_signal("verify_requested")

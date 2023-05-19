@@ -176,6 +176,8 @@ margin_bottom = 590.0
 
 [node name="QuitMatchPopup" parent="." instance=ExtResource( 7 )]
 
+[connection signal="match_run_started" from="." to="." method="_on_PondMatch_match_run_started"]
+[connection signal="match_run_stopped" from="." to="." method="_on_PondMatch_match_run_stopped"]
 [connection signal="sfx_played" from="UI/MarginContainer/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_sfx_played"]
 [connection signal="vfx_played" from="UI/MarginContainer/Gameplay/PondContainer/PondViewport/PondVisualization" to="." method="_on_PondVisualization_vfx_played"]
 [connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/QuitButton" to="." method="_on_QuitButton_pressed"]
