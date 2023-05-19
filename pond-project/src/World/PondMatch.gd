@@ -261,38 +261,31 @@ func compile_script(p_index : int, show_result : bool = false) -> bool:
 
 	return false
 
-
-func run():
-	run_reset_btn.swap_role("reset")
-	step_btn.visible = is_step_by_step
-	set_back_disabled(true)
-
-	var player_count : int = PlayerData.count()
-	var successfully_compiled := true
+func compile_scripts() -> bool:
+	var successfully_compiled : bool = true
 	var user_index : int = PlayerData.get_user_index()
+	var player_count : int = PlayerData.count()
 	for i in player_count:
 		# Skips absent Players
 		if not PlayerData.is_present(i):
 			continue
 		successfully_compiled = compile_script(i, user_index == i) and successfully_compiled
-
-	if successfully_compiled:
-		var any_thread_failed := false
-		for i in player_count:
-			# Skips absent Players
-			if not PlayerData.is_present(i):
-				continue
-			
-			if threads[i].start(self, "controller_run_wrapper", i) != OK:
-				push_error("thread for controller %d can't be created" % i)
-				any_thread_failed = true
-				break
-		if any_thread_failed:
-			reset_pond_match()
-			is_running = false
-		else:
-			is_running = true
+	return successfully_compiled
 		
+# Returns true if every thread lauched
+func launch_threads() -> bool :
+	var any_thread_failed := false
+	var player_count : int = PlayerData.count()
+	for i in player_count:
+		# Skips absent Players
+		if not PlayerData.is_present(i):
+			continue
+		
+		if threads[i].start(self, "controller_run_wrapper", i) != OK:
+			push_error("thread for controller %d can't be created" % i)
+			any_thread_failed = true
+			break
+	return not any_thread_failed
 
 func controller_run_wrapper(index : int) -> int :
 	var return_code = controllers[index].run()
@@ -301,6 +294,22 @@ func controller_run_wrapper(index : int) -> int :
 		# [TODO] Better error treatment. Maybe a log? Maybe a return value?
 		print("When thread %d finished: " % index + controllers[index].get_error_message())
 	return return_code
+
+func run():
+	run_reset_btn.swap_role("reset")
+	step_btn.visible = is_step_by_step
+	set_back_disabled(true)
+
+	if not compile_scripts():
+		reset_pond_match()
+		is_running = false
+		return
+		
+	if not launch_threads():
+		reset_pond_match()
+		is_running = false
+	else:
+		is_running = true
 
 # Force threads to stop and then joins them
 func force_join_controllers() :
