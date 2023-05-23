@@ -574,7 +574,13 @@ func _on_QuitButton_pressed():
 func _on_CompilationStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
-	compile_script(user_index, true)
+	if compile_script(user_index, true):
+		send_pond_script_btn.set_disabled( false )
+		send_pond_script_btn.set_text( "Enviar script" )
+	else:
+		send_pond_script_btn.set_disabled( true )
+		send_pond_script_btn.set_text( "Corrija script" )
+	
 
 #JSONable class for PondMath
 class State extends JSONable:
