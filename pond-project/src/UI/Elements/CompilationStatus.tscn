@@ -11,29 +11,30 @@ custom_constants/separation = 5
 script = ExtResource( 2 )
 
 [node name="VerifyButton" type="Button" parent="."]
-margin_right = 99.0
+margin_right = 150.0
 margin_bottom = 43.0
+rect_min_size = Vector2( 150, 0 )
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
-text = "VERIFY"
+text = "VERIFICAR"
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
-margin_left = 104.0
+margin_left = 155.0
 margin_right = 603.0
 margin_bottom = 43.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer"]
-margin_right = 499.0
+margin_right = 448.0
 margin_bottom = 43.0
 scroll_vertical_enabled = false
 
 [node name="Label" type="Label" parent="PanelContainer/ScrollContainer"]
-margin_right = 611.0
+margin_right = 654.0
 margin_bottom = 31.0
 size_flags_horizontal = 3
-text = "Aperte VERIFY para conferir se há erros de sintaxe."
+text = "Aperte VERIFICAR para conferir se há erros de sintaxe."
 
 [connection signal="pressed" from="VerifyButton" to="." method="_on_VerifyButton_pressed"]

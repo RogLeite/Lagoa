@@ -2,7 +2,7 @@ extends HBoxContainer
 
 signal verify_requested
 
-const TEXT_STANDBY : String = "Aperte \"VERIFY\" para conferir se há erros de sintaxe."
+const TEXT_STANDBY : String = "Aperte \"VERIFICAR\" para conferir se há erros de sintaxe."
 const TEXT_OK : String = "Compilação bem sucedida."
 
 onready var label := $PanelContainer/ScrollContainer/Label

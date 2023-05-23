@@ -143,7 +143,7 @@ margin_left = 232.0
 margin_right = 400.0
 margin_bottom = 79.0
 size_flags_horizontal = 3
-text = "Run"
+text = "Começar"
 script = ExtResource( 4 )
 
 [node name="SendScriptButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]

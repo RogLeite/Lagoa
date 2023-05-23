@@ -19,8 +19,8 @@ func swap_role(role):
 		to_reset()
 	
 func to_run():
-	text = "Run"
+	text = "Começar"
 	current_role = "run"
 func to_reset():
-	text = "Reset"
+	text = "Parar"
 	current_role = "reset"

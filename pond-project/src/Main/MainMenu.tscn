@@ -33,7 +33,7 @@ margin_right = 200.0
 margin_bottom = 50.0
 rect_min_size = Vector2( 200, 50 )
 size_flags_vertical = 3
-text = "Singleplayer"
+text = "Um Jogador"
 
 [node name="MultiplayerButton" type="Button" parent="MarginContainer/ModesList"]
 margin_top = 66.0
@@ -41,7 +41,7 @@ margin_right = 200.0
 margin_bottom = 116.0
 rect_min_size = Vector2( 200, 50 )
 size_flags_vertical = 3
-text = "Multiplayer"
+text = "Multijogador"
 
 [node name="Title" type="Label" parent="."]
 modulate = Color( 0.0431373, 0.0392157, 0.733333, 1 )
