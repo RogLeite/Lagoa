@@ -118,7 +118,7 @@ func start(pond_state : PondMatch.State) -> void:
 		pond_match.pond_state = pond_state
 		
 	
-func result(p_message : String = "") -> void:
+func result(p_winner_declared : bool = false, p_message : String = "") -> void:
 	_main_state = "result"
 	get_tree().set_auto_accept_quit(false)
 	pond_match.set_back_disabled(false)
@@ -126,7 +126,7 @@ func result(p_message : String = "") -> void:
 	pond_match.modulate = Color.white
 	# [TODO] Possibly handle reconnection attempt
 
-	if p_message.empty():
+	if not p_winner_declared:
 		return 
 	
 	show_victory(p_message)
@@ -232,7 +232,7 @@ func _on_PondMatch_match_quit_requested() -> void:
 
 
 func _on_PlayerClient_victory_shown(p_message):
-	call_deferred("result", p_message)
+	call_deferred("result", true, p_message)
 
 
 func _on_VictoryPopup_confirmed(_p_affirmative):
