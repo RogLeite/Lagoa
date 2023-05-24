@@ -7,6 +7,7 @@ const TEXT_OK : String = "Compilação bem sucedida."
 
 onready var label := $PanelContainer/ScrollContainer/Label
 onready var verify_button := $VerifyButton
+onready var animation_player := $AnimationPlayer
 
 func _ready():
 	set_standby()
@@ -16,6 +17,8 @@ func set_standby() -> void:
 
 func set_error(p_message : String) -> void:
 	label.text = p_message
+	animation_player.stop(true)
+	animation_player.play("alert")
 	
 func set_ok() -> void:
 	label.text = TEXT_OK
