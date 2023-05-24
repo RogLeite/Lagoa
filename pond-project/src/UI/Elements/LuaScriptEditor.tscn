@@ -33,3 +33,5 @@ syntax_highlighting = true
 show_line_numbers = true
 draw_tabs = true
 script = ExtResource( 1 )
+
+[connection signal="text_changed" from="." to="." method="_on_PlayerScriptTemplate_text_changed"]

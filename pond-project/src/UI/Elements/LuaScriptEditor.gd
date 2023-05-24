@@ -1,6 +1,8 @@
 tool
 extends TextEdit
 
+signal lua_script_changed(p_self)
+
 const KEYWORDS : Array = ["and", "break", "do", "end", "false", "function", "in", "local", "nil", "not", "or", "return", "true"]
 const FLOW_CONTROL_KEYWORDS = ["until", "while", "else", "elseif", "for", "goto", "if", "repeat", "then"]
 #const SYMBOLS : Array = ["+", "-", "*", "/", "%", "^", "#", "&", "~", "|", "<<", ">>", "//", "==", "~=", "<=", ">=", "<", ">", "=", "(", ")", "{", "}", "[", "]", "::", ";", ":", ",", ".", "..", "..."]
@@ -30,3 +32,7 @@ func _init():
 	add_color_region("--", "", comment_color, true)
 
 	
+
+
+func _on_PlayerScriptTemplate_text_changed():
+	emit_signal("lua_script_changed", self)

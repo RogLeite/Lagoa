@@ -398,13 +398,25 @@ func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 func add_pond_script_editor(p_index : int) -> void:
 	if script_editors[p_index]:
 		return
-	script_editors[p_index] = script_scene.instance()
-	scripts_tab_container.add_child(script_editors[p_index])
+	var new_editor := script_scene.instance()
+	script_editors[p_index] = new_editor
+	scripts_tab_container.add_child(new_editor)
+	
+	new_editor.connect("lua_script_changed", self, "_on_LuaScriptEditor_lua_script_changed")
+	
 	reorder_pond_script_editors()
 		
 func set_pond_script_editor_visible(p_index : int, p_can_see : bool, p_can_edit : bool) -> void:
 	scripts_tab_container.set_tab_hidden(p_index, !p_can_see)
 	update_pond_script_editor(p_index, p_can_edit)
+	
+func set_send_pond_script_btn_enabled(p_enabled : bool) -> void:
+	if p_enabled:
+		send_pond_script_btn.set_disabled( false )
+		send_pond_script_btn.set_text( "Enviar script" )
+	else:
+		send_pond_script_btn.set_disabled( true )
+		send_pond_script_btn.set_text( "Corrija script" )
 
 # Hides a script editor tab
 func disable_pond_script_editor(p_index : int) -> void:
@@ -575,11 +587,15 @@ func _on_CompilationStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
 	if compile_script(user_index, true):
-		send_pond_script_btn.set_disabled( false )
-		send_pond_script_btn.set_text( "Enviar script" )
+		set_send_pond_script_btn_enabled(true)
 	else:
-		send_pond_script_btn.set_disabled( true )
-		send_pond_script_btn.set_text( "Corrija script" )
+		set_send_pond_script_btn_enabled(false)
+
+func _on_LuaScriptEditor_lua_script_changed(p_node : TextEdit) -> void:
+	var index := script_editors.find(p_node)
+	if index != 0:
+		return
+	set_send_pond_script_btn_enabled(false)
 	
 
 #JSONable class for PondMath
