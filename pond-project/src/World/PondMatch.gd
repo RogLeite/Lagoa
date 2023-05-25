@@ -232,10 +232,10 @@ func format_error(p_message : String) -> String:
 		known_index = p_message.find(" expected near ")
 		var start_index : int = p_message.rfind(":", known_index)
 		start_index = p_message.rfind(":", start_index-1)
-		message = "Erro na linha" + p_message.substr(start_index).replace(" expected near ", " esperado perto de ")
+		message = "na linha " + p_message.substr(start_index+1).replace(" expected near ", " esperado perto de ")
 	else: 
 		var start_index : int = p_message.rfind(":", known_index-1)
-		message = "Erro na linha" + p_message.substr(start_index).replace(": syntax error near ", ": perto de ")
+		message = "na linha " + p_message.substr(start_index+1).replace(": syntax error near ", ": perto de ")
 
 	return message
 
@@ -272,22 +272,27 @@ func compile_scripts() -> bool:
 		if not PlayerData.is_present(i):
 			continue
 		successfully_compiled = compile_script(i, user_index == i) and successfully_compiled
+		
 	return successfully_compiled
 
-func controller_run_wrapper(index : int) -> int :
+func controller_run_wrapper(p_arguments : Dictionary) -> int :
+	var index : int = p_arguments.index
+	var show_result : bool = p_arguments.show_result
+	
 	var return_code = controllers[index].run()
 	ThreadSincronizer.remove_participant(controllers[index].get_instance_id())
 	
-	if return_code != OK:
-		# [TODO] Better error treatment. Maybe a log? Maybe a return value?
-		print("When thread %d finished: " % index + controllers[index].get_error_message())
+	if return_code != OK and show_result:
+		lua_script_status.set_runtime_error(format_error(controllers[index].get_error_message()))
 
 	return return_code
 
 # Returns true if thread launched
-func launch_thread(p_index : int) -> bool:
+func launch_thread(p_index : int, p_show_result : bool = false) -> bool:
 
-	if threads[p_index].start(self, "controller_run_wrapper", p_index) == OK:
+	var arguments : Dictionary = {index=p_index, show_result=p_show_result}
+
+	if threads[p_index].start(self, "controller_run_wrapper", arguments) == OK:
 		return true
 
 	push_error("thread for controller %d can't be created" % p_index)
@@ -295,17 +300,17 @@ func launch_thread(p_index : int) -> bool:
 
 # Returns true if every thread lauched
 func launch_threads() -> bool :
+	var successfully_launched : bool = true
+	var user_index : int = PlayerData.get_user_index()
 	var player_count : int = PlayerData.count()
 	
 	for i in player_count:
 		# Skips absent Players
 		if not PlayerData.is_present(i):
 			continue
-
-		if not launch_thread(i):
-			return false
+		successfully_launched = launch_thread(i, user_index == i) and successfully_launched
 	
-	return true
+	return successfully_launched
 
 func run():
 	if not compile_scripts():

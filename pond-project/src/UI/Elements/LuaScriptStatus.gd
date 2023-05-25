@@ -18,6 +18,10 @@ func set_standby() -> void:
 func set_compilation_error(p_message : String) -> void:
 	label.text = "Erro de Compilação "+p_message
 	play_alert()
+
+func set_runtime_error(p_message : String) -> void:
+	label.text = "Erro de execução "+p_message
+	play_alert()
 	
 func set_ok() -> void:
 	label.text = TEXT_OK
