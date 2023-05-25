@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://src/World/Characters/MockDuckController.gd" type="Script" id=1]
+
+[node name="MockDuckControllerTemplate" type="LuaController"]
+methods_to_register = {
+}
+max_lines = 0
+max_count = 10000
+script = ExtResource( 1 )

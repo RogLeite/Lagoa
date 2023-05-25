@@ -36,6 +36,8 @@ var script_editors : Array # Array of TextEdit
 var controllers : Array
 var controller_ids : Array
 var back_disabled : bool = false setget set_back_disabled
+var mock_controller : LuaController
+var mock_thread : Thread
 
 var pond_state : State setget set_pond_state, get_pond_state
 var tick : int
@@ -50,6 +52,7 @@ var _ducks_tired : TiredRegistry
 
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
+onready var mock_controller_scene := preload("res://src/World/Characters/MockDuckController.tscn")
 
 # References to Nodes
 onready var quit_btn := $UI/MarginContainer/Gameplay/HBoxContainer/QuitButton
@@ -274,6 +277,7 @@ func compile_scripts() -> bool:
 		successfully_compiled = compile_script(i, user_index == i) and successfully_compiled
 		
 	return successfully_compiled
+	
 
 func controller_run_wrapper(p_arguments : Dictionary) -> int :
 	var index : int = p_arguments.index
@@ -350,6 +354,65 @@ func are_controllers_finished() -> bool :
 		if thread and thread.is_alive():
 			return false
 	return true
+
+# ==============================================
+# == Mock controller functionality =============
+func compile_mock_script() -> bool:
+	if mock_controller:
+		remove_child(mock_controller)
+		mock_controller.queue_free()
+	mock_controller = mock_controller_scene.instance()
+	mock_controller.set_name("MockController")
+	add_child(mock_controller)
+	
+	mock_controller.set_lua_code(PlayerData.get_pond_script(PlayerData.get_user_index()))
+	var error_message = ""
+	if mock_controller.compile() == OK:
+		lua_script_status.set_ok()
+		return true 
+		
+	error_message = mock_controller.get_error_message()
+
+	var message : String 
+	if error_message.empty() :
+		message = "Compilação falhou sem descrição do erro"
+	else:
+		message = format_error(error_message)
+
+	lua_script_status.set_compilation_error(message)
+
+	return false
+		
+func mock_controller_run_wrapper() -> int :
+	
+	var return_code = mock_controller.run()
+	
+	if return_code != OK and return_code != ERR_TIMEOUT:
+		lua_script_status.set_runtime_error(format_error(mock_controller.get_error_message()))
+
+	return return_code
+
+# Returns true if thread launched
+func launch_mock_thread() -> bool:
+	force_join_mock_controller()
+
+	mock_thread = Thread.new()
+	if mock_thread.start(self, "mock_controller_run_wrapper") == OK:
+		return true
+
+	push_error("thread for mock_controller %d can't be created")
+	return false
+
+func force_join_mock_controller():
+	if mock_controller:
+		mock_controller.set_force_stop(true)
+		
+	if mock_thread :
+		# warning-ignore:return_value_discarded
+		mock_thread.wait_to_finish()
+
+# == END Mock controller functionality =============
+# ==================================================
 
 func enable_player(p_index : int):
 	var is_user := p_index == PlayerData.get_user_index()
@@ -601,7 +664,7 @@ func _on_QuitButton_pressed():
 func _on_CompilationStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
-	if compile_script(user_index, true):
+	if compile_mock_script() and launch_mock_thread():
 		set_send_pond_script_btn_enabled(true)
 	else:
 		set_send_pond_script_btn_enabled(false)
