@@ -185,5 +185,5 @@ margin_bottom = 590.0
 [connection signal="reset" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
 [connection signal="run" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
 [connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]
-[connection signal="verify_requested" from="UI/Editor/ScriptStatus" to="." method="_on_CompilationStatus_verify_requested"]
+[connection signal="verify_requested" from="UI/Editor/ScriptStatus" to="." method="_on_LuaScriptStatus_verify_requested"]
 [connection signal="confirmed" from="QuitMatchPopup" to="." method="_on_QuitMatchPopup_confirmed"]

@@ -20,7 +20,7 @@ tracks/0/keys = {
 "values": [ Color( 1, 1, 1, 1 ), Color( 1, 0, 0.188235, 1 ), Color( 1, 0, 0.188235, 1 ), Color( 1, 1, 1, 1 ) ]
 }
 
-[node name="CompilationStatus" type="HBoxContainer"]
+[node name="LuaScriptStatus" type="HBoxContainer"]
 margin_right = 603.0
 margin_bottom = 31.0
 theme = ExtResource( 1 )

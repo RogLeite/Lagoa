@@ -661,7 +661,7 @@ func _on_QuitMatchPopup_confirmed(p_affirmative):
 func _on_QuitButton_pressed():
 	show_quit_popup()
 
-func _on_CompilationStatus_verify_requested():
+func _on_LuaScriptStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
 	if compile_mock_script() and launch_mock_thread():
