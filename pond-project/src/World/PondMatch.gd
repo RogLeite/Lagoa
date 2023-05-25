@@ -273,29 +273,39 @@ func compile_scripts() -> bool:
 			continue
 		successfully_compiled = compile_script(i, user_index == i) and successfully_compiled
 	return successfully_compiled
-		
-# Returns true if every thread lauched
-func launch_threads() -> bool :
-	var any_thread_failed := false
-	var player_count : int = PlayerData.count()
-	for i in player_count:
-		# Skips absent Players
-		if not PlayerData.is_present(i):
-			continue
-		
-		if threads[i].start(self, "controller_run_wrapper", i) != OK:
-			push_error("thread for controller %d can't be created" % i)
-			any_thread_failed = true
-			break
-	return not any_thread_failed
 
 func controller_run_wrapper(index : int) -> int :
 	var return_code = controllers[index].run()
 	ThreadSincronizer.remove_participant(controllers[index].get_instance_id())
+	
 	if return_code != OK:
 		# [TODO] Better error treatment. Maybe a log? Maybe a return value?
 		print("When thread %d finished: " % index + controllers[index].get_error_message())
+
 	return return_code
+
+# Returns true if thread launched
+func launch_thread(p_index : int) -> bool:
+
+	if threads[p_index].start(self, "controller_run_wrapper", p_index) == OK:
+		return true
+
+	push_error("thread for controller %d can't be created" % p_index)
+	return false
+
+# Returns true if every thread lauched
+func launch_threads() -> bool :
+	var player_count : int = PlayerData.count()
+	
+	for i in player_count:
+		# Skips absent Players
+		if not PlayerData.is_present(i):
+			continue
+
+		if not launch_thread(i):
+			return false
+	
+	return true
 
 func run():
 	if not compile_scripts():
