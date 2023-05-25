@@ -488,13 +488,18 @@ func set_pond_script_editor_visible(p_index : int, p_can_see : bool, p_can_edit 
 	scripts_tab_container.set_tab_hidden(p_index, !p_can_see)
 	update_pond_script_editor(p_index, p_can_edit)
 	
-func set_send_pond_script_btn_enabled(p_enabled : bool) -> void:
+# Enables/disables Send script button, with custom text
+func enable_send_script(p_enabled : bool) -> void:
 	if p_enabled:
 		send_pond_script_btn.set_disabled( false )
-		send_pond_script_btn.set_text( "Enviar script" )
+		send_pond_script_btn.set_text( "Enviar código" )
 	else:
 		send_pond_script_btn.set_disabled( true )
-		send_pond_script_btn.set_text( "Corrija script" )
+		send_pond_script_btn.set_text( "Corrija código" )
+
+# Enables/disables run/reset button
+func enable_run_match(p_enabled : bool) -> void:
+	run_reset_btn.set_disabled( not p_enabled )
 
 # Hides a script editor tab
 func disable_pond_script_editor(p_index : int) -> void:
@@ -599,6 +604,9 @@ func set_pond_state(p_state : State) -> void:
 	self.duck_pond_states = p_state.duck_pond_states
 	self.projectile_pond_states = p_state.projectile_pond_states
 	pond_state = p_state
+	
+# ====================================
+# === LISTENERS ======================
 
 func _on_Duck_tired(p_duck : Duck):
 	_ducks_tired.add_duck(p_duck)
@@ -665,16 +673,22 @@ func _on_LuaScriptStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
 	if compile_mock_script() and launch_mock_thread():
-		set_send_pond_script_btn_enabled(true)
+		enable_send_script(true)
+		enable_run_match(true)
 	else:
-		set_send_pond_script_btn_enabled(false)
+		enable_send_script(false)
+		enable_run_match(false)
 
 func _on_LuaScriptEditor_lua_script_changed(p_node : TextEdit) -> void:
 	var index := script_editors.find(p_node)
 	if index != 0:
 		return
-	set_send_pond_script_btn_enabled(false)
+	enable_send_script(false)
+	enable_run_match(false)
 	
+
+# === END LISTENERS ==================
+# ====================================
 
 #JSONable class for PondMath
 class State extends JSONable:
