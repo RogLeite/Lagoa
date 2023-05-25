@@ -12,7 +12,7 @@
 [ext_resource path="res://assets/theme/stylebox/player2_fg.tres" type="StyleBox" id=10]
 [ext_resource path="res://assets/theme/stylebox/player0_fg.tres" type="StyleBox" id=11]
 [ext_resource path="res://assets/theme/stylebox/player1_fg.tres" type="StyleBox" id=12]
-[ext_resource path="res://src/UI/Elements/CompilationStatus.tscn" type="PackedScene" id=13]
+[ext_resource path="res://src/UI/Elements/LuaScriptStatus.tscn" type="PackedScene" id=13]
 
 [node name="PondMatch" type="Control"]
 anchor_right = 1.0
@@ -169,7 +169,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 tab_align = 0
 
-[node name="CompilationStatus" parent="UI/Editor" instance=ExtResource( 13 )]
+[node name="ScriptStatus" parent="UI/Editor" instance=ExtResource( 13 )]
 margin_top = 559.0
 margin_right = 613.0
 margin_bottom = 590.0
@@ -185,5 +185,5 @@ margin_bottom = 590.0
 [connection signal="reset" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
 [connection signal="run" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
 [connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]
-[connection signal="verify_requested" from="UI/Editor/CompilationStatus" to="." method="_on_CompilationStatus_verify_requested"]
+[connection signal="verify_requested" from="UI/Editor/ScriptStatus" to="." method="_on_CompilationStatus_verify_requested"]
 [connection signal="confirmed" from="QuitMatchPopup" to="." method="_on_QuitMatchPopup_confirmed"]

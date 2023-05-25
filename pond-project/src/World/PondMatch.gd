@@ -57,7 +57,7 @@ onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunReset
 onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/Editor/ScriptTabs
-onready var compilation_status := $UI/Editor/CompilationStatus
+onready var lua_script_status := $UI/Editor/ScriptStatus
 
 func _init():
 
@@ -246,7 +246,7 @@ func compile_script(p_index : int, show_result : bool = false) -> bool:
 	var error_message = ""
 	if controllers[p_index].compile() == OK:
 		if show_result:
-			compilation_status.set_ok()
+			lua_script_status.set_ok()
 		return true 
 		
 	error_message = controllers[p_index].get_error_message()
@@ -259,7 +259,7 @@ func compile_script(p_index : int, show_result : bool = false) -> bool:
 		message = "Compilação falhou sem descrição do erro"
 	else:
 		message = format_error(error_message)
-	compilation_status.set_error(message)
+	lua_script_status.set_compilation_error(message)
 
 	return false
 
@@ -563,14 +563,14 @@ func _on_PondMatch_match_run_started():
 	run_reset_btn.swap_role("reset")
 	set_back_disabled(true)
 	step_btn.visible = is_step_by_step
-	compilation_status.set_disabled(true)
+	lua_script_status.set_disabled(true)
 
 
 func _on_PondMatch_match_run_stopped():
 	run_reset_btn.swap_role("run")
 	set_back_disabled(false)
 	step_btn.hide()
-	compilation_status.set_disabled(false)
+	lua_script_status.set_disabled(false)
 
 func _on_StepButton_pressed():
 	emit_signal("match_step_requested")
