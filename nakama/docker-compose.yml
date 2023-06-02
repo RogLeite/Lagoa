@@ -1,17 +1,28 @@
 version: '3'
 services:
+  certificates:
+    image: cockroachdb/cockroach:latest-v20.2
+    entrypoint: /bin/sh
+    command: /.cockroach-certs/create_certificates.sh 
+    restart: "no"
+    volumes:
+      - ./.cockroach-certs:/.cockroach-certs
   cockroachdb:
     image: cockroachdb/cockroach:latest-v20.2
     command: start-single-node --insecure --store=attrs=ssd,path=/var/lib/cockroach/
     restart: "no"
     volumes:
       - data:/var/lib/cockroach
+      - ./.cockroach-certs:/.cockroach-certs
     expose:
       - "8080"
       - "26257"
     ports:
       - "26257:26257"
       - "8080:8080"
+    depends_on:
+      certificates:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: 3s
@@ -35,6 +46,7 @@ services:
         condition: service_started
     volumes:
       - ./:/nakama/data
+      - ./.cockroach-certs:/.cockroach-certs
     expose:
       - "7349"
       - "7350"
