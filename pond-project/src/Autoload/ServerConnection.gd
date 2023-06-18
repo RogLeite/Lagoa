@@ -77,8 +77,13 @@ enum OpCodes {
 # Unique key for the server, defined in it's "docker-compose.yml" file
 const KEY := "nakama_pond_server"
 
+# IP to the laptop hosting the server
+const LAPTOP_IP := "127.0.0.1"
+
 # String that contains the error message whenever any of the functions that yield return != OK
 var error_message := "" setget _no_set, _get_error_message
+
+var server_ip : String = ""
 
 # The Nakama used to create sessions in the server
 var _client : NakamaClient
@@ -100,7 +105,7 @@ func start_client(log_level : int =  Nakama.DEFAULT_LOG_LEVEL) -> void:
 # [TODO] When the server is hosted non-locally, change the IP address used
 	_client = Nakama.create_client(
 			KEY,
-			"127.0.0.1",
+			LAPTOP_IP if server_ip.empty() else server_ip,
 			7350,
 			"http",
 			Nakama.DEFAULT_TIMEOUT,

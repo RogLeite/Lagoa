@@ -11,6 +11,7 @@ const _popup_msg_master_client := "Não foi possível iniciar a cena do Master C
 
 
 onready var modes_list := find_node("ModesList")
+onready var ip_edit := $MarginContainer/ModesList/IP
 
 func _ready():
 	if ProjectSettings.get_setting("editor/manual_testing"):
@@ -22,6 +23,8 @@ func _ready():
 			return
 
 	self.menu_current = modes_list
+	ip_edit.text = ServerConnection.server_ip
+	
 
 func change_to_single() -> void:
 	#warning-ignore: return_value_discarded
@@ -45,3 +48,6 @@ func _on_ModesList_singleplayer_requested():
 
 func _on_ModesList_multiplayer_requested():	
 	change_to_player()
+
+func _on_IP_text_changed(new_text):
+	ServerConnection.server_ip = new_text
