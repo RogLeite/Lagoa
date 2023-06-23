@@ -1,0 +1,129 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://src/ResourceClasses/LuaScript.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+lua_script = "--[[
+  Distante 
+  Estratégia: como um scan da lagoa inteira pode ser feita em 90 graus
+  a partir de um dos cantos, Distante pode escanear a lagoa rápidamente
+]]
+
+-- Variáveis globais podem ser usadas em qualquer função 
+local corner = 0           -- Canto atual: 0, 1, 2, or 2 
+local sc = 0               -- Início corrente do scan 
+
+local range          -- distância até o alvo 
+
+-- inicializa as informações dos cantos 
+-- Localização x e y de cada canto, e início corrente do scan  
+local c1x, c1y, s1 = 2, 2, 0
+local c2x, c2y, s2 = 2, 98, 270
+local c3x, c3y, s3 = 98, 98, 180
+local c4x, c4y, s4 = 98, 2, 90
+local closest = \"infinity\"
+
+-- Formula pitagórica de distância
+local function distance(x1, y1, x2, y2)
+  local x = x1 - x2
+  local y = y1 - y2
+  return math.sqrt((x * x) + (y * y))
+end
+
+-- retorna o ângulo necessário para chegar ao destino
+local function plot_course(xx, yy)
+  local x,y
+  local curx, cury
+
+  curx = getX()
+  cury = getY()
+  x = curx - xx
+  y = cury - yy
+  return math.deg(math.atan(y, x) + math.pi)
+end
+
+-- Move para um novo canto
+local function new_corner()
+  local x, y
+
+  local rand = math.floor(math.random() * 4)         -- Escolhe um canto aleatório 
+  corner = rand == corner and (rand + 1) % 4 or rand -- Contanto que seja diferente da corrente
+  if corner == 0 then       -- Define novos x, y, e início de scan
+    x = c1x
+    y = c1y
+    sc = s1
+  end
+  if corner == 1 then
+    x = c2x
+    y = c2y
+    sc = s2
+  end
+  if corner == 2 then
+    x = c3x
+    y = c3y
+    sc = s3
+  end
+  if corner == 3 then
+    x = c4x
+    y = c4y
+    sc = s4
+  end
+
+  -- encontra a direção que precisa nadar para ir para o canto escolhido
+  local angle = plot_course(x,y)
+
+  -- Começa a nadar
+
+  -- Continua nadando até estar a 15 metros do objetivo
+  -- Velocidade é verificada para caso colida com parede ou outro pato
+  -- não é muito bom porque não faz nada enquando nada
+
+  while distance(getX(), getY(), x, y) > 15 do
+    swim(angle, 100)
+  end
+
+  -- Diminui velocidade 
+
+  while distance(getX(), getY(), x, y) > 1 do
+    swim(angle, 20)
+  end
+
+  -- Para de nadar
+  swim(angle, 0)
+end
+
+new_corner()       -- começa num canto aleatório 
+local current_energy = energy() 
+local dir = sc
+
+while true do
+  while dir < sc + 90 do    -- scan ao longo de 90 graus 
+    range = scan(dir, 2)
+    if range ~= \"infinity\" and range <= 70 then
+      while (range > 0) do   -- Continua lançando enquanto está alcançando 
+        closest = range      -- define flag do mais próximo 
+        launch(dir, range) 
+        range = scan(dir, 1) -- Confere o alvo novamente
+        if  current_energy + 15 > energy() then -- se tomou dano,  
+          range = 0                             -- vai para um novo canto
+        end
+      end
+      dir = dir - 10
+    end
+
+    dir = dir + 2
+    if current_energy ~= energy() then     -- confere se foi atingido 
+      new_corner()
+      current_energy = energy()
+      dir = sc
+    end
+  end
+
+  if closest == \"infinity\" then -- confere se tem um alvo no alcance 
+    new_corner()                -- se não encontrou, vai para um novo canto 
+    current_energy = energy()
+  end
+  dir = sc
+  closest = \"infinity\"
+end"

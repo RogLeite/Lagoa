@@ -151,27 +151,31 @@ func scan(duck_idx, angle):
 # Passes Projectile parameters to CurrentVisualization.get_current().add_projectile()
 # Starts a cooldown timer for the launcher.
 # @ param angle is in degrees
-func launcher(angle, p_distance):
-	if not is_tired() and can_launch:
-		can_launch = false
-		var distance : float
-		if p_distance is String:
-			match p_distance.to_lower():
-				"infinity":
-					distance = INF
-				_:
-					distance = float(distance)
-		else:
-			distance = p_distance
-		var p_dist := clamp(distance, 0, projectile_max_distance)
-		var p_color := Color.darkslategray
-		var p_start_location := position
-		var p_end_location := position+Vector2(p_dist,0).rotated(deg2rad(angle))
-		
-		CurrentVisualization.get_current().add_projectile(p_color, p_start_location, p_end_location, p_dist)
-		# Starts a cooldown timer for can_launch
-		# warning-ignore: return_value_discarded
-		get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
+# returns true if launched a projectile
+func launcher(angle, p_distance) -> bool:
+	if is_tired() or not can_launch:
+		return false
+
+	can_launch = false
+	var distance : float
+	if p_distance is String:
+		match p_distance.to_lower():
+			"infinity":
+				distance = INF
+			_:
+				distance = float(distance)
+	else:
+		distance = p_distance
+	var p_dist := clamp(distance, 0, projectile_max_distance)
+	var p_color := Color.darkslategray
+	var p_start_location := position
+	var p_end_location := position+Vector2(p_dist,0).rotated(deg2rad(angle))
+	
+	CurrentVisualization.get_current().add_projectile(p_color, p_start_location, p_end_location, p_dist)
+	# Starts a cooldown timer for can_launch
+	# warning-ignore: return_value_discarded
+	get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])
+	return true
 		
 func get_class() -> String :
 	return "Duck"
