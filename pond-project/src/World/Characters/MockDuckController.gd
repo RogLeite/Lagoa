@@ -35,18 +35,14 @@ func get_y() -> float:
 	if randi()%3 != 0:
 		return y
 	var newy = y + sin(angle) * speed
-	newy = min(100, newy)
-	newy = max(0  , newy)
-	y = newy
+	y = clamp(newy, 0, 100)
 	return y
 
 func get_x() -> float:
 	if randi()%3 != 0:
 		return x
 	var newx = x + cos(angle) * speed
-	newx = min(100, newx)
-	newx = max(0  , newx)
-	x = newx
+	x = clamp(newx, 0, 100)
 	return x
 
 func tire(_value) -> void :
