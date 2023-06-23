@@ -1,0 +1,74 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://src/ResourceClasses/LuaScript.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+lua_script = "--[[
+  Torre
+  Estratégia: Busca a lagoa como uma Torre, i.e., só 0,90,180,270
+  nada horizontalmente apenas, olhando horizontalmente e verticalmente
+]]
+
+-- Move para o centro da lagoa
+if getY() < 50 then
+  while getY() < 40 do        -- para perto do centro
+    swim(90, 100)           -- começa a nadar
+  end
+else
+  while getY() > 60 do        -- para perto do centro
+    swim(270, 100)          -- começa a nadar
+  end
+end
+
+swim(0, 0)
+while speed() > 0 do end
+
+local current_energy = energy()
+local course = 0
+local boundary = 99
+swim(course, 30)
+
+-- Olha em uma direção e lança repetidamente num alvo que está ao alcançe
+function look(deg)
+  local range = scan(deg, 4)
+  while range ~= \"infinity\" and range <= 70 do
+    swim(course, 0)
+    launch(deg, range)
+    if current_energy + 20 ~= energy() then
+      current_energy = energy()
+      change()
+    end
+    range = scan(deg, 4)
+  end
+end
+
+function change()
+  if (course == 0) then
+    boundary = 1
+    course = 180
+  else
+    boundary = 99
+    course = 0
+  end
+  swim(course, 30)
+end
+
+while true do
+  -- olha em todas direções
+  look(0)
+  look(90)
+  look(180)
+  look(270)
+
+  -- se está perto do final da lagoa, troca de direção
+  if (course == 0) then
+    if getX() > boundary or speed() == 0 then
+      change()
+    end
+  else
+    if getX() < boundary or speed() == 0 then
+      change()
+    end
+  end
+end"

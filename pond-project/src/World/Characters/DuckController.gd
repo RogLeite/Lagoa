@@ -7,10 +7,14 @@ onready var thread_id := get_instance_id()
 func _ready():	
 	set_methods_to_register({
 		"swim":"swim",
-		"stop":"stop",
 		"scan":"scan",
 		"launch":"launch",
-		"tire":"tire" # [TODO] Remove this method in the final version
+		"energy":"energy",
+		"getX":"getX",
+		"getY":"getY",
+		"speed":"speed"
+		# "stop":"stop",
+		# "tire":"tire"
 		})
 	
 # [TODO] Write a good error handler for DuckControllerScript
@@ -56,15 +60,56 @@ func scan(angle):
 			return "infinity"
 		return result
 	return "infinity"
+
+func energy():
+	if get_force_stop():
+		return 100
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck_node()
+	if not duck:
+		return 100
+	return duck.energy
+
+func getX():
+	if get_force_stop():
+		return 0
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck_node()
+	if not duck:
+		return 0
+	return duck.get_position().x
+
+func getY():
+	if get_force_stop():
+		return 0
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck_node()
+	if not duck:
+		return 0
+	return duck.get_position().y
+
+func speed():
+	if get_force_stop():
+		return 0
+
+	ThreadSincronizer.await_permission(thread_id)
+	var duck = get_duck_node()
+	if not duck:
+		return 0
+	return duck.speed
 	
 func launch(angle, distance) : 
 	if get_force_stop():
-		return
+		return false
 
 	ThreadSincronizer.await_permission(thread_id)
 	var duck = get_duck_node()
 	if duck:
-		duck.launcher(angle, distance)
+		return duck.launcher(angle, distance)
+	return false
 
 func get_duck_node():
 	return PlayerData.get_duck_node(duck_idx)
