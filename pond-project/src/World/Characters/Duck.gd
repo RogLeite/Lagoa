@@ -4,7 +4,7 @@ class_name Duck
 signal energy_changed(new_value)
 signal tired(duck)
 
-export var max_speed : int = 100
+export var MAX_SPEED : int = 100
 # Scan resolution in degrees
 export var scan_resolution := 5.0
 
@@ -67,13 +67,19 @@ func _physics_process(delta):
 				call_deferred("tire", COLLISION_DAMAGE_WALL)
 				# print("Collided with wall")
 
+func getX () -> float:
+	return position.x / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+
+func getY () -> float:
+	return position.y / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+
 func get_speed ():
 	return speed
 func set_speed (value):
-	speed = clamp(value, 0, 100)
+	speed = clamp(value, 0, MAX_SPEED)
 	
 func set_speed_target (value):
-	speed_target = clamp(value, 0, 100)
+	speed_target = clamp(value, 0, MAX_SPEED)
 	
 func set_energy(value : int) :
 	energy = int(clamp(value, 0, MAX_ENERGY))
@@ -146,7 +152,8 @@ func is_tired() -> bool :
 func scan(duck_idx, angle):
 	if is_tired():
 		return INF
-	return CurrentVisualization.get_current().scan_field(duck_idx, angle, scan_resolution)
+	var vis := CurrentVisualization.get_current()
+	return vis.scan_field(duck_idx, angle, scan_resolution) / vis.MAP_SCALE_FROM_BLOCKLY
 
 # Passes Projectile parameters to CurrentVisualization.get_current().add_projectile()
 # Starts a cooldown timer for the launcher.
@@ -166,12 +173,13 @@ func launcher(angle, p_distance) -> bool:
 				distance = float(distance)
 	else:
 		distance = p_distance
-	var p_dist := clamp(distance, 0, projectile_max_distance)
+	var vis = CurrentVisualization.get_current()
+	var p_dist : float = clamp(distance, 0, vis.PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY) * vis.MAP_SCALE_FROM_BLOCKLY
 	var p_color := Color.darkslategray
 	var p_start_location := position
 	var p_end_location := position+Vector2(p_dist,0).rotated(deg2rad(angle))
 	
-	CurrentVisualization.get_current().add_projectile(p_color, p_start_location, p_end_location, p_dist)
+	vis.add_projectile(p_color, p_start_location, p_end_location, p_dist)
 	# Starts a cooldown timer for can_launch
 	# warning-ignore: return_value_discarded
 	get_tree().create_timer(LAUNCHER_COOLDOWN).connect("timeout", self, "set_can_launch", [true])

@@ -79,7 +79,7 @@ func getX():
 	var duck = get_duck_node()
 	if not duck:
 		return 0
-	return duck.get_position().x
+	return duck.getX() 
 
 func getY():
 	if get_force_stop():
@@ -89,7 +89,7 @@ func getY():
 	var duck = get_duck_node()
 	if not duck:
 		return 0
-	return duck.get_position().y
+	return duck.getY()
 
 func speed():
 	if get_force_stop():
