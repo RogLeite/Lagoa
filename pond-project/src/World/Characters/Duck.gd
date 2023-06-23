@@ -174,7 +174,7 @@ func launcher(angle, p_distance) -> bool:
 	else:
 		distance = p_distance
 	var vis = CurrentVisualization.get_current()
-	var p_dist : float = clamp(distance, 0, vis.PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY) * vis.MAP_SCALE_FROM_BLOCKLY
+	var p_dist : float = clamp(distance, 0, PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY) * vis.MAP_SCALE_FROM_BLOCKLY
 	var p_color := Color.darkslategray
 	var p_start_location := position
 	var p_end_location := position+Vector2(p_dist,0).rotated(deg2rad(angle))

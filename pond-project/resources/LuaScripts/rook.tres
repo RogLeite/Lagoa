@@ -26,7 +26,7 @@ while speed() > 0 do end
 
 local current_energy = energy()
 local course = 0
-local boundary = 99
+local boundary = 95
 swim(course, 30)
 
 -- Olha em uma direção e lança repetidamente num alvo que está ao alcançe
@@ -45,10 +45,10 @@ end
 
 function change()
   if (course == 0) then
-    boundary = 1
+    boundary = 5
     course = 180
   else
-    boundary = 99
+    boundary = 95
     course = 0
   end
   swim(course, 30)
