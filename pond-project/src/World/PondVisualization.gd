@@ -29,8 +29,7 @@ var _every_duck := []
 var _participating_ducks := []
 var _pool_vision_cones := []
 
-var scan_mutex := Mutex.new()
-var projectile_mutex := Mutex.new()
+var mutex : Mutex
 
 onready var marker := $MarkerLayer/Marker
 onready var projectile_scene := preload("res://src/World/Characters/Projectile.tscn")
@@ -38,6 +37,9 @@ onready var vision_cone_scene := preload("res://src/World/Effects/VisionCone.tsc
 onready var boom_player_scene := preload("res://src/World/Effects/BoomPlayer.tscn")
 onready var blast_scene := preload("res://src/World/Effects/Blast.tscn")
 onready var splash_player_scene := preload("res://src/World/Effects/SplashPlayer.tscn")
+
+func _init():
+	mutex = Mutex.new()
 
 func _enter_tree():
 	# Sets itself as the current visualization
@@ -96,7 +98,7 @@ func _exit_tree():
 
 # If the center of a duck is visible, returns distance to it. Else returns INF
 func scan_field(scanner : int, degree, angular_resolution) -> float:
-	scan_mutex.lock()
+	mutex.lock()
 
 	var scanner_duck : Duck = _every_duck[scanner]
 	var start : Vector2 = scanner_duck.position
@@ -123,7 +125,7 @@ func scan_field(scanner : int, degree, angular_resolution) -> float:
 
 	add_vision_cone(start, radians)
 	
-	scan_mutex.unlock()
+	mutex.unlock()
 	
 	return best_distance
 
@@ -198,7 +200,7 @@ func add_vision_cone(p_position : Vector2, p_rotation : float):
 			break
 
 func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location : Vector2, p_distance : float):
-	projectile_mutex.lock()
+	mutex.lock()
 
 	for proj in projectiles:
 		if proj.is_processing():
@@ -211,7 +213,7 @@ func add_projectile(p_color : Color, p_start_location : Vector2, p_end_location 
 		show_projectile(proj)
 		break
 
-	projectile_mutex.unlock()
+	mutex.unlock()
 
 func show_projectile(projectile : Projectile):
 	projectile.set_process(true)
@@ -242,11 +244,11 @@ func _get_projectile_pond_states() -> Array:
 	return states
 
 func _get_vision_cones_pond_states() -> Array:
-	scan_mutex.lock()
+	mutex.lock()
 	var states := [] 
 	for cone in _pool_vision_cones:
 		states.push_back(cone.pond_state)
-	scan_mutex.unlock()
+	mutex.unlock()
 	return states
 
 func _free_groups(effects : Array):
@@ -308,7 +310,9 @@ func enable_duck(p_index):
 		_participating_ducks.push_back(duck)
 	
 	if PlayerData.is_user(p_index):
+		mutex.lock()
 		duck.following_node = marker
+		mutex.unlock()
 
 # [TODO] Force the removal of the player
 func remove_duck(_p_index):

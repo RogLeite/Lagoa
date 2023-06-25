@@ -35,7 +35,6 @@ var color : Color = Color.white
 var pond_state : State setget set_pond_state, get_pond_state
 
 onready var projectile_max_distance : float = PROJECTILE_MAX_DISTANCE_FROM_BLOCKLY * CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
-onready var tire_mutex := Mutex.new()
 onready var _base_modulate := modulate
 onready var collision := $Collision
 onready var follower := $Follower
@@ -52,7 +51,10 @@ func _physics_process(delta):
 	accelerate(delta)
 	# Needs delta in calculations because move_and_collide doesn't use it automatically like move_and_slide does
 	var velocity : Vector2 = Vector2(speed, 0).rotated(rotation) * delta
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
 	var collision_result :=  move_and_collide(velocity, true, true, false)
+	mutex.unlock()
 	
 	if not collision_result or not collision_result.collider:
 		return
@@ -68,10 +70,18 @@ func _physics_process(delta):
 				# print("Collided with wall")
 
 func getX () -> float:
-	return position.x / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
+	var res = position.x / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+	mutex.unlock()
+	return res
 
 func getY () -> float:
-	return position.y / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
+	var res = position.y / CurrentVisualization.get_current().MAP_SCALE_FROM_BLOCKLY
+	mutex.unlock()
+	return res
 
 func get_speed ():
 	return speed
@@ -110,9 +120,7 @@ func set_participating(p_participating : bool) -> void:
 	collision.disabled = not p_participating
 	
 func tire(value : int) :
-	tire_mutex.lock()
 	self.energy = energy - value
-	tire_mutex.unlock()
 
 
 # Target is optional. If omitted, defaults to 50 (half the maximum speed)
@@ -139,12 +147,20 @@ func accelerate(delta) :
 		self.speed = max(speed - ACCELERATION * delta, speed_target)
 
 func check_energy():
-	if energy == 0 :
-		emergency_stop()
-		collision.disabled = true
-		modulate = Color(0.75,0.75,0.75,0.75)
-		emit_signal("tired", self)
-		call_deferred("set_physics_process", false)
+	
+	if energy > 0 :
+		return
+	
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
+	
+	emergency_stop()
+	collision.disabled = true
+	modulate = Color(0.75,0.75,0.75,0.75)
+	emit_signal("tired", self)
+	call_deferred("set_physics_process", false)
+	
+	mutex.unlock()
 
 func is_tired() -> bool :
 	return energy == 0
