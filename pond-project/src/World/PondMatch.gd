@@ -44,7 +44,6 @@ var tick : int
 var pond_events: Dictionary setget set_pond_events, get_pond_events
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
-var pond_events_mutex : Mutex
 
 var winner : String = WINNER_TEMPLATE
 
@@ -77,8 +76,6 @@ func _init():
 	}
 	duck_pond_states = []
 	projectile_pond_states = []
-
-	pond_events_mutex = Mutex.new()
 
 	_ducks_tired = TiredRegistry.new()
 
@@ -543,8 +540,9 @@ func _exit_tree():
 		PlayerData.disconnect("pond_script_changed", self, "_on_PlayerData_pond_script_changed")
 
 func set_pond_events(p_events_state : Dictionary):
-	pond_events_mutex.lock()
-
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
+	
 	var current := CurrentVisualization.get_current()
 	# Pushes sfx
 	current.play_sfx(p_events_state["sfx"])
@@ -552,13 +550,14 @@ func set_pond_events(p_events_state : Dictionary):
 	# Pushes vfx
 	current.play_vfx(p_events_state["vfx"])
 	
-	pond_events_mutex.unlock()
+	mutex.unlock()
 
 func get_pond_events() -> Dictionary :
-	pond_events_mutex.lock()
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
 	var ret = pond_events
 	ret.vfx.vision_cone = CurrentVisualization.get_current().vision_cones_pond_states
-	pond_events_mutex.unlock()
+	mutex.unlock()
 	return ret
 
 
@@ -614,14 +613,16 @@ func _on_Duck_tired(p_duck : Duck):
 		emit_signal("match_ended")	
 
 func _on_PondVisualization_sfx_played(p_effect_name : String):
-	pond_events_mutex.lock()
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
 	pond_events["sfx"][p_effect_name] = true
-	pond_events_mutex.unlock()
+	mutex.unlock()
 
 func _on_PondVisualization_vfx_played(p_effect_name: String, p_pond_state):
-	pond_events_mutex.lock()
+	var mutex = CurrentVisualization.get_current().mutex
+	mutex.lock()
 	pond_events["vfx"][p_effect_name].push_back(p_pond_state)
-	pond_events_mutex.unlock()
+	mutex.unlock()
 
 func _on_PlayerData_player_joined(p_index : int):
 	if not is_running:
