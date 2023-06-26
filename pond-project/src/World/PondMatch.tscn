@@ -79,7 +79,7 @@ margin_right = 192.0
 margin_bottom = 31.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = ""
+text = "P3"
 theme_override = ExtResource( 10 )
 
 [node name="EnergyBar3" parent="UI/MarginContainer/Gameplay/EnergyBars" instance=ExtResource( 2 )]
@@ -90,7 +90,7 @@ margin_right = 400.0
 margin_bottom = 31.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = ""
+text = "P4"
 theme_override = ExtResource( 9 )
 
 [node name="EnergyBar0" parent="UI/MarginContainer/Gameplay/EnergyBars" instance=ExtResource( 2 )]
@@ -101,7 +101,7 @@ margin_right = 192.0
 margin_bottom = 78.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = ""
+text = "P1"
 theme_override = ExtResource( 11 )
 
 [node name="EnergyBar1" parent="UI/MarginContainer/Gameplay/EnergyBars" instance=ExtResource( 2 )]
@@ -113,7 +113,7 @@ margin_right = 400.0
 margin_bottom = 78.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = ""
+text = "P2"
 theme_override = ExtResource( 12 )
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/MarginContainer/Gameplay"]

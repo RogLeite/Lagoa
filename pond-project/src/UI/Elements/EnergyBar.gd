@@ -2,8 +2,8 @@ tool
 extends Control
 class_name EnergyBar
 
+export var text : String = "<no text>" setget set_text, get_text
 # Facilitates changes to the tint of the bar and it's tooltip
-export var text : String = "Label" setget set_text, get_text
 export var theme_override : StyleBoxFlat setget set_theme_override, get_theme_override
 
 func _ready():
@@ -20,7 +20,7 @@ func reset() -> void:
 func set_text(string : String) : 
 	text = string
 	if has_node("Label"):
-		$Label.text = string
+		$Label.text = text
 func get_text() -> String : 
 	if has_node("Label"):
 		return $Label.text
