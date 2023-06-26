@@ -15,7 +15,12 @@ signal match_run_started
 signal match_run_stopped
 
 const WINNER_TEMPLATE : String = "<NO WINNER DECLARED>"
+const TIMER_DEFAULT : String = "-:--:--"
+const TIMER_TEMPLATE : String = "%d:%02d:%02s"
 
+
+# Duration of the match in seconds
+export(int, 10, 300) var match_duration : int = 180
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
 # Is the scene running the scripts
@@ -60,6 +65,8 @@ onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/Editor/ScriptTabs
 onready var lua_script_status := $UI/Editor/ScriptStatus
+onready var match_timer := $MatchTimer
+onready var timer_label := $TimerLabel
 
 func _init():
 
@@ -110,8 +117,17 @@ func _ready():
 
 func _physics_process(_delta: float) -> void:
 	if not is_running:
+		timer_label.set_text(TIMER_DEFAULT)
 		return
-
+		
+	var time : float = match_timer.get_time_left()
+# warning-ignore:narrowing_conversion
+	var minutes : int = time / 60
+	var seconds : int = time as int % 60 
+# warning-ignore:narrowing_conversion
+	var hundredths : int  = floor((time-floor(time))*100)
+	timer_label.set_text(TIMER_TEMPLATE%[minutes, seconds, hundredths])
+	
 	if not is_step_by_step:
 		script_step()
 	if are_controllers_finished() :
@@ -143,6 +159,8 @@ func reset_pond_match() -> void:
 	$ResetManager.reset_requested()
 	
 func _reset() -> void:
+	match_timer.stop()
+	
 	winner = WINNER_TEMPLATE
 	_ducks_tired.reset()
 	tick = 0
@@ -222,6 +240,56 @@ func check_victory():
 		_:
 			winner = WINNER_TEMPLATE
 			return false
+
+# Forces a victor to be chosen
+# Returns false if there is only one duck in the match
+
+# If a victor is found, stores it's username in member winner
+func force_victory():
+	if PlayerData.present_count() == 1:
+		return false
+	
+	var less_tired = []
+	var highest_energy := -1
+	
+	for idx in PlayerData.count():
+		if not PlayerData.is_present(idx):
+			continue
+		
+		var duck = PlayerData.get_duck_node(idx)
+		if not duck or duck.is_tired():
+			continue
+			
+		if duck.energy < highest_energy:
+			continue
+		elif duck.energy == highest_energy:
+			less_tired.push_back(idx)
+		else: # duck.energy > highest_energy
+			less_tired = [idx]
+			highest_energy = duck.energy
+			
+	
+	match less_tired.size():
+		0:
+			var last_tired_ducks = _ducks_tired.last_tired()
+			var winners = []
+			var msg = "%s" + " e %s".repeat(last_tired_ducks.size()-1) + " VENCERAM!"
+			for duck in last_tired_ducks:
+				var idx = PlayerData.duck_node_to_index(duck)
+				winners.push_back(PlayerData.get_player(idx).username)
+			winner = msg%winners
+		1:
+			winner = "%s VENCEU!"%PlayerData.get_player(less_tired[0]).username
+		_:
+			
+			var winners = []
+			var msg = "%s" + " e %s".repeat(less_tired.size()-1) + " VENCERAM!"
+			for idx in less_tired:
+				winners.push_back(PlayerData.get_player(idx).username)
+			winner = msg%winners
+		
+	return true
+
 
 # Parses compilation error message then formats it to readable portuguese
 func format_error(p_message : String) -> String:
@@ -324,6 +392,7 @@ func run():
 		self.is_running = false
 	else:
 		self.is_running = true
+		match_timer.start(match_duration)
 
 # Force threads to stop and then joins them
 func force_join_controllers() :
@@ -606,6 +675,10 @@ func set_pond_state(p_state : State) -> void:
 	
 # ====================================
 # === LISTENERS ======================
+
+func _on_MatchTimer_timeout():
+	if is_running and force_victory():
+		emit_signal("match_ended")	
 
 func _on_Duck_tired(p_duck : Duck):
 	_ducks_tired.add_duck(p_duck)
