@@ -44,11 +44,13 @@ var back_disabled : bool = false setget set_back_disabled
 var mock_controller : LuaController
 var mock_thread : Thread
 
+# Members updated in `pond_state`
 var pond_state : State setget set_pond_state, get_pond_state
 var tick : int
 var pond_events: Dictionary setget set_pond_events, get_pond_events
 var duck_pond_states : Array setget set_duck_pond_states, get_duck_pond_states
 var projectile_pond_states : Array setget set_projectile_pond_states, get_projectile_pond_states
+var time_left : float setget set_time_left, get_time_left
 
 var winner : String = WINNER_TEMPLATE
 
@@ -117,16 +119,10 @@ func _ready():
 
 func _physics_process(_delta: float) -> void:
 	if not is_running:
-		timer_label.set_text(TIMER_DEFAULT)
+		set_time_left(-1)
 		return
 		
-	var time : float = match_timer.get_time_left()
-# warning-ignore:narrowing_conversion
-	var minutes : int = time / 60
-	var seconds : int = time as int % 60 
-# warning-ignore:narrowing_conversion
-	var hundredths : int  = floor((time-floor(time))*100)
-	timer_label.set_text(TIMER_TEMPLATE%[minutes, seconds, hundredths])
+	set_time_left(match_timer.get_time_left())
 	
 	if not is_step_by_step:
 		script_step()
@@ -658,12 +654,29 @@ func get_projectile_pond_states() -> Array:
 	return CurrentVisualization.get_current().projectile_pond_states
 func set_projectile_pond_states(p_states : Array) :
 	CurrentVisualization.get_current().projectile_pond_states = p_states
+
+func get_time_left() -> float:
+	return time_left
+func set_time_left(p_time_left : float) :
+	time_left = p_time_left
+	
+	if time_left < 0 :
+		timer_label.set_text(TIMER_DEFAULT)
+		return
+
+	# warning-ignore:narrowing_conversion
+	var minutes : int = time_left / 60
+	var seconds : int = time_left as int % 60 
+	# warning-ignore:narrowing_conversion
+	var hundredths : int  = floor((time_left-floor(time_left))*100)
+	timer_label.set_text(TIMER_TEMPLATE%[minutes, seconds, hundredths])
 	
 func get_pond_state() -> State:
 	pond_state.tick = self.tick
 	pond_state.pond_events = self.pond_events
 	pond_state.duck_pond_states = self.duck_pond_states
 	pond_state.projectile_pond_states = self.projectile_pond_states
+	pond_state.time_left = self.time_left
 	return pond_state
 
 func set_pond_state(p_state : State) -> void:
@@ -671,6 +684,7 @@ func set_pond_state(p_state : State) -> void:
 	self.pond_events = p_state.pond_events
 	self.duck_pond_states = p_state.duck_pond_states
 	self.projectile_pond_states = p_state.projectile_pond_states
+	self.time_left = p_state.time_left
 	pond_state = p_state
 	
 # ====================================
@@ -770,7 +784,7 @@ class State extends JSONable:
 	var pond_events : Dictionary
 	var duck_pond_states : Array
 	var projectile_pond_states : Array
-
+	var time_left : float 
 	
 	func _init(
 		p_tick := 0,
@@ -782,11 +796,13 @@ class State extends JSONable:
 			"sfx" : {}
 		},
 		p_duck_pond_states := [],
-		p_projectile_pond_states := []):
+		p_projectile_pond_states := [],
+		p_time_left := 0.0):
 		tick = p_tick
 		pond_events = p_pond_events
 		duck_pond_states = p_duck_pond_states
 		projectile_pond_states = p_projectile_pond_states
+		time_left = p_time_left
 
 	func to(pond_match : PondMatch = null) -> Dictionary:
 		if pond_match:
@@ -794,6 +810,7 @@ class State extends JSONable:
 			pond_events = pond_match.pond_events
 			duck_pond_states = pond_match.duck_pond_states
 			projectile_pond_states = pond_match.projectile_pond_states
+			time_left = pond_match.time_left
 
 		# Populates `pond_events` with Strings converted from the State's booleans
 		# To possibly avoid bugs when Nakama receives the message
@@ -832,7 +849,8 @@ class State extends JSONable:
 			"tick" : tick,
 			"pond_events" : events_dict,
 			"duck_pond_states" : duck_states,
-			"projectile_pond_states" : projectile_states
+			"projectile_pond_states" : projectile_states,
+			"time_left" : time_left
 		}
 		
 	func from(p_from : Dictionary) -> JSONable:
@@ -840,6 +858,7 @@ class State extends JSONable:
 		pond_events = {}
 		duck_pond_states = []
 		projectile_pond_states = []
+		time_left = p_from.time_left
 
 		# Populates `pond_events` with booleans converted p_from the received Dictionary's Strings
 		pond_events = p_from.pond_events.duplicate(true)
