@@ -23,8 +23,10 @@ const TIMER_TEMPLATE : String = "%d:%02d:%02s"
 export(int, 10, 300) var match_duration : int = 180
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
-# Is the scene running the scripts
-export var is_simulating_match : bool  = true
+# Is physics_process running for visualization
+export var is_visualization_physics_processing : bool  = true
+# Is the scene emitting the "pond_state_updated" signal
+export var is_emitting_state : bool  = false
 # Will the scripts wait for the signal to continue
 export var is_step_by_step : bool = false
 # Are the tabs of other player's scripts visible 
@@ -91,7 +93,7 @@ func _init():
 func _ready():
 	var pond_visualization := CurrentVisualization.get_current()
 	pond_visualization.visible = is_visualizing_pond
-	pond_visualization.is_simulating_match = is_simulating_match
+	pond_visualization.is_visualization_physics_processing = is_visualization_physics_processing
 	
 	step_btn.visible = is_step_by_step
 	send_pond_script_btn.visible = can_send_pond_script
@@ -142,7 +144,7 @@ func script_step():
 	_ducks_tired.add_frame()
 	while not ThreadSincronizer.everyone_arrived() :
 		continue
-	if is_simulating_match:
+	if is_emitting_state:
 		emit_signal("pond_state_updated", self.pond_state)
 	
 	clear_events()
