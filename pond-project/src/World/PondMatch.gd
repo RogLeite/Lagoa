@@ -29,6 +29,8 @@ export var is_visualization_physics_processing : bool  = true
 export var is_emitting_state : bool  = false
 # Will the scripts wait for the signal to continue
 export var is_step_by_step : bool = false
+# If true, cannot run the match with the other ducks' scripts, only simulate 
+export var can_only_simulate_match : bool = false
 # Are the tabs of other player's scripts visible 
 export var can_see_scripts : bool  = true
 # Are other player's scripts editable
@@ -65,6 +67,7 @@ onready var mock_controller_scene := preload("res://src/World/Characters/MockDuc
 # References to Nodes
 onready var quit_btn := $UI/MarginContainer/Gameplay/HBoxContainer/QuitButton
 onready var run_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton
+onready var simulate_reset_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SimulateResetButton
 onready var step_btn := $UI/MarginContainer/Gameplay/HBoxContainer/StepButton
 onready var send_pond_script_btn := $UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton
 onready var scripts_tab_container := $UI/Editor/ScriptTabs
@@ -97,6 +100,8 @@ func _ready():
 	
 	step_btn.visible = is_step_by_step
 	send_pond_script_btn.visible = can_send_pond_script
+	run_reset_btn.visible = not can_only_simulate_match
+	simulate_reset_btn.visible = can_only_simulate_match
 	
 	threads.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
 	script_editors.resize(PlayerData.MAX_PLAYERS_PER_MATCH)
@@ -564,6 +569,8 @@ func enable_send_script(p_enabled : bool) -> void:
 # Enables/disables run/reset button
 func enable_run_match(p_enabled : bool) -> void:
 	run_reset_btn.set_disabled( not p_enabled )
+	simulate_reset_btn.set_disabled( not p_enabled )
+	
 
 # Hides a script editor tab
 func disable_pond_script_editor(p_index : int) -> void:
@@ -727,6 +734,8 @@ func _on_PlayerData_pond_script_changed(p_index : int, p_pond_script : String):
 
 func _on_PondMatch_match_run_started():
 	run_reset_btn.swap_role("reset")
+	simulate_reset_btn.swap_role("reset")
+	
 	set_back_disabled(true)
 	step_btn.visible = is_step_by_step
 	lua_script_status.set_disabled(true)
@@ -734,6 +743,8 @@ func _on_PondMatch_match_run_started():
 
 func _on_PondMatch_match_run_stopped():
 	run_reset_btn.swap_role("run")
+	simulate_reset_btn.swap_role("run")
+	
 	set_back_disabled(false)
 	step_btn.hide()
 	lua_script_status.set_disabled(false)
@@ -745,9 +756,16 @@ func _on_StepButton_pressed():
 func _on_RunResetButton_reset():
 	emit_signal("match_reset_requested")
 
-
 func _on_RunResetButton_run():
 	emit_signal("match_run_requested")
+
+
+func _on_SimulateResetButton_run():
+	emit_signal("match_run_requested")
+
+func _on_SimulateResetButton_reset():
+	emit_signal("match_reset_requested")
+
 
 func _on_SendScriptButton_pressed():
 	emit_signal("send_pond_script_requested")
