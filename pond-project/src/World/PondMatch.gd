@@ -20,7 +20,7 @@ const TIMER_TEMPLATE : String = "%d:%02d:%02s"
 
 
 # Duration of the match in seconds
-export(int, 10, 300) var match_duration : int = 180
+export(int, 10, 300) var match_duration : int = 120
 # Is the scene rendering the pond
 export var is_visualizing_pond : bool = true
 # Is physics_process running for visualization
