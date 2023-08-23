@@ -49,6 +49,7 @@ anims/spin = SubResource( 1 )
 
 [node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
+can_only_simulate_match = true
 can_see_scripts = false
 can_edit_scripts = false
 can_send_pond_script = true

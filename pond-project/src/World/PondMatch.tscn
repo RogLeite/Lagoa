@@ -136,18 +136,26 @@ text = "<"
 
 [node name="StepButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
 margin_left = 48.0
-margin_right = 216.0
+margin_right = 153.0
 margin_bottom = 79.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Step"
 
 [node name="RunResetButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
-margin_left = 232.0
-margin_right = 400.0
+margin_left = 169.0
+margin_right = 279.0
 margin_bottom = 79.0
 size_flags_horizontal = 3
 text = "Começar"
+script = ExtResource( 4 )
+
+[node name="SimulateResetButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
+margin_left = 295.0
+margin_right = 400.0
+margin_bottom = 79.0
+size_flags_horizontal = 3
+text = "Simular"
 script = ExtResource( 4 )
 
 [node name="SendScriptButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
@@ -197,6 +205,8 @@ text = "-:--:--"
 [connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/StepButton" to="." method="_on_StepButton_pressed"]
 [connection signal="reset" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_reset"]
 [connection signal="run" from="UI/MarginContainer/Gameplay/HBoxContainer/RunResetButton" to="." method="_on_RunResetButton_run"]
+[connection signal="reset" from="UI/MarginContainer/Gameplay/HBoxContainer/SimulateResetButton" to="." method="_on_SimulateResetButton_reset"]
+[connection signal="run" from="UI/MarginContainer/Gameplay/HBoxContainer/SimulateResetButton" to="." method="_on_SimulateResetButton_run"]
 [connection signal="pressed" from="UI/MarginContainer/Gameplay/HBoxContainer/SendScriptButton" to="." method="_on_SendScriptButton_pressed"]
 [connection signal="verify_requested" from="UI/Editor/ScriptStatus" to="." method="_on_LuaScriptStatus_verify_requested"]
 [connection signal="confirmed" from="QuitMatchPopup" to="." method="_on_QuitMatchPopup_confirmed"]
