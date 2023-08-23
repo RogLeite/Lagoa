@@ -56,6 +56,7 @@ uppercase = true
 
 [node name="PondMatch" parent="." instance=ExtResource( 3 )]
 visible = false
+is_emitting_state = true
 
 [connection signal="connection_closed" from="MasterClient" to="." method="_on_MasterClient_connection_closed"]
 [connection signal="joins_received" from="MasterClient" to="." method="_on_MasterClient_joins_received"]
