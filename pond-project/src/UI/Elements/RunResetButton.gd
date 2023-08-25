@@ -5,6 +5,7 @@ signal run
 signal reset
 
 export(String , "run", "reset") var current_role = "run" setget swap_role
+export var run_text : String = "run"
 
 func _pressed():
 	if current_role == "run" :
@@ -19,7 +20,7 @@ func swap_role(role):
 		to_reset()
 	
 func to_run():
-	text = "Começar"
+	text = run_text
 	current_role = "run"
 func to_reset():
 	text = "Parar"

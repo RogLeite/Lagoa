@@ -148,6 +148,7 @@ margin_bottom = 79.0
 size_flags_horizontal = 3
 text = "Começar"
 script = ExtResource( 4 )
+run_text = "Começar"
 
 [node name="SimulateResetButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
 margin_left = 295.0
@@ -156,6 +157,7 @@ margin_bottom = 79.0
 size_flags_horizontal = 3
 text = "Simular"
 script = ExtResource( 4 )
+run_text = "Simular"
 
 [node name="SendScriptButton" type="Button" parent="UI/MarginContainer/Gameplay/HBoxContainer"]
 visible = false
