@@ -206,6 +206,8 @@ func _reset() -> void:
 
 	self.is_running = false
 
+	enable_simulate(true)
+
 	emit_signal("reset_finished")
 
 
@@ -611,6 +613,10 @@ func set_is_running(p_value : bool) -> void:
 	else:
 		emit_signal("match_run_stopped")
 
+# Handles sensitivity of simulate_reset_btn
+func enable_simulate(p_enabled : bool) -> void:
+	if can_only_simulate_match:
+		simulate_reset_btn.set_disabled(not p_enabled)
 
 func _exit_tree():
 	force_join_controllers()
@@ -703,6 +709,7 @@ func set_pond_state(p_state : State) -> void:
 	self.projectile_pond_states = p_state.projectile_pond_states
 	self.time_left = p_state.time_left
 	pond_state = p_state
+	enable_simulate(false)
 	
 # ====================================
 # === LISTENERS ======================
