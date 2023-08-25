@@ -128,7 +128,6 @@ func _ready():
 
 func _physics_process(_delta: float) -> void:
 	if not is_running:
-		set_time_left(-1)
 		return
 		
 	set_time_left(match_timer.get_time_left())
@@ -165,6 +164,7 @@ func reset_pond_match() -> void:
 	
 func _reset() -> void:
 	match_timer.stop()
+	set_time_left(-1)
 	
 	winner = WINNER_TEMPLATE
 	_ducks_tired.reset()
