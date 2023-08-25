@@ -132,11 +132,9 @@ func result(p_winner_declared : bool = false, p_message : String = "") -> void:
 	pond_match.modulate = Color.white
 	# [TODO] Possibly handle reconnection attempt
 
-	if not p_winner_declared:
-		return 
-	
-	show_victory(p_message)
-
+	if p_winner_declared:
+		show_victory(p_message)
+		
 	call_deferred("elapse")
 
 
@@ -250,4 +248,5 @@ func _on_PondMatch_match_reset_requested():
 
 
 func _on_PondMatch_match_run_requested():
-	call_deferred("start", null, true)
+	if _main_state == "elapse":
+		call_deferred("start", null, true)
