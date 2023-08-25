@@ -60,6 +60,8 @@ var winner : String = WINNER_TEMPLATE
 
 var _ducks_tired : TiredRegistry
 
+onready var nothing_script := preload("res://resources/LuaScripts/nothing.tres")
+
 onready var script_scene := preload("res://src/UI/Elements/LuaScriptEditor.tscn")
 onready var controller_scene := preload("res://src/World/Characters/DuckController.tscn")
 onready var mock_controller_scene := preload("res://src/World/Characters/MockDuckController.tscn")
@@ -310,10 +312,16 @@ func format_error(p_message : String) -> String:
 
 	return message
 
+# If can_only_simulate_match, returns `nothing_script`, unless p_index is the User's index
+func get_duck_script(p_index : int) -> String:
+	if not can_only_simulate_match or p_index == PlayerData.get_user_index():
+		return PlayerData.get_pond_script(p_index)
+	return nothing_script.lua_script
+
 # Compiles the script for the player represented by the given index
 # Returns true if successfully compiled; false if not
 func compile_script(p_index : int, show_result : bool = false) -> bool:
-	controllers[p_index].set_lua_code(PlayerData.get_pond_script(p_index))
+	controllers[p_index].set_lua_code(get_duck_script(p_index))
 	var error_message = ""
 	if controllers[p_index].compile() == OK:
 		if show_result:

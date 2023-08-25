@@ -108,14 +108,20 @@ func elapse() -> void:
 	# print("PlayerCache.print: %s"%PlayerCache)
 	PlayerCache.release()
 	
-func start(pond_state : PondMatch.State) -> void:
+func start(pond_state : PondMatch.State, p_is_simulate : bool = false) -> void:
 	_main_state = "start"
 	get_tree().set_auto_accept_quit(false)
 	pond_match.modulate = Color.white
 
 	pond_match.set_back_disabled(true)
-	if pond_state.tick > pond_match.tick:
-		pond_match.pond_state = pond_state
+	if p_is_simulate:
+		pond_match.save_pond_scripts()
+		pond_match.run()
+	else:
+		# if pond_match.is_running:
+		# 	pond_match.reset_pond_match()
+		if pond_state.tick > pond_match.tick:
+			pond_match.pond_state = pond_state
 		
 	
 func result(p_winner_declared : bool = false, p_message : String = "") -> void:
@@ -237,3 +243,11 @@ func _on_PlayerClient_victory_shown(p_message):
 
 func _on_VictoryPopup_confirmed(_p_affirmative):
 	pond_match.modulate = Color.white
+
+
+func _on_PondMatch_match_reset_requested():
+	call_deferred("result", false)
+
+
+func _on_PondMatch_match_run_requested():
+	call_deferred("start", null, true)
