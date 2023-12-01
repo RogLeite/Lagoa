@@ -5,6 +5,7 @@
 [node name="DuckControllerTemplate" type="LuaController"]
 methods_to_register = {
 }
+lua_core_libraries = 167
 max_lines = 0
 max_count = 10000
 script = ExtResource( 1 )
