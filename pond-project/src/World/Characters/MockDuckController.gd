@@ -53,7 +53,7 @@ func swim(p_angle, p_target) -> void :
 	if get_force_stop():
 		return
 	angle = p_angle
-	speed = p_target
+	speed = p_target if p_target else 50
 	
 
 func stop() -> void :
