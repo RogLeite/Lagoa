@@ -5,6 +5,7 @@
 [ext_resource path="res://assets/sprite.png" type="Texture" id=3]
 
 [sub_resource type="CircleShape2D" id=1]
+radius = 15.0
 
 [node name="Duck" type="KinematicBody2D"]
 material = ExtResource( 1 )
