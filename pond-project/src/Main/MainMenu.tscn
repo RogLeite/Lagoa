@@ -50,6 +50,7 @@ size_flags_vertical = 3
 text = "Multijogador"
 
 [node name="IP" type="LineEdit" parent="MarginContainer/ModesList"]
+visible = false
 margin_top = 152.0
 margin_right = 200.0
 margin_bottom = 199.0
