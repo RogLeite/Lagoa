@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://src/ResourceClasses/LuaScript.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+lua_script = "directions = {0,90,180,270}
+i = 1
+while getX() < 50 
+	and getY() < 50 do
+	swim(45, 100)
+end
+swim(225, 0)
+while (true) do 
+	if launch(directions[i],
+		scan(directions[i])) then
+		i = (i % 4) + 1
+	end
+end"
