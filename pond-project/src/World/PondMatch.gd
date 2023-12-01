@@ -436,7 +436,7 @@ func are_controllers_finished() -> bool :
 
 # ==============================================
 # == Mock controller functionality =============
-func compile_mock_script() -> bool:
+func compile_mock_script(p_index : int) -> bool:
 	if mock_controller:
 		remove_child(mock_controller)
 		mock_controller.queue_free()
@@ -444,7 +444,7 @@ func compile_mock_script() -> bool:
 	mock_controller.set_name("MockController")
 	add_child(mock_controller)
 	
-	mock_controller.set_lua_code(PlayerData.get_pond_script(PlayerData.get_user_index()))
+	mock_controller.set_lua_code(PlayerData.get_pond_script(p_index))
 	var error_message = ""
 	if mock_controller.compile() == OK:
 		lua_script_status.set_ok()
@@ -795,7 +795,7 @@ func _on_QuitButton_pressed():
 func _on_LuaScriptStatus_verify_requested():
 	var user_index = PlayerData.get_user_index()
 	save_pond_script(user_index)
-	if compile_mock_script() and launch_mock_thread():
+	if compile_mock_script(user_index) and launch_mock_thread():
 		enable_send_script(true)
 		enable_run_match(true)
 	else:
@@ -804,7 +804,7 @@ func _on_LuaScriptStatus_verify_requested():
 
 func _on_LuaScriptEditor_lua_script_changed(p_node : TextEdit) -> void:
 	var index := script_editors.find(p_node)
-	if index != 0:
+	if index != PlayerData.get_user_index():
 		return
 	enable_send_script(false)
 	enable_run_match(false)
