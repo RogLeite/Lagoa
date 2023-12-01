@@ -8,7 +8,7 @@ onready var victory_popup := $VictoryPopup
 
 func _init():
 	# FINAL
-	var script1 : LuaScript = preload("res://resources/LuaScripts/launch_right.tres")
+	var script1 : LuaScript = preload("res://resources/LuaScripts/default.tres")
 	var script2 : LuaScript = preload("res://resources/LuaScripts/rook.tres")
 	var script3 : LuaScript = preload("res://resources/LuaScripts/counter.tres")
 	var script4 : LuaScript = preload("res://resources/LuaScripts/distant.tres")
