@@ -13,18 +13,18 @@ func _ready():
 	set_standby()
 
 func set_standby() -> void:
-	label.text = TEXT_STANDBY
+	set_info(TEXT_STANDBY)
 
 func set_compilation_error(p_message : String) -> void:
-	label.text = "Erro de Compilação "+p_message
+	set_info("Erro de Compilação "+p_message)
 	play_alert()
 
 func set_runtime_error(p_message : String) -> void:
-	label.text = "Erro de execução "+p_message
+	set_info("Erro de execução "+p_message)
 	play_alert()
 	
 func set_ok() -> void:
-	label.text = TEXT_OK
+	set_info(TEXT_OK)
 	
 func set_disabled(p_value : bool) -> void:
 	verify_button.set_disabled(p_value)
@@ -32,6 +32,10 @@ func set_disabled(p_value : bool) -> void:
 func play_alert() -> void:
 	animation_player.stop(true)
 	animation_player.play("alert")
+
+func set_info( p_text : String ) -> void:
+	label.text = p_text
+	label.set_tooltip(p_text)
 
 func _on_VerifyButton_pressed():
 	emit_signal("verify_requested")

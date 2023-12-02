@@ -808,6 +808,7 @@ func _on_LuaScriptEditor_lua_script_changed(p_node : TextEdit) -> void:
 	var index := script_editors.find(p_node)
 	if index != PlayerData.get_user_index():
 		return
+	lua_script_status.set_standby()
 	enable_send_script(false)
 	enable_run_match(false)
 	
