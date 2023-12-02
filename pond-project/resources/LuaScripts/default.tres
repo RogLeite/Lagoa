@@ -4,16 +4,35 @@
 
 [resource]
 script = ExtResource( 1 )
-lua_script = "directions = {0,90,180,270}
-i = 1
-while getX() < 50 
-	and getY() < 50 do
-	swim(45, 100)
+lua_script = "--[[
+	Antes do \"while true do\", você pode escrever código que prepara teu pato
+]]
+directions = {0,90,180,270}
+current = 1
+swim_angle = 0
+
+-- Retorna true se o Pato se encontra na região central de 10x10
+function in_center()
+	local x,y = getX(), getY()
+	return (45 < x and x < 55) or (45 < y and y < 55)
 end
-swim(225, 0)
+
+-- Enquanto não está no centro, nada na direção dele
+while not in_center() do
+	local x,y = getX(), getY()
+	swim_angle = math.deg(math.atan(50-y, 50-x))
+	swim(swim_angle, 100)
+end
+-- Desacelera até parar
+swim(swim_angle+180, 0)
+
+-- Busca e Lança nas quatro direções especificadas em \"directions\"
 while (true) do 
-	if launch(directions[i],
-		scan(directions[i])) then
-		i = (i % 4) + 1
+	--[[
+		Aqui você pode botar o principal da lógica do teu Pato
+	]]
+	local dir = directions[current]
+	if launch(dir, scan(dir)) then
+		current = (current % 4) + 1
 	end
 end"
