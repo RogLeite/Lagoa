@@ -40,17 +40,20 @@ text = "VERIFICAR"
 margin_left = 155.0
 margin_right = 603.0
 margin_bottom = 43.0
+mouse_filter = 1
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer"]
 margin_right = 448.0
 margin_bottom = 43.0
+mouse_filter = 1
 scroll_vertical_enabled = false
 
 [node name="Label" type="Label" parent="PanelContainer/ScrollContainer"]
 margin_right = 654.0
 margin_bottom = 31.0
+mouse_filter = 1
 size_flags_horizontal = 3
 text = "Aperte VERIFICAR para conferir se há erros de sintaxe."
 
