@@ -548,7 +548,8 @@ func update_pond_script_editor(p_index : int, p_can_edit : bool) -> void:
 	var edit : TextEdit = script_editors[p_index]
 	edit.set_readonly(true)
 	var uname = PlayerData.players[p_index].username
-	edit.name = uname.left(uname.find("@"))
+	var split = uname.find("@")
+	edit.name = uname.left(split) if split >= 0 else uname
 	edit.text = PlayerData.get_pond_script(p_index)
 	edit.set_readonly(not p_can_edit)
 
