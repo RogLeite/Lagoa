@@ -755,6 +755,7 @@ func _on_PondMatch_match_run_started():
 	
 	set_back_disabled(true)
 	step_btn.visible = is_step_by_step
+	scripts_tab_container.get_tab_control(PlayerData.get_user_index()).set_readonly(true)
 	lua_script_status.set_disabled(true)
 
 
@@ -764,6 +765,7 @@ func _on_PondMatch_match_run_stopped():
 	
 	set_back_disabled(false)
 	step_btn.hide()
+	scripts_tab_container.get_tab_control(PlayerData.get_user_index()).set_readonly(false)
 	lua_script_status.set_disabled(false)
 
 func _on_StepButton_pressed():
