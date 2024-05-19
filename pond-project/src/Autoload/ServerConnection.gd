@@ -78,8 +78,7 @@ enum OpCodes {
 const KEY := "nakama_pond_server"
 
 # IP of the machine hosting the server
-# const SERVER_IP := "127.0.0.1"
-const SERVER_IP := "lagoa.tecmf.inf.puc-rio.br"
+const SERVER_IP := "127.0.0.1"
 
 # String that contains the error message whenever any of the functions that yield return != OK
 var error_message := "" setget _no_set, _get_error_message
